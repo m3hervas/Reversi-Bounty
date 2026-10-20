@@ -218,3 +218,28 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Guía interna del equipo (no se publica)
+GUIA-EQUIPO.txt
+
+# Archivos generados por el proyecto
+web/py.zip
+web/leaderboard.json
+web_b/py.zip
+web_b/leaderboard.json
+results/
+site/
+
+# Editores y sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Configuración local de Claude
+.claude/
+
+# Temporales de editores y sistema
+*.swp
+*~
+desktop.ini
