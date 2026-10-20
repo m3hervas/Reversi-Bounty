@@ -1,0 +1,35 @@
+name: Docs
+
+# Construye la documentación en modo estricto: cualquier aviso (enlace roto,
+# página fuera del menú, referencia que no existe) hace fallar el pull request.
+# Read the Docs no ejecuta "--strict", por eso esta comprobación va aparte.
+# Sin filtro "paths": un check obligatorio que no se ejecuta en algún PR lo
+# dejaría bloqueado para siempre en estado "Expected".
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Instalar
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[docs]"
+      - name: Construir la documentación (modo estricto)
+        run: mkdocs build --strict
