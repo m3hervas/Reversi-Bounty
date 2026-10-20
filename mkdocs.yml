@@ -1,0 +1,52 @@
+site_name: Reversi Bounty
+site_description: Reversi (Othello) para humanos y bots, con torneo automático y clasificación de recompensas.
+site_url: https://reversi-bounty.readthedocs.io
+repo_url: https://github.com/m3hervas/Reversi-Bounty
+repo_name: m3hervas/Reversi-Bounty
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  language: es
+  palette:
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Cambiar a modo claro
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      toggle:
+        icon: material/weather-night
+        name: Cambiar a modo oscuro
+  features:
+    - content.code.copy
+    - navigation.top
+    - search.highlight
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_source: true
+            show_root_heading: true
+            docstring_style: google
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+
+nav:
+  - Inicio: index.md
+  - Referencia:
+      - El motor del juego: referencia/motor.md
