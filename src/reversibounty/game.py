@@ -66,12 +66,23 @@ class GameState:
     player: int
 
     def to_dict(self) -> dict[str, Any]:
-        """Devuelve el estado como un diccionario serializable a JSON."""
+        """Devuelve el estado como un diccionario serializable a JSON.
+
+        Returns:
+            Un diccionario con las claves ``"board"`` (lista de 8 listas de 8 enteros) y
+            ``"player"``.
+        """
         return {"board": [list(row) for row in self.board], "player": self.player}
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> GameState:
         """Construye un estado a partir de :meth:`to_dict`, validando su forma.
+
+        Args:
+            data: un diccionario con las claves ``"board"`` y ``"player"``.
+
+        Returns:
+            El estado correspondiente.
 
         Raises:
             ValueError: si el tablero no es 8x8, contiene valores no válidos o el
@@ -101,12 +112,23 @@ class GameState:
 
 
 def opponent(color: int) -> int:
-    """Devuelve el color contrario."""
+    """Devuelve el color contrario.
+
+    Args:
+        color: :data:`BLACK` o :data:`WHITE`.
+
+    Returns:
+        :data:`WHITE` si ``color`` es :data:`BLACK`, y al revés.
+    """
     return -color
 
 
 def initial_state() -> GameState:
-    """Devuelve la posición inicial estándar: cuatro fichas en el centro, mueven negras."""
+    """Devuelve la posición inicial estándar: cuatro fichas en el centro, mueven negras.
+
+    Returns:
+        Un estado nuevo con dos fichas negras, dos blancas y el turno de las negras.
+    """
     board = [[EMPTY] * SIZE for _ in range(SIZE)]
     mid = SIZE // 2
     board[mid - 1][mid - 1] = WHITE
@@ -123,8 +145,18 @@ def _on_board(row: int, col: int) -> bool:
 def flips(board: Board, color: int, move: Move) -> list[Move]:
     """Devuelve las fichas que se darían la vuelta si ``color`` jugase en ``move``.
 
-    No comprueba de quién es el turno; solo la geometría. Una lista vacía
-    significa que la jugada no es legal para ese color.
+    Trabaja con un tablero y un color (no con un :class:`GameState`) porque solo mira
+    la geometría y no necesita saber de quién es el turno: así sirve también para
+    preguntar qué pasaría si jugase el otro color.
+
+    Args:
+        board: el tablero, sin modificar.
+        color: :data:`BLACK` o :data:`WHITE`, quien jugaría.
+        move: la casilla ``(fila, columna)`` donde se pondría la ficha.
+
+    Returns:
+        Las casillas ``(fila, columna)`` que se voltearían. Una lista vacía significa que
+        la jugada no es legal para ese color.
     """
     row, col = move
     if not _on_board(row, col) or board[row][col] != EMPTY:
@@ -143,8 +175,8 @@ def flips(board: Board, color: int, move: Move) -> list[Move]:
     return flipped
 
 
-def moves_for(board: Board, color: int) -> list[Move]:
-    """Devuelve las jugadas legales de ``color`` en ``board``, ordenadas por fila y columna."""
+def _moves_for(board: Board, color: int) -> list[Move]:
+    """Jugadas legales de ``color`` en ``board``, ordenadas por fila y columna (interno)."""
     return [
         (r, c)
         for r in range(SIZE)
@@ -153,9 +185,38 @@ def moves_for(board: Board, color: int) -> list[Move]:
     ]
 
 
+def _has_moves(board: Board, color: int) -> bool:
+    """Indica si ``color`` tiene alguna jugada legal. Se detiene en cuanto encuentra una."""
+    return any(
+        board[r][c] == EMPTY and flips(board, color, (r, c))
+        for r in range(SIZE)
+        for c in range(SIZE)
+    )
+
+
 def legal_moves(state: GameState) -> list[Move]:
-    """Devuelve las jugadas legales del jugador al que le toca. Vacía si la partida acabó."""
-    return moves_for(state.board, state.player)
+    """Devuelve las jugadas legales del jugador al que le toca.
+
+    Args:
+        state: la posición actual, sin modificar.
+
+    Returns:
+        Las jugadas ``(fila, columna)`` ordenadas por fila y columna. Vacía si el jugador
+        no puede mover (porque pasa o porque la partida ha terminado).
+    """
+    return _moves_for(state.board, state.player)
+
+
+def _as_move(move: object) -> Move | None:
+    """Convierte ``move`` en ``(fila, columna)`` si es una pareja de enteros; si no, ``None``."""
+    if not isinstance(move, (tuple, list)) or len(move) != 2:
+        return None
+    row, col = move
+    if not isinstance(row, int) or not isinstance(col, int):
+        return None
+    if isinstance(row, bool) or isinstance(col, bool):
+        return None
+    return row, col
 
 
 def is_legal(state: GameState, move: object) -> bool:
@@ -163,15 +224,18 @@ def is_legal(state: GameState, move: object) -> bool:
 
     ``move`` se tipa como ``object`` a propósito: sirve para juzgar lo que
     devuelve un bot **no fiable**, que puede ser cualquier cosa.
+
+    Args:
+        state: la posición actual.
+        move: lo que se quiere comprobar; normalmente ``(fila, columna)``, pero puede ser
+            cualquier objeto.
+
+    Returns:
+        ``True`` solo si ``move`` es una pareja de enteros que forma una jugada legal.
+        Nunca lanza una excepción, sea cual sea ``move``.
     """
-    if not isinstance(move, (tuple, list)) or len(move) != 2:
-        return False
-    row, col = move
-    if not isinstance(row, int) or not isinstance(col, int):
-        return False
-    if isinstance(row, bool) or isinstance(col, bool):
-        return False
-    return bool(flips(state.board, state.player, (row, col)))
+    parsed = _as_move(move)
+    return parsed is not None and bool(flips(state.board, state.player, parsed))
 
 
 def apply_move(state: GameState, move: Move) -> GameState:
@@ -180,13 +244,22 @@ def apply_move(state: GameState, move: Move) -> GameState:
     Gestiona el paso de turno: si el rival no tiene jugadas pero el jugador
     actual sí, el turno vuelve al jugador actual.
 
+    Args:
+        state: la posición actual; nunca se modifica.
+        move: la jugada ``(fila, columna)`` a aplicar.
+
+    Returns:
+        Un estado nuevo, con la ficha colocada, las fichas encerradas volteadas y el
+        turno ya actualizado.
+
     Raises:
         ValueError: si la jugada no es legal.
     """
-    if not is_legal(state, move):
+    parsed = _as_move(move)
+    to_flip = flips(state.board, state.player, parsed) if parsed is not None else []
+    if parsed is None or not to_flip:
         raise ValueError(f"Jugada ilegal {move!r} para {color_name(state.player)}")
-    row, col = move
-    to_flip = flips(state.board, state.player, (row, col))
+    row, col = parsed
     board = [list(r) for r in state.board]
     board[row][col] = state.player
     for r, c in to_flip:
@@ -194,18 +267,32 @@ def apply_move(state: GameState, move: Move) -> GameState:
     new_board = tuple(tuple(r) for r in board)
 
     next_player = opponent(state.player)
-    if not moves_for(new_board, next_player) and moves_for(new_board, state.player):
+    if not _has_moves(new_board, next_player) and _has_moves(new_board, state.player):
         next_player = state.player  # el rival pasa
     return GameState(board=new_board, player=next_player)
 
 
 def is_terminal(state: GameState) -> bool:
-    """Indica si la partida ha terminado (ninguno de los dos puede mover)."""
-    return not moves_for(state.board, BLACK) and not moves_for(state.board, WHITE)
+    """Indica si la partida ha terminado (ninguno de los dos puede mover).
+
+    Args:
+        state: la posición a comprobar.
+
+    Returns:
+        ``True`` si ni las negras ni las blancas tienen ninguna jugada legal.
+    """
+    return not _has_moves(state.board, BLACK) and not _has_moves(state.board, WHITE)
 
 
 def score(state: GameState) -> tuple[int, int]:
-    """Devuelve ``(fichas_negras, fichas_blancas)``."""
+    """Cuenta las fichas de cada color.
+
+    Args:
+        state: la posición a contar.
+
+    Returns:
+        Una pareja ``(fichas_negras, fichas_blancas)``.
+    """
     black = sum(row.count(BLACK) for row in state.board)
     white = sum(row.count(WHITE) for row in state.board)
     return black, white
@@ -213,6 +300,9 @@ def score(state: GameState) -> tuple[int, int]:
 
 def winner(state: GameState) -> int | None:
     """Devuelve el ganador de una posición terminal.
+
+    Args:
+        state: la posición a evaluar.
 
     Returns:
         :data:`BLACK`, :data:`WHITE`, ``0`` si es empate, o ``None`` si la
@@ -229,18 +319,38 @@ def winner(state: GameState) -> int | None:
 
 
 def color_name(color: int) -> str:
-    """Nombre legible de un color: ``"negras"`` o ``"blancas"``."""
+    """Nombre legible de un color.
+
+    Args:
+        color: :data:`BLACK` o :data:`WHITE`.
+
+    Returns:
+        ``"negras"`` o ``"blancas"``.
+    """
     return "negras" if color == BLACK else "blancas"
 
 
 def move_to_str(move: Move) -> str:
-    """Convierte ``(fila, columna)`` a notación estándar, p. ej. ``(2, 3)`` → ``"d3"``."""
+    """Convierte ``(fila, columna)`` a notación estándar, p. ej. ``(2, 3)`` → ``"d3"``.
+
+    Args:
+        move: una casilla ``(fila, columna)``, ambas entre 0 y 7.
+
+    Returns:
+        El texto de la casilla: una letra de la ``a`` a la ``h`` y un número del 1 al 8.
+    """
     row, col = move
     return f"{'abcdefgh'[col]}{row + 1}"
 
 
 def str_to_move(text: str) -> Move:
     """Convierte notación estándar a ``(fila, columna)``, p. ej. ``"d3"`` → ``(2, 3)``.
+
+    Args:
+        text: la casilla escrita, como ``"d3"``. Admite mayúsculas y espacios alrededor.
+
+    Returns:
+        La casilla como pareja ``(fila, columna)``.
 
     Raises:
         ValueError: si el texto no es una casilla válida.

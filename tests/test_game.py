@@ -61,7 +61,10 @@ def test_apply_move_does_not_mutate():
 
 @pytest.mark.parametrize(
     "move",
-    [(0, 0), (3, 3), (-1, 2), (8, 0), (2, 8), "d3", None, (2,), (2, 3, 4), (2.0, 3), (True, 3), [2, "3"]],
+    [
+        (0, 0), (3, 3), (-1, 2), (8, 0), (2, 8), "d3", None,
+        (2,), (2, 3, 4), (2.0, 3), (True, 3), [2, "3"],
+    ],
 )
 def test_illegal_moves_are_rejected(move):
     state = initial_state()

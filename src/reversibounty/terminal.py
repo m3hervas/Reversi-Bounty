@@ -6,8 +6,8 @@ Se instala con el paquete y ofrece dos comandos::
     reversi-play-color    # tablero con colores y fichas grandes
 
 Este módulo NO imprime ni lee nada al importarse: solo lo hacen las funciones
-``main*`` cuando se ejecuta uno de los comandos. Así la librería sigue siendo
-importable y silenciosa, y el bucle usa solo la API pública del motor
+``main_texto`` y ``main_color`` cuando se ejecuta uno de los comandos. Así la librería
+sigue siendo importable y silenciosa, y el bucle usa solo la API pública del motor
 (``initial_state``, ``legal_moves``, ``apply_move``...). Eso sirve de prueba de que
 esa API es cómoda: no hace falta tocar el interior de ``GameState``, ni llevar fuera
 una variable de turno, ni tratar el primer turno como un caso especial.
@@ -24,10 +24,9 @@ Dos modos de dibujo:
 
 from __future__ import annotations
 
-import argparse
 import os
 import sys
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
 
 from .game import (
     BLACK,
@@ -48,6 +47,7 @@ from .game import (
 )
 
 ANCHO = 52  # columnas del marco
+COLUMNAS = "abcdefgh"
 
 # Colores de 256 tonos (los admiten Windows Terminal, VS Code y casi cualquier terminal).
 VERDE_CLARO = "48;5;34"
@@ -58,7 +58,6 @@ TINTA_BLANCA = "38;5;231"
 TINTA_PISTA = "38;5;226"
 NEGRITA = "1"
 TENUE = "2"
-RESET = "\x1b[0m"
 
 # Una ficha ocupa dos líneas y seis columnas: con los bloques parece un disco.
 DISCO_ARRIBA = " ▄██▄ "
@@ -71,7 +70,7 @@ def _estilo(texto: str, *codigos: str, color: bool) -> str:
     """Envuelve ``texto`` en códigos ANSI, o lo devuelve igual si no hay color."""
     if not color or not codigos:
         return texto
-    return f"\x1b[{';'.join(codigos)}m{texto}{RESET}"
+    return f"\x1b[{';'.join(codigos)}m{texto}\x1b[0m"
 
 
 def _casilla_plana(valor: int, es_jugada: bool, es_ultima: bool) -> str:
@@ -98,43 +97,57 @@ def _casilla_color(
     )
 
 
-def dibujar_tablero(state: GameState, ultima: Move | None = None, color: bool = False) -> str:
-    """Devuelve el tablero como texto, marcando las jugadas posibles y la última jugada.
+def _tablero_plano(state: GameState, ultima: Move | None, posibles: set[Move]) -> str:
+    cabecera = "".join(f" {letra} " for letra in COLUMNAS)
+    lineas = [f"     {cabecera}"]
+    for fila in range(8):
+        celdas = "".join(
+            _casilla_plana(state.board[fila][col], (fila, col) in posibles, (fila, col) == ultima)
+            for col in range(8)
+        )
+        lineas.append(f"   {fila + 1}  {celdas}")
+    return "\n".join(lineas)
 
-    Con ``color=False`` usa solo ASCII (``X`` negras, ``O`` blancas, ``+`` jugada posible
-    y corchetes en la última jugada), para terminales sin colores o para redirigir a un
-    archivo.
-    """
-    posibles = set() if is_terminal(state) else set(legal_moves(state))
-    if not color:
-        letras = "".join(f" {letra} " for letra in "abcdefgh")
-        lineas = [f"     {letras}"]
-        for fila in range(8):
-            celdas = "".join(
-                _casilla_plana(state.board[fila][c], (fila, c) in posibles, (fila, c) == ultima)
-                for c in range(8)
-            )
-            lineas.append(f"   {fila + 1}  {celdas}")
-        return "\n".join(lineas)
 
-    letras = "".join(f"  {letra}   " for letra in "abcdefgh")
-    lineas = [_estilo(f"     {letras}", TENUE, color=True)]
+def _tablero_color(state: GameState, ultima: Move | None, posibles: set[Move]) -> str:
+    cabecera = "".join(f"  {letra}   " for letra in COLUMNAS)
+    lineas = [_estilo(f"     {cabecera}", TENUE, color=True)]
     for fila in range(8):
         arriba, abajo = [], []
         for col in range(8):
-            casilla = _casilla_color(
+            casilla_arriba, casilla_abajo = _casilla_color(
                 state.board[fila][col], (fila, col) in posibles, (fila, col) == ultima, fila, col
             )
-            arriba.append(casilla[0])
-            abajo.append(casilla[1])
+            arriba.append(casilla_arriba)
+            abajo.append(casilla_abajo)
         numero = _estilo(f"{fila + 1}", TENUE, color=True)
         lineas.append(f"   {numero}  {''.join(arriba)}")
         lineas.append(f"      {''.join(abajo)}")
     return "\n".join(lineas)
 
 
+def dibujar_tablero(state: GameState, ultima: Move | None = None, color: bool = False) -> str:
+    """Devuelve el tablero como texto, marcando las jugadas posibles y la última jugada.
+
+    Con ``color=False`` usa solo ASCII (``X`` negras, ``O`` blancas, ``+`` jugada posible
+    y corchetes en la última jugada), para terminales sin colores o para redirigir a un
+    archivo.
+
+    Args:
+        state: la posición a dibujar.
+        ultima: la última jugada, que se resalta. ``None`` si no hay ninguna.
+        color: si es ``True``, usa colores ANSI y fichas grandes.
+
+    Returns:
+        El tablero, con cabecera de columnas y número de fila, en varias líneas.
+    """
+    posibles = set(legal_moves(state))
+    dibujo = _tablero_color if color else _tablero_plano
+    return dibujo(state, ultima, posibles)
+
+
 def _ficha(jugador: int, color: bool) -> str:
-    """Nombre del color con su ficha: ``negras (X)`` o, con color, ``negras ⬤`` visible."""
+    """Nombre del color con su ficha: ``negras (X)`` o, con color, un bloque del color."""
     nombre = color_name(jugador)
     if not color:
         return f"{nombre} ({'X' if jugador == BLACK else 'O'})"
@@ -235,13 +248,16 @@ def jugar(
 ) -> GameState:
     """Juega una partida completa entre dos personas y devuelve el último estado.
 
+    La partida termina al llegar a una posición terminal o si se escribe ``q`` (o se
+    cierra la entrada). El paso de turno lo gestiona el motor: aquí solo se avisa.
+
     Args:
         leer: función que muestra un texto y devuelve lo que escribe quien juega.
         escribir: función que muestra un texto.
         color: si es ``True``, usa colores ANSI y fichas grandes.
 
-    La partida termina al llegar a una posición terminal o si se escribe ``q`` (o se
-    cierra la entrada). El paso de turno lo gestiona el motor: aquí solo se avisa.
+    Returns:
+        El estado en el que acabó la partida, o en el que se abandonó.
     """
     escribir(_titulo(color))
     escribir(_inicio_breve(color))
@@ -252,9 +268,11 @@ def jugar(
         escribir(_pantalla(state, ultima, color))
         jugadas = legal_moves(state)
         opciones = " ".join(move_to_str(m) for m in jugadas)
-        turno = _ficha(state.player, color)
+        pregunta = (
+            f"  Turno de las {_ficha(state.player, color)}. Jugadas: {opciones}\n"
+            "  Escribe una casilla (? ayuda, q salir) > "
+        )
         try:
-            pregunta = f"  Turno de las {turno}. Jugadas: {opciones}\n  Escribe una casilla (? ayuda, q salir) > "
             texto = leer(pregunta).strip().lower()
         except EOFError:
             escribir("\n  Partida abandonada.")
@@ -268,10 +286,16 @@ def jugar(
         try:
             jugada = str_to_move(texto)
         except ValueError:
-            escribir(f"  '{texto}' no es una casilla. Usa una letra de la a a la h y un número del 1 al 8.")
+            escribir(
+                f"  '{texto}' no es una casilla. "
+                "Usa una letra de la a a la h y un número del 1 al 8."
+            )
             continue
         if jugada not in jugadas:
-            escribir(f"  {move_to_str(jugada)} no es una jugada legal: no encierra ninguna ficha rival.")
+            escribir(
+                f"  {move_to_str(jugada)} no es una jugada legal: "
+                "no encierra ninguna ficha rival."
+            )
             continue
 
         quien = state.player
@@ -279,7 +303,10 @@ def jugar(
         state = apply_move(state, jugada)
         ultima = jugada
         plural = "ficha" if volteadas == 1 else "fichas"
-        escribir(f"  Las {color_name(quien)} juegan {move_to_str(jugada)} y voltean {volteadas} {plural}.")
+        escribir(
+            f"  Las {color_name(quien)} juegan {move_to_str(jugada)} "
+            f"y voltean {volteadas} {plural}."
+        )
         if state.player == quien and not is_terminal(state):
             escribir(f"  Las {color_name(-quien)} no pueden mover y pasan el turno.")
 
@@ -295,35 +322,14 @@ def _preparar_consola() -> None:
         sys.stdout.reconfigure(encoding="utf-8")
 
 
-def _terminal_admite_color() -> bool:
-    """Colores solo si hay terminal real y el usuario no los ha desactivado (NO_COLOR)."""
-    return sys.stdout.isatty() and "NO_COLOR" not in os.environ
-
-
 def main_texto() -> int:
     """Comando ``reversi-play``: partida de solo texto."""
-    jugar(leer=input, color=False)
+    jugar(color=False)
     return 0
 
 
 def main_color() -> int:
     """Comando ``reversi-play-color``: partida con colores y fichas grandes."""
     _preparar_consola()
-    jugar(leer=input, color=True)
+    jugar(color=True)
     return 0
-
-
-def main(argv: Sequence[str] | None = None) -> int:
-    """Punto de entrada con opciones: ``python -m reversibounty.terminal [--sin-color]``."""
-    parser = argparse.ArgumentParser(description="Juega al Reversi en la terminal (dos personas).")
-    parser.add_argument("--sin-color", action="store_true", help="solo texto, sin colores")
-    args = parser.parse_args(argv)
-    color = _terminal_admite_color() and not args.sin_color
-    if color:
-        _preparar_consola()
-    jugar(color=color)
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
