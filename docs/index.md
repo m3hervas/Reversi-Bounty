@@ -28,3 +28,29 @@ python -m venv .venv
 .venv\Scripts\activate
 pip install -e ".[dev]"
 ```
+
+## Jugar en la terminal
+
+Dos personas pueden jugar una partida completa desde la consola, sin web ni interfaz gráfica.
+
+**Qué hay que ejecutar**, con el proyecto instalado y el entorno activado:
+
+```bash
+reversi-play          # solo texto, funciona en cualquier terminal
+reversi-play-color    # tablero con colores y fichas grandes
+```
+
+**Cómo se juega:**
+
+1. Al empezar, el juego muestra unas instrucciones.
+2. En tu turno, las casillas donde puedes jugar están marcadas en el tablero.
+3. Escribe una de ellas, por ejemplo `d3`, y pulsa Enter.
+4. Las fichas del rival que quedan encerradas se dan la vuelta.
+5. Si alguien no tiene jugadas, pasa el turno, y el juego avisa.
+6. Gana quien tenga más fichas cuando ninguno de los dos pueda mover.
+
+**Comandos durante la partida:** `?` muestra la ayuda y `q` sale.
+
+!!! tip "Si los colores no se ven bien"
+    Usa `reversi-play`, que muestra solo texto y no depende de la fuente ni de los colores
+    de la terminal.
