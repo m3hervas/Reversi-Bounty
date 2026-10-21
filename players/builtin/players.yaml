@@ -1,0 +1,13 @@
+# Reversi Bounty - jugadores de REFERENCIA que trae el proyecto.
+#
+# Cada entrada dice dónde está la clase y cuál es. Nada se descubre solo: un jugador
+# entra en el proyecto únicamente si aparece aquí. El nombre, los autores, la descripción
+# y el emoji los declara la propia clase, así que no se repiten en esta lista.
+#
+#   - module: reversibounty.bots.random_player   # una clase del propio paquete
+#     class: RandomPlayer
+
+players:
+
+  - module: reversibounty.bots.random_player
+    class: RandomPlayer

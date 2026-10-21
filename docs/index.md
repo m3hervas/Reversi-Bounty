@@ -11,7 +11,7 @@ Práctica de **Inteligencia Artificial, 3º MAT-A, CUNEF Universidad 2026/27**.
 | Parte | Qué hace |
 |---|---|
 | Motor del juego | Reglas, jugadas legales, volteos, paso de turno y final de partida. |
-| API de bots | Una clase `Player` que cualquiera puede implementar para escribir su bot. |
+| API de bots | Una clase `Player` que cualquiera puede implementar para escribir su bot. Hay un [tutorial paso a paso](tutorial.md). |
 | Torneo | Todos contra todos, con ambos colores, y clasificación. |
 | Web | Jugar contra la IA en el navegador, sin instalar nada. |
 
