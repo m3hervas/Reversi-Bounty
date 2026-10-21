@@ -197,3 +197,41 @@ def test_random_games_respect_invariants():
             state = apply_move(state, rng.choice(moves))
             assert sum(score(state)) == before + 1
         assert winner(state) in (BLACK, WHITE, 0)
+
+
+# Partida completa registrada (60 jugadas, con dos pasos de turno automáticos) cuyo resultado
+# se ha comprobado contando las fichas del tablero final: ganan las blancas, 38 a 26.
+PARTIDA_CONOCIDA = (
+    "d3 c3 b3 e3 f3 c5 f6 g2 b5 c6 f4 a5 h1 f5 d6 e7 d7 e6 d8 c4 c7 b7 a8 b6 a4 f8 g4 b4 e8 a3 "
+    "a7 g5 g8 c2 h4 g3 a2 h3 c1 d1 d2 e1 f1 f7 a6 h6 e2 b8 g7 c8 h5 g6 h2 h7 h8 g1 b2 f2 a1 b1"
+).split()
+
+
+def test_known_game_ends_with_expected_winner():
+    state = initial_state()
+    for text in PARTIDA_CONOCIDA:
+        state = apply_move(state, str_to_move(text))
+    assert is_terminal(state)
+    assert score(state) == (26, 38)
+    assert sum(score(state)) == SIZE * SIZE
+    assert winner(state) == WHITE
+
+
+def test_empty_board_has_no_moves_and_is_terminal():
+    state = board_from(["........"] * 8)
+    assert legal_moves(state) == []
+    assert is_terminal(state)
+    assert score(state) == (0, 0)
+    assert winner(state) == 0
+
+
+def test_position_with_exactly_one_legal_move():
+    state = board_from(["XO......"] + ["........"] * 7)
+    assert legal_moves(state) == [(0, 2)]
+
+
+def test_move_on_the_board_edge_flips_along_the_edge():
+    state = board_from(["XO......"] + ["........"] * 7)
+    after = apply_move(state, (0, 2))
+    assert after.board[0][:3] == (BLACK, BLACK, BLACK)
+    assert score(after) == (3, 0)
