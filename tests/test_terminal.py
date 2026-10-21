@@ -88,16 +88,16 @@ def test_cerrar_la_entrada_abandona_sin_romperse():
     assert score(estado) == (2, 2)
 
 
-def test_al_empezar_se_explica_como_jugar():
+def test_al_empezar_hay_un_inicio_breve():
     _, texto = jugar_con(["q"])
-    assert "CÓMO SE JUEGA" in texto
-    assert "por ejemplo  d3" in texto
-    assert "q   salir" in texto
+    assert "por ejemplo d3" in texto
+    assert "? ayuda completa" in texto
+    assert "CÓMO SE JUEGA" not in texto  # la ayuda larga solo sale con "?"
 
 
-def test_el_comando_ayuda_vuelve_a_mostrar_las_instrucciones():
+def test_el_comando_ayuda_muestra_las_instrucciones_completas():
     _, texto = jugar_con(["?", "q"])
-    assert texto.count("CÓMO SE JUEGA") == 2
+    assert texto.count("CÓMO SE JUEGA") == 1
 
 
 def test_se_cuentan_las_fichas_volteadas():
@@ -143,7 +143,7 @@ def test_main_texto_juega_y_sale_con_q(monkeypatch, capsys):
     monkeypatch.setattr("builtins.input", lambda _="": "q")
     assert terminal.main_texto() == 0
     salida = capsys.readouterr().out
-    assert "CÓMO SE JUEGA" in salida
+    assert "? ayuda completa" in salida
     assert "\x1b[" not in salida  # sin color
 
 

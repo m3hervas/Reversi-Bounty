@@ -163,8 +163,20 @@ def _titulo(color: bool) -> str:
     )
 
 
+def _inicio_breve(color: bool) -> str:
+    """Dos líneas al empezar: qué escribir y cómo pedir la ayuda completa."""
+    pista = "◆◆" if color else "+"
+    return "\n".join(
+        [
+            "",
+            f"  Escribe una casilla marcada con {pista}, por ejemplo d3, y pulsa Enter.",
+            "  ? ayuda completa    q salir",
+        ]
+    )
+
+
 def _instrucciones(color: bool) -> str:
-    """Pantalla de ayuda: cómo se juega y qué hay que escribir, para quien no conoce el juego."""
+    """Ayuda completa (comando ``?``): cómo se juega, para quien no conoce el juego."""
     pista = "◆◆ amarillos" if color else "el símbolo +"
     lineas = [
         "",
@@ -232,7 +244,7 @@ def jugar(
     cierra la entrada). El paso de turno lo gestiona el motor: aquí solo se avisa.
     """
     escribir(_titulo(color))
-    escribir(_instrucciones(color))
+    escribir(_inicio_breve(color))
 
     state = initial_state()
     ultima: Move | None = None
