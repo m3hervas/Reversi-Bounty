@@ -48,5 +48,6 @@ markdown_extensions:
 
 nav:
   - Inicio: index.md
+  - Reglas del juego: reglas.md
   - Referencia:
       - El motor del juego: referencia/motor.md

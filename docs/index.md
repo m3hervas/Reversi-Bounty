@@ -16,8 +16,8 @@ Práctica de **Inteligencia Artificial, 3º MAT-A, CUNEF Universidad 2026/27**.
 | Web | Jugar contra la IA en el navegador, sin instalar nada. |
 
 !!! note "Estado"
-    La documentación crece con el proyecto. Por ahora está disponible la referencia del
-    [motor del juego](referencia/motor.md).
+    La documentación crece con el proyecto. Por ahora están disponibles las
+    [reglas del juego](reglas.md) y la referencia del [motor del juego](referencia/motor.md).
 
 ## Instalación
 
