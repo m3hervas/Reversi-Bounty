@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import io
 import random
 
 import pytest
@@ -140,7 +141,7 @@ def test_los_comandos_de_consola_existen(nombre):
 
 
 def test_main_texto_juega_y_sale_con_q(monkeypatch, capsys):
-    monkeypatch.setattr("builtins.input", lambda _="": "q")
+    monkeypatch.setattr("sys.stdin", io.StringIO("q\n"))
     assert terminal.main_texto() == 0
     salida = capsys.readouterr().out
     assert "? ayuda completa" in salida
@@ -148,7 +149,7 @@ def test_main_texto_juega_y_sale_con_q(monkeypatch, capsys):
 
 
 def test_main_color_juega_con_color(monkeypatch, capsys):
-    monkeypatch.setattr("builtins.input", lambda _="": "q")
+    monkeypatch.setattr("sys.stdin", io.StringIO("q\n"))
     monkeypatch.setattr(terminal, "_preparar_consola", lambda: None)
     assert terminal.main_color() == 0
     assert "\x1b[" in capsys.readouterr().out

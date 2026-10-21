@@ -54,3 +54,18 @@ reversi-play-color    # tablero con colores y fichas grandes
 !!! tip "Si los colores no se ven bien"
     Usa `reversi-play`, que muestra solo texto y no depende de la fuente ni de los colores
     de la terminal.
+
+## Jugar desde Python
+
+Dos jugadores aleatorios, con semilla para que la partida se repita:
+
+```python
+from reversibounty import play_game
+from reversibounty.bots import RandomPlayer
+
+resultado = play_game(RandomPlayer.create(seed=1), RandomPlayer.create(seed=2))
+print(resultado.winner, resultado.score)  # -1 (29, 35): ganan las blancas
+```
+
+`resultado.winner` vale `1` si ganan las negras, `-1` si ganan las blancas y `0` si hay empate.
+Más detalles en la referencia de [las partidas](referencia/partidas.md).

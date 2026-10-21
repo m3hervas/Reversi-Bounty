@@ -9,6 +9,7 @@ from .game import (
     GameState,
     Move,
     apply_move,
+    color_name,
     flips,
     initial_state,
     is_legal,
@@ -20,6 +21,8 @@ from .game import (
     str_to_move,
     winner,
 )
+from .match import GameResult, play_game
+from .player import Player
 
 __version__ = "0.1.0"
 
@@ -29,9 +32,13 @@ __all__ = [
     "SIZE",
     "WHITE",
     "Board",
+    "GameResult",
     "GameState",
     "Move",
+    "Player",
+    "__version__",
     "apply_move",
+    "color_name",
     "flips",
     "initial_state",
     "is_legal",
@@ -39,6 +46,7 @@ __all__ = [
     "legal_moves",
     "move_to_str",
     "opponent",
+    "play_game",
     "score",
     "str_to_move",
     "winner",

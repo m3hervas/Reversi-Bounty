@@ -51,3 +51,5 @@ nav:
   - Reglas del juego: reglas.md
   - Referencia:
       - El motor del juego: referencia/motor.md
+      - La API de jugadores: referencia/jugadores.md
+      - El ejecutor de partidas: referencia/partidas.md
