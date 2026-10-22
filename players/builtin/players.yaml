@@ -11,3 +11,6 @@ players:
 
   - module: reversibounty.bots.random_player
     class: RandomPlayer
+
+  - module: reversibounty.bots.greedy_player
+    class: GreedyPlayer
