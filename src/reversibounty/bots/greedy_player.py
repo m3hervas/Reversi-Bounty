@@ -97,7 +97,7 @@ class GreedyPlayer(Player):
 
     @classmethod
     def get_icon(cls) -> str:
-        return "💰"
+        return "😈"
 
     @classmethod
     def create(cls, seed: int) -> GreedyPlayer:

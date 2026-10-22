@@ -14,3 +14,6 @@ players:
 
   - module: reversibounty.bots.greedy_player
     class: GreedyPlayer
+
+  - module: reversibounty.bots.zeff_minmax
+    class: ZeffMinmaxPlayer

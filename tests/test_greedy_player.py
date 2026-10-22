@@ -12,7 +12,7 @@ def test_greedy_player_es_un_player_con_identidad_valida():
     assert GreedyPlayer.get_name() == "avaricioso"
     assert GreedyPlayer.get_authors()
     assert GreedyPlayer.get_description()
-    assert GreedyPlayer.get_icon() == "💰"
+    assert GreedyPlayer.get_icon() == "😈"
 
 
 def test_greedy_player_siempre_elige_una_jugada_legal():
