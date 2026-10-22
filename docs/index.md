@@ -12,7 +12,7 @@ Práctica de **Inteligencia Artificial, 3º MAT-A, CUNEF Universidad 2026/27**.
 |---|---|
 | Motor del juego | Reglas, jugadas legales, volteos, paso de turno y final de partida. |
 | API de bots | Una clase `Player` que cualquiera puede implementar para escribir su bot. Hay un [tutorial paso a paso](tutorial.md). |
-| Torneo | Todos contra todos, con ambos colores, y clasificación. |
+| Torneo | Todos contra todos, con ambos colores, y clasificación en un archivo. Ver [el torneo](referencia/torneo.md). |
 | Web | [Jugar contra la IA en el navegador](https://m3hervas.github.io/Reversi-Bounty/), sin instalar nada. |
 
 !!! note "Estado"
@@ -69,3 +69,14 @@ print(resultado.winner, resultado.score)  # -1 (29, 35): ganan las blancas
 
 `resultado.winner` vale `1` si ganan las negras, `-1` si ganan las blancas y `0` si hay empate.
 Más detalles en la referencia de [las partidas](referencia/partidas.md).
+
+## Jugar un torneo
+
+Todos los bots registrados, todos contra todos y con los dos colores:
+
+```bash
+reversi-tournament
+```
+
+Imprime la clasificación y la guarda en `results/leaderboard.json`. Con la misma semilla
+(`--semilla`), el resultado es siempre el mismo. Más detalles en [el torneo](referencia/torneo.md).
