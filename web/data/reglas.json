@@ -1,0 +1,124 @@
+{
+  "_comentario": "Diagramas de la página de Reglas. Cada uno es una lista de jugadas desde la posición inicial: la página las reproduce con el motor de Python, así que los tableros nunca se dibujan a mano. 'marcas' son las casillas que se señalan sobre el tablero (volteables, anclas, destino, prohibidas, esquinas, x, c) y 'esperado' lo que el texto afirma de cada diagrama: tests/test_web_reglas.py comprueba todo contra el motor. 'pistas' dibuja las jugadas posibles; 'ultima' resalta la última jugada; 'volteadas' marca con un aro las fichas que cambian de color en la última jugada.",
+  "diagramas": {
+    "inicio": {
+      "etiqueta": "Posición inicial del Reversi, con las cuatro jugadas posibles de las negras",
+      "jugadas": [],
+      "pistas": true,
+      "ultima": false,
+      "volteadas": false,
+      "marcas": {},
+      "esperado": {
+        "turno": 1,
+        "legales": ["c4", "d3", "e6", "f5"],
+        "puntos": [2, 2],
+        "blancas": ["d4", "e5"],
+        "negras": ["d5", "e4"]
+      }
+    },
+    "antes-f3": {
+      "etiqueta": "Tablero tras d3 y e3: las negras van a jugar f3 y encerrar las fichas blancas e3 y e4",
+      "jugadas": ["d3", "e3"],
+      "pistas": false,
+      "ultima": false,
+      "volteadas": false,
+      "marcas": {
+        "destino": ["f3"],
+        "volteables": ["e3", "e4"],
+        "anclas": ["d3", "d5"]
+      },
+      "esperado": {
+        "turno": 1,
+        "destino": "f3",
+        "volteables": ["e3", "e4"],
+        "anclas": ["d3", "d5"],
+        "puntos": [3, 3]
+      }
+    },
+    "despues-f3": {
+      "etiqueta": "Tablero tras jugar f3: las fichas e3 y e4 se han dado la vuelta",
+      "jugadas": ["d3", "e3", "f3"],
+      "pistas": false,
+      "ultima": true,
+      "volteadas": true,
+      "marcas": {},
+      "esperado": {
+        "volteadas": ["e3", "e4"],
+        "blancas": ["e5"],
+        "puntos": [6, 1]
+      }
+    },
+    "c3-prohibida": {
+      "etiqueta": "Posición inicial: c3 no es una jugada posible porque no encierra ninguna ficha",
+      "jugadas": [],
+      "pistas": false,
+      "ultima": false,
+      "volteadas": false,
+      "marcas": {
+        "prohibidas": ["c3"]
+      },
+      "esperado": {
+        "no_legales": ["c3"],
+        "puntos": [2, 2]
+      }
+    },
+    "paso": {
+      "etiqueta": "Las blancas acaban de jugar c1 y las negras no tienen ninguna jugada posible: pasan",
+      "jugadas": ["d3", "c3", "e6", "d2", "d1", "e1", "b2", "c1"],
+      "pistas": false,
+      "ultima": true,
+      "volteadas": false,
+      "marcas": {},
+      "esperado": {
+        "pasa": true,
+        "turno": -1,
+        "terminal": false
+      }
+    },
+    "final-lleno": {
+      "etiqueta": "Final habitual: el tablero está lleno y las blancas ganan 38 a 26",
+      "jugadas": ["d3", "c3", "b3", "e3", "f3", "c5", "f6", "g2", "b5", "c6", "f4", "a5", "h1", "f5", "d6", "e7", "d7", "e6", "d8", "c4", "c7", "b7", "a8", "b6", "a4", "f8", "g4", "b4", "e8", "a3", "a7", "g5", "g8", "c2", "h4", "g3", "a2", "h3", "c1", "d1", "d2", "e1", "f1", "f7", "a6", "h6", "e2", "b8", "g7", "c8", "h5", "g6", "h2", "h7", "h8", "g1", "b2", "f2", "a1", "b1"],
+      "pistas": false,
+      "ultima": false,
+      "volteadas": false,
+      "marcas": {},
+      "esperado": {
+        "terminal": true,
+        "puntos": [26, 38],
+        "ganador": -1,
+        "vacias": 0
+      }
+    },
+    "final-temprano": {
+      "etiqueta": "Final anticipado: las blancas se quedan sin fichas y las negras ganan 13 a 0 con 51 casillas vacías",
+      "jugadas": ["e6", "f4", "e3", "f6", "g5", "d6", "e7", "f5", "c5"],
+      "pistas": false,
+      "ultima": false,
+      "volteadas": false,
+      "marcas": {},
+      "esperado": {
+        "terminal": true,
+        "puntos": [13, 0],
+        "ganador": 1,
+        "vacias": 51
+      }
+    },
+    "mapa": {
+      "etiqueta": "Mapa del tablero: las cuatro esquinas, las casillas X y las casillas C",
+      "jugadas": [],
+      "pistas": false,
+      "ultima": false,
+      "volteadas": false,
+      "marcas": {
+        "esquinas": ["a1", "h1", "a8", "h8"],
+        "x": ["b2", "g2", "b7", "g7"],
+        "c": ["b1", "g1", "a2", "h2", "a7", "h7", "b8", "g8"]
+      },
+      "esperado": {
+        "esquinas": ["a1", "h1", "a8", "h8"],
+        "x": ["b2", "g2", "b7", "g7"],
+        "c": ["a2", "a7", "b1", "b8", "g1", "g8", "h2", "h7"]
+      }
+    }
+  }
+}

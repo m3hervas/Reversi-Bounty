@@ -1,0 +1,131 @@
+/* Reversi Bounty — tokens de diseño (tomados de la web B de Reversi Arena).
+ *
+ * Identidad: un programa de torneo impreso. Papel cálido y tinta casi negra, el verde
+ * del tablero como color de marca y un bermellón de señal que SOLO aparece donde hay que
+ * mirar: la última jugada y los avisos.
+ *
+ * Tipografía: Archivo (con eje de anchura: expandida para titulares, condensada para
+ * datos) e IBM Plex Mono para notación, etiquetas y cifras.
+ *
+ * Tema: claro por defecto; oscuro si lo pide el sistema y nadie ha elegido otra cosa, o si
+ * se elige a mano (atributo data-theme en <html>, guardado en localStorage por app.js).
+ * Contraste comprobado: todo el texto supera 4,5:1 en los dos temas.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* ----------------------------------------------------- papel y tinta */
+  --paper: #f3efe6;
+  --paper-2: #ebe6da;
+  --card: #fbf9f4;
+  --ink: #161513;
+  --ink-2: #47443e;
+  --ink-3: #635e55;
+  --rule: rgba(22, 21, 19, 0.11);
+  --rule-2: rgba(22, 21, 19, 0.2);
+  --grid-line: rgba(22, 21, 19, 0.045);
+  --on-ink: #f6f3ec;
+  --scrim: rgba(243, 239, 230, 0.74);
+
+  /* ------------------------------------------------- marca y señal */
+  --accent: #1d6a50;
+  --accent-ink: #17573f;
+  --accent-soft: rgba(29, 106, 80, 0.1);
+  --signal: #e2532e;
+  --signal-ink: #b23b1c;
+  --signal-soft: rgba(226, 83, 46, 0.12);
+
+  /* ------------------------------------------------------- tablero */
+  --felt: #1e6b51;
+  --felt-2: #237a5d;
+  --felt-line: #14503c;
+  --felt-frame: #0f3d2d;
+  --hint: rgba(255, 255, 255, 0.36);
+
+  /* Fichas: el degradado radial y el canto oscuro les dan grosor. */
+  --disc-black: radial-gradient(circle at 34% 28%, #55534f 0%, #1b1a18 46%, #0b0b0a 100%);
+  --disc-white: radial-gradient(circle at 34% 28%, #ffffff 0%, #f1ede3 44%, #cfc8b8 100%);
+
+  /* ------------------------------------------------------- sombras */
+  --shadow-1: 0 1px 0 rgba(22, 21, 19, 0.03), 0 1px 3px rgba(22, 21, 19, 0.06);
+  --shadow-2: 0 18px 40px -20px rgba(22, 21, 19, 0.35);
+  --shadow-board: 0 34px 60px -30px rgba(10, 34, 25, 0.6), 0 2px 0 rgba(255, 255, 255, 0.4) inset;
+  --shadow-pop: 0 24px 48px -16px rgba(22, 21, 19, 0.32), 0 0 0 1px var(--rule);
+
+  /* ------------------------------------------------------ tipografía */
+  --font-sans: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+
+  /* --------------------------------------------------------- movimiento */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+  /* ------------------------------------------------------------ medidas */
+  --radius: 14px;
+  --radius-l: 20px;
+  --gutter: clamp(16px, 4vw, 40px);
+  --maxw: 1120px;
+  --header-h: 64px;
+}
+
+/* Tema oscuro, «sala de noche». Va dos veces (sistema y elección a mano) porque CSS no
+ * deja combinar una media query con un selector en una sola regla. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #121210;
+    --paper-2: #181816;
+    --card: #1b1a18;
+    --ink: #f0ece2;
+    --ink-2: #c2bdb1;
+    --ink-3: #9a9589;
+    --rule: rgba(240, 236, 226, 0.1);
+    --rule-2: rgba(240, 236, 226, 0.19);
+    --grid-line: rgba(240, 236, 226, 0.035);
+    --on-ink: #121210;
+    --scrim: rgba(18, 18, 16, 0.72);
+    --accent: #3fae84;
+    --accent-ink: #5cc497;
+    --accent-soft: rgba(63, 174, 132, 0.13);
+    --signal: #f26a43;
+    --signal-ink: #ff8a66;
+    --signal-soft: rgba(242, 106, 67, 0.15);
+    --felt: #1a5f48;
+    --felt-2: #1f6c52;
+    --felt-line: #113f30;
+    --felt-frame: #0b2c21;
+    --shadow-1: 0 1px 0 rgba(0, 0, 0, 0.3);
+    --shadow-2: 0 18px 40px -18px rgba(0, 0, 0, 0.7);
+    --shadow-board: 0 34px 60px -26px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+    --shadow-pop: 0 24px 48px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--rule-2);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #121210;
+  --paper-2: #181816;
+  --card: #1b1a18;
+  --ink: #f0ece2;
+  --ink-2: #c2bdb1;
+  --ink-3: #9a9589;
+  --rule: rgba(240, 236, 226, 0.1);
+  --rule-2: rgba(240, 236, 226, 0.19);
+  --grid-line: rgba(240, 236, 226, 0.035);
+  --on-ink: #121210;
+  --scrim: rgba(18, 18, 16, 0.72);
+  --accent: #3fae84;
+  --accent-ink: #5cc497;
+  --accent-soft: rgba(63, 174, 132, 0.13);
+  --signal: #f26a43;
+  --signal-ink: #ff8a66;
+  --signal-soft: rgba(242, 106, 67, 0.15);
+  --felt: #1a5f48;
+  --felt-2: #1f6c52;
+  --felt-line: #113f30;
+  --felt-frame: #0b2c21;
+  --shadow-1: 0 1px 0 rgba(0, 0, 0, 0.3);
+  --shadow-2: 0 18px 40px -18px rgba(0, 0, 0, 0.7);
+  --shadow-board: 0 34px 60px -26px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  --shadow-pop: 0 24px 48px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--rule-2);
+}

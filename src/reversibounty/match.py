@@ -1,22 +1,18 @@
 """El ejecutor de partidas: juega una partida completa entre dos jugadores.
 
-``play_game`` no sabe nada de personas, bots, dificultades ni torneos. Solo necesita dos
-objetos con un método ``choose_move``, que es justo lo que ofrece
-:class:`~reversibounty.player.Player`.
-Así el mismo ejecutor sirve para el torneo, la web y los tests.
+``play_game`` no sabe nada de personas, bots ni torneos: solo necesita dos objetos con un
+método ``choose_move``, que es lo que ofrece :class:`~reversibounty.player.Player`. Así el
+mismo ejecutor sirve para el torneo, la web y los tests.
 
-Decisiones de diseño:
+Un bot no es de fiar: puede devolver una casilla ocupada, ``None`` o un texto, o lanzar una
+excepción. Por eso cada jugada se valida antes de aplicarla, y quien incumple pierde esa
+partida con el motivo anotado, en lugar de romper el programa. Esa regla vive en un solo sitio,
+:func:`request_move`, y la usan tanto ``play_game`` como la web.
 
-* **Valida todas las jugadas antes de aplicarlas.** Un bot no es de fiar: puede devolver
-  una casilla ocupada, ``None``, un texto o lanzar una excepción. Nada de eso llega al
-  motor: el ejecutor lo juzga con :func:`~reversibounty.game.is_legal`.
-* **Quien incumple, pierde esa partida** y la partida se da por terminada con el motivo
-  anotado, en lugar de romper todo el programa. Así un bot malo no puede estropear ni un
-  torneo ni a los demás jugadores. La guía no fija qué hacer aquí; esta es nuestra decisión.
-* **Cada jugador recibe su propio objeto de estado.** Como :class:`~reversibounty.game.GameState`
-  es inmutable, un bot que intente modificarlo no puede: se queja con una excepción y solo
-  se perjudica a sí mismo.
-* **El ejecutor no pone límites de tiempo.** Eso corresponde al torneo (paso 5.2).
+Cada jugador recibe su propio objeto de estado. Como :class:`~reversibounty.game.GameState` es
+inmutable, un bot que intente modificarlo no puede: falla y solo se perjudica a sí mismo.
+
+El ejecutor no pone límites de tiempo; eso corresponde a quien organice un torneo.
 """
 
 from __future__ import annotations
@@ -45,6 +41,18 @@ class Mover(Protocol):
     def choose_move(self, state: GameState) -> Move: ...
 
 
+class Forfeit(Exception):
+    """Un jugador pierde la partida por incumplir las reglas.
+
+    Attributes:
+        reason: lo que hizo mal, por ejemplo ``"devolvió una jugada ilegal: (3, 3)"``.
+    """
+
+    def __init__(self, reason: str) -> None:
+        super().__init__(reason)
+        self.reason = reason
+
+
 @dataclass(frozen=True)
 class GameResult:
     """El resultado de una partida.
@@ -65,6 +73,32 @@ class GameResult:
     forfeit: str | None = None
 
 
+def request_move(player: Mover, state: GameState) -> Move:
+    """Le pide una jugada a un jugador y comprueba que es legal.
+
+    Es la única definición de "un jugador incumple las reglas": lanzar una excepción o
+    devolver algo que no es una jugada legal. El jugador recibe su propia copia del estado.
+
+    Args:
+        player: quien debe jugar.
+        state: la posición, con el turno de ese jugador.
+
+    Returns:
+        La jugada, como una pareja ``(fila, columna)``.
+
+    Raises:
+        Forfeit: si el jugador lanza una excepción o devuelve una jugada ilegal.
+    """
+    try:
+        move = player.choose_move(replace(state))
+    except Exception as error:  # código ajeno: cualquier fallo es una derrota
+        raise Forfeit(f"lanzó {type(error).__name__}: {error}") from error
+    if not is_legal(state, move):
+        raise Forfeit(f"devolvió una jugada ilegal: {move!r}")
+    row, column = move
+    return row, column
+
+
 def play_game(
     player_a: Mover, player_b: Mover, state: GameState | None = None
 ) -> GameResult:
@@ -82,8 +116,8 @@ def play_game(
             pedir ninguna jugada.
 
     Returns:
-        Un :class:`GameResult`. Si un jugador lanza una excepción o devuelve una jugada
-        ilegal, pierde esa partida y el motivo queda en ``forfeit``.
+        Un :class:`GameResult`. Si un jugador incumple las reglas (ver :func:`request_move`),
+        pierde esa partida y el motivo queda en ``forfeit``.
     """
     state = initial_state() if state is None else state
     moves: list[Move] = []
@@ -91,23 +125,14 @@ def play_game(
         quien = state.player
         jugador = player_a if quien == BLACK else player_b
         try:
-            jugada = jugador.choose_move(replace(state))  # copia: cada bot recibe la suya
-        except Exception as error:  # código ajeno: cualquier fallo es una derrota
-            motivo = f"lanzó {type(error).__name__}: {error}"
-            return _pierde(quien, state, moves, motivo)
-        if not is_legal(state, jugada):
-            return _pierde(quien, state, moves, f"devolvió una jugada ilegal: {jugada!r}")
-        fila, columna = jugada
-        moves.append((fila, columna))
+            jugada = request_move(jugador, state)
+        except Forfeit as forfeit:
+            return GameResult(
+                winner=opponent(quien),
+                moves=tuple(moves),
+                score=score(state),
+                forfeit=f"las {color_name(quien)} {forfeit.reason}",
+            )
+        moves.append(jugada)
         state = apply_move(state, jugada)
     return GameResult(winner(state) or 0, tuple(moves), score(state))
-
-
-def _pierde(quien: int, state: GameState, moves: list[Move], motivo: str) -> GameResult:
-    """Resultado de una partida en la que ``quien`` pierde por incumplir las reglas."""
-    return GameResult(
-        winner=opponent(quien),
-        moves=tuple(moves),
-        score=score(state),
-        forfeit=f"las {color_name(quien)} {motivo}",
-    )

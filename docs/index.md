@@ -13,7 +13,7 @@ Práctica de **Inteligencia Artificial, 3º MAT-A, CUNEF Universidad 2026/27**.
 | Motor del juego | Reglas, jugadas legales, volteos, paso de turno y final de partida. |
 | API de bots | Una clase `Player` que cualquiera puede implementar para escribir su bot. Hay un [tutorial paso a paso](tutorial.md). |
 | Torneo | Todos contra todos, con ambos colores, y clasificación. |
-| Web | Jugar contra la IA en el navegador, sin instalar nada. |
+| Web | [Jugar contra la IA en el navegador](https://m3hervas.github.io/Reversi-Bounty/), sin instalar nada. |
 
 !!! note "Estado"
     La documentación crece con el proyecto. Por ahora están disponibles las
