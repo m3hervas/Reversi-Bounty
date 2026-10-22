@@ -224,7 +224,7 @@ def test_el_leaderboard_tiene_version_hora_clasificacion_y_metadatos(tmp_path):
     assert [s["rank"] for s in datos["standings"]] == [1, 2]
     primero = datos["standings"][0]
     assert primero["name"] == "avaricioso"
-    assert primero["icon"] == "💰"  # se guarda en UTF-8, no como \ud83d...
+    assert primero["icon"] == "😈"  # se guarda en UTF-8, no como \ud83d...
     for clave in ("authors", "description", "played", "wins", "draws", "losses", "points"):
         assert clave in primero
     assert len(datos["games"]) == 2
