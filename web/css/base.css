@@ -1,0 +1,354 @@
+/* Reversi Bounty — base: reset, tipografía, cabecera, botones y controles comunes.
+ *
+ * Movimiento: solo se animan transform y opacity; los estados hover viven dentro de
+ * @media (hover: hover) para que no se queden «pegados» en una pantalla táctil. */
+
+/* ================================================================ reset */
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  display: flex; flex-direction: column;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 16.5px/1.6 var(--font-sans);
+  font-kerning: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+main { flex: 1; }
+
+svg { display: block; }
+a { color: inherit; text-underline-offset: 3px; }
+button, input { font: inherit; color: inherit; }
+p { margin: 0; }
+h1, h2 { margin: 0; }
+::selection { background: var(--accent-soft); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+/* Los títulos reciben el foco al cambiar de apartado, sin marco visible. */
+[tabindex="-1"]:focus { outline: none; }
+
+.skip {
+  position: absolute; left: 16px; top: 12px; z-index: 100;
+  padding: 10px 16px; border-radius: 999px;
+  background: var(--ink); color: var(--on-ink); font-weight: 600; text-decoration: none;
+  transform: translateY(-80px);
+}
+.skip:focus { transform: none; }
+
+/* ============================================================ tipografía */
+.eyebrow {
+  display: flex; align-items: center; gap: 10px;
+  margin: 0 0 16px;
+  font: 500 11.5px/1.2 var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.eyebrow::before { content: ""; width: 20px; height: 1px; background: currentColor; flex: none; }
+.eyebrow--plain::before { display: none; }
+
+.display {
+  font-weight: 850;
+  font-stretch: 125%;
+  text-transform: uppercase;
+  line-height: 0.86;
+  letter-spacing: -0.015em;
+}
+.h1 {
+  font-size: clamp(30px, 4.2vw, 52px);
+  font-weight: 800;
+  font-stretch: 112%;
+  line-height: 1;
+  letter-spacing: -0.028em;
+  text-wrap: balance;
+}
+.label {
+  font: 500 11px/1.2 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.lede {
+  max-width: 52ch;
+  font-size: clamp(17px, 1.55vw, 19.5px);
+  line-height: 1.55;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+/* =============================================================== layout */
+:root { --sticky-offset: 88px; } /* hueco bajo la cabecera pegajosa al saltar a una sección */
+
+.wrap {
+  width: 100%; max-width: var(--maxw); margin: 0 auto;
+  padding: 0 max(var(--gutter), env(safe-area-inset-right, 0px)) 0 max(var(--gutter), env(safe-area-inset-left, 0px));
+}
+
+/* Solo se ve el apartado de la dirección (lo fija html[data-view], ver js/app.js). Sin
+ * JavaScript se ven todos, para que la página nunca quede en blanco. */
+.js .view { display: none; }
+/* El fondo de la portada mide 100vw, y 100vw cuenta la barra de desplazamiento (en Windows, unos
+ * 8-15 px): sin esto, la página se desbordaba en horizontal. «clip» recorta el sobrante sin crear
+ * una zona de scroll, así que no afecta a position: sticky. */
+.view { overflow-x: clip; }
+html[data-view="inicio"] .view[data-view="inicio"],
+html[data-view="jugar"] .view[data-view="jugar"],
+html[data-view="reglas"] .view[data-view="reglas"],
+html[data-view="bots"] .view[data-view="bots"] { display: block; animation: view-in 260ms var(--ease-out); }
+@keyframes view-in { from { opacity: 0; transform: translateY(8px); } }
+
+/* ============================================================ cabecera */
+.topbar {
+  position: sticky; top: 0; z-index: 40;
+  height: var(--header-h);
+  background: color-mix(in srgb, var(--paper) 86%, transparent);
+  backdrop-filter: saturate(150%) blur(14px);
+  -webkit-backdrop-filter: saturate(150%) blur(14px);
+  border-bottom: 1px solid var(--rule);
+}
+@supports not (backdrop-filter: blur(1px)) { .topbar { background: var(--paper); } }
+.topbar__inner {
+  display: flex; align-items: center; gap: 16px;
+  height: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 max(var(--gutter), env(safe-area-inset-right, 0px)) 0 max(var(--gutter), env(safe-area-inset-left, 0px));
+}
+
+.brand {
+  display: inline-flex; align-items: center; gap: 11px;
+  flex: none;
+  min-height: 44px;
+  text-decoration: none;
+  user-select: none; -webkit-user-select: none;
+}
+.brand__mark { position: relative; width: 30px; height: 20px; flex: none; }
+.brand__mark i {
+  position: absolute; top: 0;
+  width: 20px; height: 20px; border-radius: 50%;
+  transition: transform 260ms var(--ease-out);
+}
+.brand__mark i:first-child { left: 0; z-index: 1; background: var(--disc-black); box-shadow: 0 0 0 1.5px var(--paper), inset 0 0 0 1px rgba(255, 255, 255, 0.2); }
+.brand__mark i:last-child { left: 10px; background: var(--disc-white); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18); }
+.brand__name {
+  font-weight: 800;
+  font-stretch: 118%;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.brand__name span { color: var(--accent-ink); }
+@media (hover: hover) and (pointer: fine) {
+  .brand:hover .brand__mark i:first-child { transform: translateX(-2px) rotate(-10deg); }
+  .brand:hover .brand__mark i:last-child { transform: translateX(3px) rotate(10deg); }
+}
+
+.nav { display: flex; align-items: center; gap: 2px; margin-left: auto; }
+.nav a {
+  position: relative;
+  display: inline-flex; align-items: center;
+  min-height: 44px; padding: 0 12px;
+  border-radius: 999px;
+  font-size: 15px; font-weight: 600;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.nav a[aria-current="page"] { color: var(--ink); }
+.nav a::after {
+  content: "";
+  position: absolute; left: 12px; right: 12px; bottom: 8px;
+  height: 2px; border-radius: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transition: transform 220ms var(--ease-out);
+}
+.nav a[aria-current="page"]::after { transform: none; }
+@media (hover: hover) and (pointer: fine) {
+  .nav a:hover { color: var(--ink); }
+}
+
+.tools { display: flex; align-items: center; gap: 8px; flex: none; }
+
+/* Estado del motor de Python. */
+.engine-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 34px; padding: 0 12px 0 10px;
+  border: 1px solid var(--rule-2); border-radius: 999px;
+  font: 500 12px/1 var(--font-mono);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.engine-chip__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); flex: none; }
+.engine-chip[data-state="loading"] .engine-chip__dot { background: var(--signal); animation: pulse 1100ms ease-in-out infinite; }
+.engine-chip[data-state="ready"] .engine-chip__dot { background: var(--accent); }
+.engine-chip[data-state="error"] { color: var(--signal-ink); border-color: var(--signal); }
+.engine-chip[data-state="error"] .engine-chip__dot { background: var(--signal); }
+@keyframes pulse { 50% { opacity: 0.3; transform: scale(0.75); } }
+
+.icon-btn {
+  display: inline-grid; place-items: center;
+  width: 44px; height: 44px;
+  padding: 0;
+  border: 1px solid var(--rule-2); border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 140ms var(--ease-out);
+}
+.icon-btn svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.icon-btn:active { transform: scale(0.94); }
+@media (hover: hover) and (pointer: fine) {
+  .icon-btn:hover { background: var(--card); }
+}
+/* El botón de tema enseña lo que vas a conseguir: la luna en claro, el sol en oscuro. */
+#theme-btn .i-sun, #theme-btn[data-current="dark"] .i-moon { display: none; }
+#theme-btn[data-current="dark"] .i-sun { display: block; }
+/* El botón de sonido enseña el estado actual: altavoz con ondas, o tachado. */
+#sound-btn .i-sound-off, #sound-btn[data-on="false"] .i-sound-on { display: none; }
+#sound-btn[data-on="false"] .i-sound-off { display: block; }
+#sound-btn[data-on="false"] { color: var(--ink-3); }
+
+/* ============================================================== botones */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 48px; padding: 0 22px;
+  border: 1px solid transparent; border-radius: 999px;
+  font: 650 15.5px/1 var(--font-sans);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none; -webkit-user-select: none;
+  transition: transform 140ms var(--ease-out), opacity 160ms ease;
+}
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.btn__arrow { transition: transform 200ms var(--ease-out); }
+.btn--primary { background: var(--ink); color: var(--on-ink); }
+.btn--secondary { background: transparent; color: var(--ink); border-color: var(--rule-2); }
+.btn--light { background: #fff; color: #161513; }
+.btn--small { min-height: 40px; padding: 0 16px; font-size: 14px; }
+.btn--block { width: 100%; }
+@media (hover: hover) and (pointer: fine) {
+  .btn--primary:hover:not(:disabled) { background: color-mix(in oklab, var(--ink) 84%, var(--accent)); }
+  .btn--secondary:hover:not(:disabled) { background: var(--card); }
+  .btn:hover .btn__arrow { transform: translateX(3px); }
+}
+
+/* =========================================================== controles */
+.seg {
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 2px;
+  padding: 3px;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+}
+.seg label { position: relative; display: flex; }
+.seg input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.seg span {
+  display: flex; flex: 1; align-items: center; justify-content: center; gap: 8px;
+  min-height: 42px; padding: 0 14px;
+  border-radius: 11px;
+  font-size: 14.5px; font-weight: 600;
+  color: var(--ink-2);
+  white-space: nowrap;
+  user-select: none; -webkit-user-select: none;
+}
+/* La opción elegida lleva un contorno de tinta, como el rival elegido: se ve en los dos temas. */
+.seg input:checked + span { background: var(--card); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+.seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.dot { display: inline-block; flex: none; width: 14px; height: 14px; border-radius: 50%; }
+.dot--black { background: var(--disc-black); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22); }
+.dot--white { background: var(--disc-white); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2); }
+
+.h2 {
+  font-size: clamp(24px, 3vw, 34px);
+  font-weight: 800;
+  font-stretch: 108%;
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+.h3 {
+  font-size: 20px;
+  font-weight: 780;
+  font-stretch: 104%;
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-1);
+}
+
+/* ======================================================== errores y pie */
+/* Aviso de error global: visible siempre, encima de todo (ver el script de index.html). */
+.fatal {
+  position: sticky; top: 0; z-index: 60;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 16px;
+  padding: 10px var(--gutter);
+  background: var(--signal-ink);
+  color: #fff;
+  font-size: 14.5px;
+}
+.noscript { margin: 16px; padding: 16px; border: 1px solid var(--signal); border-radius: var(--radius); }
+
+.footer {
+  margin-top: clamp(40px, 7vw, 88px);
+  border-top: 1px solid var(--rule);
+  background: var(--paper-2);
+  color: var(--ink-2);
+  font-size: 14px;
+}
+.footer__inner {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 24px;
+  padding-top: 22px;
+  padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+}
+.footer__engine { flex: 1 1 280px; color: var(--ink-3); }
+.footer__links { display: flex; gap: 18px; }
+.footer__links a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; }
+
+/* ============================================================== móvil */
+/* Con cuatro enlaces y tres botones, la cabecera no cabe en una fila: en móvil la marca y los
+ * botones van arriba y la navegación debajo, con los enlaces repartidos a lo ancho. */
+@media (max-width: 640px) {
+  :root { --header-h: 58px; --sticky-offset: 132px; }
+  .topbar { height: auto; }
+  .topbar__inner { flex-wrap: wrap; height: auto; gap: 0 8px; padding-top: 4px; padding-bottom: 0; }
+  .brand { gap: 9px; }
+  .brand__name { font-size: 13.5px; letter-spacing: 0.03em; }
+  .tools { gap: 6px; margin-left: auto; }
+  .engine-chip { width: 32px; height: 32px; padding: 0; justify-content: center; }
+  .engine-chip__text { display: none; }
+  .nav { order: 3; flex: 1 0 100%; justify-content: space-between; margin: 2px 0 0; gap: 0; }
+  .nav a { flex: 1; justify-content: center; padding: 0 6px; min-height: 42px; }
+  .nav a::after { left: 22%; right: 22%; bottom: 5px; }
+}
+
+/* Movimiento reducido: nada se desplaza ni gira; los cambios se ven igual porque los
+ * colores cambian en el acto. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}

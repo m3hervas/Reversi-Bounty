@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Reversi Bounty</title>
+  <meta name="description" content="Juega al Reversi contra bots escritos en Python. El motor del juego se ejecuta en tu navegador.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3efe6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121210">
+  <script>
+    /* Antes de pintar nada: tema guardado y apartado de la dirección (sin parpadeo), y un
+     * aviso visible para cualquier error que nadie haya capturado. Una web estática no
+     * tiene registros en un servidor: si un error no se enseña, nadie se entera. */
+    (function () {
+      var d = document.documentElement;
+      d.classList.add("js");
+      try {
+        var t = localStorage.getItem("rb-tema");
+        if (t === "light" || t === "dark") d.dataset.theme = t;
+      } catch (e) {}
+      var m = /^#\/?([a-z-]*)/.exec(location.hash);
+      d.dataset.view = m && ["jugar", "reglas", "bots"].indexOf(m[1]) >= 0 ? m[1] : "inicio";
+
+      var RB = (window.RB = window.RB || {});
+      RB.reportError = function (err) {
+        var text = err && err.message ? err.message : String(err || "Error desconocido");
+        if (window.console) console.error(err);
+        var box = document.getElementById("fatal");
+        if (!box) return;
+        document.getElementById("fatal-text").textContent = text;
+        box.hidden = false;
+      };
+      window.addEventListener("error", function (e) { RB.reportError(e.error || e.message); });
+      window.addEventListener("unhandledrejection", function (e) { RB.reportError(e.reason); });
+    })();
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e6b51'/%3E%3Ccircle cx='12.5' cy='16' r='7' fill='%23161513'/%3E%3Ccircle cx='19.5' cy='16' r='7' fill='%23f6f3ec'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <!-- Cache-buster: al cambiar un .css o un .js, sube su ?v= para que nadie vea la versión vieja. -->
+  <link rel="stylesheet" href="css/tokens.css?v=2">
+  <link rel="stylesheet" href="css/base.css?v=3">
+  <link rel="stylesheet" href="css/board.css?v=4">
+  <link rel="stylesheet" href="css/views.css?v=6">
+</head>
+<body>
+  <a class="skip" href="#main">Saltar al contenido</a>
+
+  <div class="fatal" id="fatal" role="alert" hidden>
+    <p><strong>Algo ha fallado.</strong> <span id="fatal-text"></span></p>
+    <button class="btn btn--small btn--light" type="button" onclick="location.reload()">Recargar</button>
+  </div>
+
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="brand" href="#/" aria-label="Reversi Bounty, inicio">
+        <span class="brand__mark" aria-hidden="true"><i></i><i></i></span>
+        <span class="brand__name">Reversi <span>Bounty</span></span>
+      </a>
+      <!-- Cada apartado es un enlace #/nombre y una <section data-view="nombre">; ver js/app.js. -->
+      <nav class="nav" aria-label="Apartados">
+        <a href="#/jugar" data-route="jugar">Jugar</a>
+        <a href="#/reglas" data-route="reglas">Reglas</a>
+        <a href="#/bots" data-route="bots">Bots</a>
+      </nav>
+      <div class="tools">
+        <span class="engine-chip" id="engine-chip" data-state="loading" title="El motor del juego es el paquete Python del proyecto, ejecutándose en tu navegador">
+          <span class="engine-chip__dot" aria-hidden="true"></span>
+          <span class="engine-chip__text" id="engine-chip-text">Python…</span>
+        </span>
+        <button class="icon-btn" type="button" id="sound-btn" aria-pressed="true" aria-label="Silenciar los sonidos" data-on="true">
+          <svg class="i-sound-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.6l4.4 3.8V5.7L7.6 9.5H4z"/><path d="M15.6 9.2a4 4 0 0 1 0 5.6M18.2 6.6a7.6 7.6 0 0 1 0 10.8"/></svg>
+          <svg class="i-sound-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.6l4.4 3.8V5.7L7.6 9.5H4z"/><path d="M16 9.7l4.6 4.6M20.6 9.7L16 14.3"/></svg>
+        </button>
+        <button class="icon-btn" type="button" id="theme-btn" aria-label="Cambiar a tema oscuro">
+          <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+          <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+
+    <!-- ============================================================= INICIO -->
+    <section class="view" data-view="inicio" aria-labelledby="t-inicio">
+      <div class="wrap hero">
+        <div class="hero__text">
+          <p class="eyebrow">Inteligencia Artificial · CUNEF · 2026/27</p>
+          <h1 class="hero__title display" id="t-inicio" tabindex="-1">
+            <span class="hero__line">Reversi</span>
+            <span class="hero__line hero__line--2">Bounty</span>
+          </h1>
+          <p class="lede hero__lede">Juega al Reversi contra bots escritos en Python. No hay que instalar nada: el motor del proyecto se ejecuta aquí mismo, en tu navegador.</p>
+          <div class="hero__cta">
+            <a class="btn btn--primary" href="#/jugar">Jugar una partida
+              <svg class="btn__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5"/></svg>
+            </a>
+            <a class="btn btn--secondary" href="#/reglas">Cómo se juega</a>
+          </div>
+        </div>
+        <figure class="hero__figure">
+          <div class="hero__board" id="hero-board"></div>
+          <figcaption class="hero__caption" id="hero-caption">Arrancando el motor de Python…</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============================================================== JUGAR -->
+    <section class="view" data-view="jugar" aria-labelledby="t-jugar">
+      <div class="wrap play" id="play" data-phase="setup">
+        <header class="play__head">
+          <p class="eyebrow">Jugar</p>
+          <h1 class="h1 play__title" id="t-jugar" tabindex="-1">Tú contra <span id="play-rival">un bot</span></h1>
+        </header>
+
+        <div class="play__grid">
+          <aside class="play__setup card" aria-label="Preparar la partida">
+            <form class="setup" id="setup" autocomplete="off">
+              <fieldset class="setup__group">
+                <legend class="label">Rival</legend>
+                <div class="rivals" id="rivals" aria-live="polite">
+                  <p class="setup__hint">Cargando los jugadores del registro…</p>
+                </div>
+                <p class="rival-desc" id="rival-desc"></p>
+              </fieldset>
+
+              <fieldset class="setup__group">
+                <legend class="label">Juegas con</legend>
+                <div class="seg">
+                  <label><input type="radio" name="color" value="1" checked><span><i class="dot dot--black"></i>Negras</span></label>
+                  <label><input type="radio" name="color" value="-1"><span><i class="dot dot--white"></i>Blancas</span></label>
+                </div>
+                <p class="setup__hint">Las negras mueven primero.</p>
+              </fieldset>
+
+              <button class="btn btn--primary btn--block" type="submit" id="start" disabled>Cargando el motor…</button>
+              <p class="setup__note" id="setup-note" hidden>Los cambios se aplican en la próxima partida.</p>
+            </form>
+          </aside>
+
+          <div class="play__table">
+            <div class="plates">
+              <div class="plate" id="plate-1">
+                <span class="plate__disc dot dot--black" aria-hidden="true"></span>
+                <span class="plate__who"><b id="who-1">Tú</b><small>negras</small></span>
+                <span class="plate__think" aria-hidden="true"><i></i><i></i><i></i></span>
+                <b class="plate__count" id="count-1" aria-label="Fichas negras">2</b>
+              </div>
+              <div class="plate plate--right" id="plate--1">
+                <b class="plate__count" id="count--1" aria-label="Fichas blancas">2</b>
+                <span class="plate__think" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span class="plate__who"><b id="who--1">Bot</b><small>blancas</small></span>
+                <span class="plate__disc dot dot--white" aria-hidden="true"></span>
+              </div>
+            </div>
+
+            <div class="board-wrap">
+              <div id="board"></div>
+              <div class="board-toast" id="toast" role="status" hidden></div>
+              <div class="result" id="result" hidden>
+                <div class="result__card" role="dialog" aria-labelledby="result-title" aria-describedby="result-score">
+                  <p class="eyebrow eyebrow--plain">Fin de la partida</p>
+                  <p class="result__title" id="result-title">Has ganado</p>
+                  <p class="result__score" id="result-score">40 – 24</p>
+                  <p class="result__reason" id="result-reason" hidden></p>
+                  <div class="result__actions">
+                    <button class="btn btn--primary" type="button" id="rematch">Nueva partida</button>
+                    <button class="btn btn--secondary" type="button" id="change">Cambiar rival o color</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p class="status" id="status" data-state="loading">
+              <span class="status__dot" aria-hidden="true"></span>
+              <span id="status-text" role="status" aria-live="polite">Cargando el motor de Python…</span>
+              <button class="btn btn--small btn--secondary" type="button" id="retry" hidden>Reintentar</button>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== REGLAS -->
+    <section class="view" data-view="reglas" aria-labelledby="t-reglas">
+      <div class="wrap article">
+        <header class="page-head">
+          <p class="eyebrow">Reglas</p>
+          <h1 class="h1" id="t-reglas" tabindex="-1">Cómo se juega al Reversi</h1>
+          <p class="lede">Un tablero, cuatro reglas y ninguna casualidad. En cinco minutos sabrás lo suficiente para jugar tu primera partida.</p>
+          <ul class="facts" aria-label="El juego, en cuatro datos">
+            <li><b>2</b><span>jugadores</span></li>
+            <li><b>8 × 8</b><span>casillas</span></li>
+            <li><b>64</b><span>fichas</span></li>
+            <li><b>0</b><span>azar</span></li>
+          </ul>
+        </header>
+
+        <div class="doc">
+          <nav class="toc" aria-label="En esta página">
+            <p class="toc__title">En esta página</p>
+            <ol>
+              <li><button type="button" data-scroll="r-web">Cómo se juega aquí</button></li>
+              <li>
+                <button type="button" data-scroll="r-reglas">Las cuatro reglas</button>
+                <ol class="toc__sub">
+                  <li><button type="button" data-scroll="r-1">1 · El tablero</button></li>
+                  <li><button type="button" data-scroll="r-2">2 · Capturar</button></li>
+                  <li><button type="button" data-scroll="r-3">3 · Pasar</button></li>
+                  <li><button type="button" data-scroll="r-4">4 · El final</button></li>
+                </ol>
+              </li>
+              <li><button type="button" data-scroll="r-dudas">Casos dudosos</button></li>
+              <li><button type="button" data-scroll="r-estrategia">Estrategia</button></li>
+              <li><button type="button" data-scroll="r-glosario">Glosario</button></li>
+            </ol>
+          </nav>
+
+          <div class="doc__body">
+
+            <section class="block block--first" id="r-web" aria-labelledby="h-web">
+              <h2 class="h2" id="h-web">Cómo se juega aquí</h2>
+              <ol class="steps">
+                <li>
+                  <span class="steps__n" aria-hidden="true">1</span>
+                  <div><h3>Elige rival y color</h3><p>Cada rival es un bot escrito en Python. Las negras mueven primero.</p></div>
+                </li>
+                <li>
+                  <span class="steps__n" aria-hidden="true">2</span>
+                  <div><h3>Pulsa una casilla marcada</h3><p>Los puntos claros señalan dónde puedes jugar. También puedes moverte con las flechas y pulsar Intro.</p></div>
+                </li>
+                <li>
+                  <span class="steps__n" aria-hidden="true">3</span>
+                  <div><h3>Espera su respuesta</h3><p>El bot juega solo, tras una breve pausa. Si alguien no tiene jugada, pasa, y el juego te lo avisa.</p></div>
+                </li>
+              </ol>
+              <p class="note">El tema y los sonidos se cambian con los botones de la esquina superior derecha. Tu partida se guarda sola: si recargas la página, sigue donde estaba.</p>
+              <a class="btn btn--primary" href="#/jugar">Jugar una partida
+                <svg class="btn__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5"/></svg>
+              </a>
+            </section>
+
+            <section class="block" id="r-reglas" aria-labelledby="h-reglas">
+              <h2 class="h2" id="h-reglas">Las cuatro reglas</h2>
+
+              <!-- ------------------------------------------------------------ regla 1 -->
+              <article class="rule" id="r-1" aria-labelledby="h-r1">
+                <header class="rule__head">
+                  <span class="rule__n" aria-hidden="true">1</span>
+                  <div>
+                    <h3 class="h3" id="h-r1">El tablero y la salida</h3>
+                    <p class="rule__sum">Un tablero de 8 × 8, cuatro fichas en el centro y empiezan las negras.</p>
+                  </div>
+                </header>
+                <div class="rule__body">
+                  <ul class="list">
+                    <li>El tablero tiene 64 casillas. Las fichas son negras por una cara y blancas por la otra.</li>
+                    <li>Cada casilla se nombra con su columna (<code>a–h</code>) y su fila (<code>1–8</code>), como en el ajedrez: <code>d3</code> es la columna d, fila 3.</li>
+                    <li>Se empieza con cuatro fichas en el centro, en diagonal.</li>
+                    <li><strong>Mueven primero las negras.</strong> Los puntos del tablero marcan sus cuatro jugadas posibles: <code>d3</code>, <code>c4</code>, <code>f5</code> y <code>e6</code>.</li>
+                  </ul>
+                  <figure class="figure" data-diagram="inicio">
+                    <div class="figure__board" role="group"></div>
+                    <figcaption>Posición inicial. Los puntos claros son las jugadas posibles de las negras.</figcaption>
+                  </figure>
+                </div>
+              </article>
+
+              <!-- ------------------------------------------------------------ regla 2 -->
+              <article class="rule" id="r-2" aria-labelledby="h-r2">
+                <header class="rule__head">
+                  <span class="rule__n" aria-hidden="true">2</span>
+                  <div>
+                    <h3 class="h3" id="h-r2">Capturar: encerrar y dar la vuelta</h3>
+                    <p class="rule__sum">Solo puedes jugar donde encierres fichas del rival, y las encerradas se dan la vuelta.</p>
+                  </div>
+                </header>
+                <div class="rule__body rule__body--single">
+                  <ul class="list">
+                    <li>En tu turno pones una ficha de tu color en una casilla vacía.</li>
+                    <li>Debe <strong>encerrar al menos una ficha rival</strong>: una línea recta de fichas rivales, sin huecos, entre la ficha nueva y otra tuya. Vale en horizontal, en vertical y en diagonal.</li>
+                    <li>Todas las fichas encerradas se dan la vuelta y pasan a ser tuyas, aunque se encierren en varias direcciones a la vez.</li>
+                  </ul>
+                </div>
+
+                <div class="example">
+                  <p class="example__label">Ejemplo · las negras juegan f3</p>
+                  <div class="example__figures">
+                    <figure class="figure" data-diagram="antes-f3">
+                      <div class="figure__board" role="group"></div>
+                      <figcaption><b>Antes.</b> Las negras van a jugar <code>f3</code>. Las blancas <code>e3</code> y <code>e4</code> quedan entre <code>f3</code> y las negras <code>d3</code> y <code>d5</code>.</figcaption>
+                    </figure>
+                    <figure class="figure" data-diagram="despues-f3">
+                      <div class="figure__board" role="group"></div>
+                      <figcaption><b>Después.</b> <code>e3</code> y <code>e4</code> se han dado la vuelta. <code>e5</code> no, porque no queda encerrada.</figcaption>
+                    </figure>
+                  </div>
+                  <ul class="legend" aria-label="Leyenda de los diagramas">
+                    <li><i class="sw sw--target" aria-hidden="true"></i>Dónde se juega</li>
+                    <li><i class="sw sw--flip" aria-hidden="true"></i>Ficha que se voltea</li>
+                    <li><i class="sw sw--anchor" aria-hidden="true"></i>Ficha tuya que cierra la línea</li>
+                  </ul>
+                  <p class="example__text">Las negras abrieron con <code>d3</code> y las blancas respondieron con <code>e3</code>. Con <code>f3</code> capturan en dos direcciones a la vez: hacia la izquierda (<code>e3</code>) y en diagonal (<code>e4</code>).</p>
+                </div>
+
+                <div class="aside">
+                  <div class="aside__text">
+                    <p class="aside__label">Ojo</p>
+                    <p>No se puede jugar donde no se encierra nada. Por ejemplo <code>c3</code> en la posición inicial: está pegada a la ficha blanca <code>d4</code>, pero detrás de ella, en esa diagonal, no hay ninguna ficha negra.</p>
+                  </div>
+                  <figure class="figure figure--small" data-diagram="c3-prohibida">
+                    <div class="figure__board" role="group"></div>
+                    <figcaption><i class="sw sw--deny" aria-hidden="true"></i> <code>c3</code> no encierra nada: no se puede jugar.</figcaption>
+                  </figure>
+                </div>
+              </article>
+
+              <!-- ------------------------------------------------------------ regla 3 -->
+              <article class="rule" id="r-3" aria-labelledby="h-r3">
+                <header class="rule__head">
+                  <span class="rule__n" aria-hidden="true">3</span>
+                  <div>
+                    <h3 class="h3" id="h-r3">Si no puedes capturar, pasas</h3>
+                    <p class="rule__sum">Sin ninguna jugada posible pierdes el turno. Pasar nunca es voluntario.</p>
+                  </div>
+                </header>
+                <div class="rule__body">
+                  <ul class="list">
+                    <li>Si ninguna casilla vacía encierra fichas de tu rival, pierdes el turno y vuelve a mover él. Puede ocurrir varias veces seguidas.</li>
+                    <li><strong>No se puede pasar por gusto:</strong> si tienes alguna jugada, es obligatorio hacerla.</li>
+                    <li>En esta web el paso es automático y te lo avisamos.</li>
+                  </ul>
+                  <figure class="figure" data-diagram="paso">
+                    <div class="figure__board" role="group"></div>
+                    <figcaption>Las blancas acaban de jugar <code>c1</code>. Ahora tocaría a las negras, pero ninguna casilla vacía encierra una ficha blanca: <b>pasan</b>, y vuelven a mover las blancas.</figcaption>
+                  </figure>
+                </div>
+              </article>
+
+              <!-- ------------------------------------------------------------ regla 4 -->
+              <article class="rule" id="r-4" aria-labelledby="h-r4">
+                <header class="rule__head">
+                  <span class="rule__n" aria-hidden="true">4</span>
+                  <div>
+                    <h3 class="h3" id="h-r4">El final</h3>
+                    <p class="rule__sum">La partida termina cuando nadie puede mover. Gana quien tenga más fichas.</p>
+                  </div>
+                </header>
+                <div class="rule__body rule__body--single">
+                  <ul class="list">
+                    <li>La partida acaba cuando <strong>ninguno de los dos puede mover</strong>.</li>
+                    <li>Casi siempre es porque el tablero está lleno (64 fichas); a veces acaba antes.</li>
+                    <li>Se cuentan las fichas de cada color: gana quien tenga más. Si hay las mismas, es empate.</li>
+                  </ul>
+                </div>
+                <div class="example example--plain">
+                  <div class="example__figures">
+                    <figure class="figure" data-diagram="final-lleno">
+                      <div class="figure__board" role="group"></div>
+                      <figcaption><b>Final habitual.</b> El tablero está lleno y las blancas ganan, 38 a 26.</figcaption>
+                    </figure>
+                    <figure class="figure" data-diagram="final-temprano">
+                      <div class="figure__board" role="group"></div>
+                      <figcaption><b>Final anticipado.</b> Las blancas se quedan sin fichas y nadie puede mover: ganan las negras, 13 a 0, con 51 casillas vacías.</figcaption>
+                    </figure>
+                  </div>
+                </div>
+              </article>
+
+              <aside class="callout">
+                <h3>Sin azar ni información oculta</h3>
+                <p>En el Reversi no hay dados ni cartas, y los dos jugadores ven siempre el tablero completo. La misma jugada en la misma posición da siempre el mismo resultado: gana quien juega mejor.</p>
+              </aside>
+            </section>
+
+            <section class="block" id="r-dudas" aria-labelledby="h-dudas">
+              <h2 class="h2" id="h-dudas">Casos dudosos</h2>
+              <p class="block__lede">Las respuestas que sigue este proyecto. Coinciden con lo que hace el motor de Python que está jugando tus partidas.</p>
+              <div class="faq">
+                <details><summary>¿Qué pasa si un jugador no puede mover pero el otro sí?</summary><p>El que no puede mover pasa y vuelve a mover el otro. La partida no termina.</p></details>
+                <details><summary>¿Y si la partida acaba antes de llenarse el tablero?</summary><p>Las casillas vacías no cuentan para nadie: se cuentan solo las fichas que hay y gana quien tenga más.</p></details>
+                <details><summary>¿Cómo se decide un empate?</summary><p>Si los dos tienen el mismo número de fichas, es empate. No hay desempate.</p></details>
+                <details><summary>¿Se puede pasar voluntariamente?</summary><p>No. Solo se pasa cuando no hay ninguna jugada legal, y el motor lo hace solo.</p></details>
+                <details><summary>¿Se pueden acabar las fichas de un jugador?</summary><p>No. Hay tantas fichas como casillas (64), así que nunca faltan.</p></details>
+                <details><summary>¿Qué es una jugada ilegal?</summary><p>Cualquiera que no cumpla las reglas: una casilla ocupada, una casilla fuera del tablero o una casilla que no encierra ninguna ficha rival.</p></details>
+                <details><summary>¿Qué hace el motor con una jugada ilegal?</summary><p>La rechaza con un error: nunca coloca una ficha donde no se puede. Si es un bot quien la intenta, pierde esa partida.</p></details>
+              </div>
+            </section>
+
+            <section class="block" id="r-estrategia" aria-labelledby="h-estrategia">
+              <h2 class="h2" id="h-estrategia">Estrategia: cinco ideas</h2>
+              <p class="block__lede">Las reglas son sencillas, pero jugar bien no lo es. Estas ideas ayudan a quien empieza, y son también las que suelen usar los bots para valorar una posición.</p>
+
+              <div class="map card">
+                <figure class="figure" data-diagram="mapa">
+                  <div class="figure__board" role="group"></div>
+                </figure>
+                <div class="map__text">
+                  <h3 class="h3">El mapa del tablero</h3>
+                  <p>No todas las casillas valen lo mismo. Estas son las que más importan:</p>
+                  <ul class="legend legend--stack" aria-label="Leyenda del mapa">
+                    <li><i class="sw sw--corner" aria-hidden="true"></i><span><b>Esquinas.</b> Las mejores casillas del tablero.</span></li>
+                    <li><i class="sw sw--x" aria-hidden="true"></i><span><b>Casillas X.</b> En diagonal a una esquina: <code>b2</code>, <code>g2</code>, <code>b7</code> y <code>g7</code>.</span></li>
+                    <li><i class="sw sw--c" aria-hidden="true"></i><span><b>Casillas C.</b> Las del borde pegadas a una esquina, como <code>b1</code> o <code>a2</code>.</span></li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="ideas">
+                <article class="idea">
+                  <p class="idea__n" aria-hidden="true">1</p>
+                  <h3>Las esquinas mandan</h3>
+                  <p class="idea__sum">Una ficha en una esquina no se puede voltear nunca.</p>
+                  <p>No hay casilla al otro lado desde la que encerrarla. Las fichas de tu color que forman una fila continua con ella por el borde tampoco: son fichas <em>estables</em>.</p>
+                  <p class="idea__tip"><b>Consejo.</b> Los buenos jugadores no cuentan fichas: cuentan las que nadie puede quitarles. Si puedes coger una esquina, casi siempre es buena jugada.</p>
+                </article>
+                <article class="idea">
+                  <p class="idea__n" aria-hidden="true">2</p>
+                  <h3>Cuidado con las casillas X</h3>
+                  <p class="idea__sum">Jugar en una casilla X suele regalar la esquina.</p>
+                  <p>Si juegas en una mientras su esquina está vacía, es fácil que tu rival encierre la ficha en diagonal y se quede con la esquina. Las casillas C son peligrosas por lo mismo, aunque menos.</p>
+                  <p class="idea__tip"><b>Consejo.</b> Mientras la esquina esté vacía, evita las casillas X.</p>
+                </article>
+                <article class="idea">
+                  <p class="idea__n" aria-hidden="true">3</p>
+                  <h3>Menos fichas, más jugadas</h3>
+                  <p class="idea__sum">Importa cuántas jugadas tienes, no cuántas fichas.</p>
+                  <p>A esto se le llama <em>movilidad</em>. Quien tiene muchas opciones elige una buena; quien tiene pocas acaba jugando donde no quiere. Comer muchas fichas pronto suele ser un error: le das más sitios a tu rival.</p>
+                  <p class="idea__tip"><b>Consejo.</b> Muchas veces, la mejor jugada es la que voltea menos fichas.</p>
+                </article>
+                <article class="idea">
+                  <p class="idea__n" aria-hidden="true">4</p>
+                  <h3>La frontera</h3>
+                  <p class="idea__sum">Tus fichas junto a casillas vacías son las puertas de entrada de tu rival.</p>
+                  <p>Las fichas de <em>frontera</em> son las que tocan alguna casilla vacía. Toda jugada del rival se hace en una casilla vacía pegada a alguna de tus fichas, así que tener pocas significa darle pocas jugadas.</p>
+                  <p class="idea__tip"><b>Consejo.</b> Prefiere jugadas que volteen fichas del interior de tu grupo y no abran la frontera.</p>
+                </article>
+                <article class="idea">
+                  <p class="idea__n" aria-hidden="true">5</p>
+                  <h3>Paridad</h3>
+                  <p class="idea__sum">Al final, quien juega la última en cada zona vacía gana terreno.</p>
+                  <p>Hacia el final, el tablero queda dividido en zonas de casillas vacías. En una zona con un número impar de casillas, quien entra primero suele hacer también la última jugada, y esa no se puede contestar. Es una costumbre de torneo, no una regla.</p>
+                  <p class="idea__tip"><b>Consejo.</b> Cuando queden pocas casillas, juega en las zonas impares y deja que tu rival abra las pares.</p>
+                </article>
+              </div>
+            </section>
+
+            <section class="block" id="r-glosario" aria-labelledby="h-glosario">
+              <h2 class="h2" id="h-glosario">Glosario</h2>
+              <dl class="glossary">
+                <div><dt>Casilla X</dt><dd>La que está en diagonal a una esquina: <code>b2</code>, <code>g2</code>, <code>b7</code> o <code>g7</code>.</dd></div>
+                <div><dt>Casilla C</dt><dd>La del borde pegada a una esquina, como <code>b1</code> o <code>a2</code>.</dd></div>
+                <div><dt>Ficha estable</dt><dd>Una ficha que ya no se puede voltear hasta el final, como la de una esquina.</dd></div>
+                <div><dt>Frontera</dt><dd>Las fichas que tocan al menos una casilla vacía.</dd></div>
+                <div><dt>Movilidad</dt><dd>El número de jugadas legales que tiene un jugador en una posición.</dd></div>
+                <div><dt>Paridad</dt><dd>La idea de que, en una zona con un número impar de casillas vacías, quien entra primero suele hacer la última jugada.</dd></div>
+                <div><dt>Pasar</dt><dd>Perder el turno por no tener ninguna jugada legal. Nunca es voluntario.</dd></div>
+                <div><dt>Notación</dt><dd>Letra de columna (<code>a–h</code>) y número de fila (<code>1–8</code>), por ejemplo <code>d3</code>.</dd></div>
+              </dl>
+            </section>
+
+            <section class="cta card" aria-labelledby="h-cta-reglas">
+              <div>
+                <h2 class="h2" id="h-cta-reglas">¿Listo para jugar?</h2>
+                <p>Pon en práctica lo que acabas de leer contra uno de los bots del proyecto.</p>
+              </div>
+              <a class="btn btn--primary" href="#/jugar">Jugar una partida
+                <svg class="btn__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5"/></svg>
+              </a>
+            </section>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ BOTS -->
+    <section class="view" data-view="bots" aria-labelledby="t-bots">
+      <div class="wrap article">
+        <header class="page-head">
+          <p class="eyebrow">Bots</p>
+          <h1 class="h1" id="t-bots" tabindex="-1">Los rivales</h1>
+          <p class="lede">Cada bot es una clase de Python que, dado el tablero, elige una jugada. Estos son los que el proyecto tiene admitidos.</p>
+          <p class="count" id="bots-count" aria-live="polite">Cargando los jugadores del registro…</p>
+        </header>
+
+        <div class="bots" id="bots-grid" aria-live="polite">
+          <div class="bot-card bot-card--skeleton" aria-hidden="true"></div>
+        </div>
+
+        <section class="block" aria-labelledby="h-como">
+          <h2 class="h2" id="h-como">Cómo funciona un bot</h2>
+          <ul class="points">
+            <li><h3>Recibe el tablero</h3><p>En cada turno ve la posición completa y devuelve una casilla. No necesita saber nada más del juego.</p></li>
+            <li><h3>Si hace trampas, pierde</h3><p>Una jugada ilegal o una excepción hacen perder la partida, pero la web sigue funcionando.</p></li>
+            <li><h3>La lista sale del registro</h3><p>Un bot nuevo aparece aquí solo cuando se admite en la carpeta <code>players/</code> del proyecto.</p></li>
+          </ul>
+        </section>
+
+        <section class="cta card" aria-labelledby="h-cta-bots">
+          <div>
+            <h2 class="h2" id="h-cta-bots">¿Quieres añadir el tuyo?</h2>
+            <p>Un bot es un archivo de Python y una línea en el registro. El tutorial te lleva desde cero hasta tu primer pull request.</p>
+          </div>
+          <div class="cta__actions">
+            <a class="btn btn--primary" href="https://reversi-bounty.readthedocs.io/es/latest/tutorial/">Leer el tutorial</a>
+            <a class="btn btn--secondary" href="https://github.com/m3hervas/Reversi-Bounty">Ver el código</a>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer__inner">
+      <p><b>Reversi Bounty</b> · Práctica de IA, CUNEF 2026/27</p>
+      <p class="footer__engine" id="footer-engine">Las reglas y los bots son el paquete Python del proyecto, ejecutado con Pyodide.</p>
+      <p class="footer__links">
+        <a href="https://github.com/m3hervas/Reversi-Bounty">Código</a>
+        <a href="https://reversi-bounty.readthedocs.io">Documentación</a>
+      </p>
+    </div>
+  </footer>
+
+  <noscript><p class="noscript">Esta web necesita JavaScript para ejecutar el motor del juego.</p></noscript>
+
+  <script src="js/engine.js?v=1" defer></script>
+  <script src="js/board.js?v=3" defer></script>
+  <script src="js/sound.js?v=1" defer></script>
+  <script src="js/play.js?v=3" defer></script>
+  <script src="js/reglas.js?v=2" defer></script>
+  <script src="js/bots.js?v=2" defer></script>
+  <script src="js/app.js?v=2" defer></script>
+</body>
+</html>

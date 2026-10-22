@@ -212,3 +212,46 @@ def test_el_ejecutor_no_depende_de_la_clase_player():
             return rng.choice(legal_moves(state))
 
     assert play_game(Suelto(), Suelto()).forfeit is None
+
+
+# -- La regla única: request_move y Forfeit -------------------------------- #
+
+
+def test_request_move_devuelve_una_jugada_legal_como_tupla():
+    from reversibounty.match import request_move
+
+    class ConLista:
+        def choose_move(self, state: GameState):
+            return list(legal_moves(state)[0])
+
+    jugada = request_move(ConLista(), initial_state())
+    assert jugada == legal_moves(initial_state())[0]
+    assert isinstance(jugada, tuple)
+
+
+def test_request_move_lanza_forfeit_con_el_motivo_si_el_bot_falla():
+    import pytest
+
+    from reversibounty.match import Forfeit, request_move
+
+    with pytest.raises(Forfeit, match="RuntimeError: boom") as error:
+        request_move(Falla(error=RuntimeError("boom")), initial_state())
+    assert error.value.reason.startswith("lanzó RuntimeError")
+
+
+def test_request_move_lanza_forfeit_si_la_jugada_es_ilegal():
+    import pytest
+
+    from reversibounty.match import Forfeit, request_move
+
+    with pytest.raises(Forfeit, match="jugada ilegal"):
+        request_move(Falla(jugada=(3, 3)), initial_state())
+
+
+def test_request_move_entrega_una_copia_del_estado():
+    from reversibounty.match import request_move
+
+    bot = Primero()
+    inicio = initial_state()
+    request_move(bot, inicio)
+    assert bot.recibidos[0] == inicio and bot.recibidos[0] is not inicio

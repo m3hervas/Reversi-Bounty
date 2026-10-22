@@ -33,6 +33,8 @@ packages = ["src/reversibounty"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# web/ para que los tests importen el puente (webglue.py), que no es parte del paquete.
+pythonpath = ["web"]
 addopts = "-ra"
 
 [tool.ruff]
