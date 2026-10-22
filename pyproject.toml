@@ -18,7 +18,7 @@ classifiers = [
     "Intended Audience :: Education",
     "Topic :: Games/Entertainment :: Board Games",
 ]
-dependencies = []
+dependencies = ["PyYAML>=6.0"]
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0", "ruff>=0.4"]

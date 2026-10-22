@@ -67,5 +67,13 @@ El nombre del paquete es `reversibounty`, todo junto y sin guion bajo.
 ## Escribir un bot
 
 Un bot es una subclase de `Player` que declara su nombre, autores, descripción y un emoji, e
-implementa un único método, `choose_move`. El ejemplo más pequeño es el
-[jugador aleatorio](src/reversibounty/bots/random_player.py).
+implementa un único método, `choose_move`. Se añade como un archivo en `players/custom/` y una
+línea en `players/custom/players.yaml`, y se envía por pull request.
+
+Hay un **[tutorial paso a paso](https://reversi-bounty.readthedocs.io/es/latest/tutorial/)**, con
+un bot de ejemplo completo, que va desde clonar el proyecto hasta tener el bot fusionado. Las
+comprobaciones automáticas (tests, estilo y la prueba de contrato) dicen si tu bot cumple las
+reglas antes de que nadie lo revise.
+
+La referencia de la API (`Player`, el motor, `play_game` y el registro) está en la
+[documentación](https://reversi-bounty.readthedocs.io).

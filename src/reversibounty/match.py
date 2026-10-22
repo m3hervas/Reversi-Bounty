@@ -1,7 +1,8 @@
 """El ejecutor de partidas: juega una partida completa entre dos jugadores.
 
 ``play_game`` no sabe nada de personas, bots, dificultades ni torneos. Solo necesita dos
-objetos con un método ``choose_move``, que es justo lo que ofrece :class:`~reversibounty.player.Player`.
+objetos con un método ``choose_move``, que es justo lo que ofrece
+:class:`~reversibounty.player.Player`.
 Así el mismo ejecutor sirve para el torneo, la web y los tests.
 
 Decisiones de diseño:
@@ -39,7 +40,7 @@ from .game import (
 
 
 class Mover(Protocol):
-    """Cualquier objeto que sepa elegir una jugada. :class:`~reversibounty.player.Player` lo cumple."""
+    """Cualquier objeto que sepa elegir una jugada; un ``Player`` lo cumple."""
 
     def choose_move(self, state: GameState) -> Move: ...
 

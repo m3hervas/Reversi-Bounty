@@ -1,0 +1,19 @@
+# Reversi Bounty - jugadores ENVIADOS por pull request.
+#
+# Para admitir un bot, añade tu archivo .py en esta carpeta y UNA entrada aquí, y abre un
+# pull request. Nada se escanea solo: quien revisa ve tu archivo y la línea que lo admite en
+# el mismo diff, y esa revisión es la puerta de seguridad.
+#
+# Cada entrada tiene:
+#   file    el archivo .py, que se busca junto a esta lista.
+#   class   la subclase de Player que se admite.
+#
+# El nombre, los autores, la descripción y el emoji los declara tu clase. El nombre debe ser
+# único entre todos los jugadores admitidos.
+#
+# Ejemplo (cópialo, no lo descomentes):
+#
+#   - file: mi_bot.py
+#     class: MiBot
+
+players: []

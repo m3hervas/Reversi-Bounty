@@ -49,7 +49,9 @@ markdown_extensions:
 nav:
   - Inicio: index.md
   - Reglas del juego: reglas.md
+  - Tutorial, escribe tu bot: tutorial.md
   - Referencia:
       - El motor del juego: referencia/motor.md
       - La API de jugadores: referencia/jugadores.md
       - El ejecutor de partidas: referencia/partidas.md
+      - El registro de jugadores: referencia/registro.md
