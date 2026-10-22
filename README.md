@@ -1,8 +1,24 @@
-# Reversi-Bounty
+# Reversi Bounty
+
+<p align="center">
+  <a href="https://m3hervas.github.io/Reversi-Bounty/">
+    <img alt="Jugar ahora en la web" src="https://img.shields.io/badge/%E2%96%B6%20%20JUGAR%20AHORA%20EN%20LA%20WEB-1f7a4d?style=for-the-badge" height="48">
+  </a>
+</p>
+
+**Juega aquí, en la web: <https://m3hervas.github.io/Reversi-Bounty/>**
+
+No hay que instalar nada: abres el enlace y juegas contra un bot.
 
 [![Docs](https://readthedocs.org/projects/reversi-bounty/badge/?version=latest)](https://reversi-bounty.readthedocs.io)
 
-Reversi (Othello) para humanos y bots: motor en Python, web para jugar contra la IA en el navegador, API para programar tu propio bot y torneo automático con clasificación de recompensas. Práctica de IA, CUNEF 2026/27.
+Reversi (Othello) para humanos y bots: motor en Python, web para jugar contra la IA, API para programar tu propio bot y torneo automático con clasificación de recompensas. Práctica de IA, CUNEF 2026/27.
+
+## Qué hay en la web
+
+- **Jugar**: una partida contra el bot que elijas.
+- **Reglas**: cómo se juega, con ejemplos sobre el tablero.
+- **Bots**: los jugadores disponibles, con su autor y su descripción.
 
 ## Jugar en la terminal
 
@@ -30,32 +46,6 @@ Dos personas pueden jugar una partida completa de Reversi desde la consola, sin 
 3. Al empezar verás las instrucciones. En tu turno, escribe una casilla marcada en el tablero, por ejemplo `d3`, y pulsa Enter. Escribe `?` para ver la ayuda y `q` para salir.
 
 Los comandos se instalan con el paquete, así que también funcionan con un simple `pip install` sin clonar el repositorio.
-
-## Jugar en el navegador
-
-**Sin instalar nada: <https://m3hervas.github.io/Reversi-Bounty/>**
-
-La carpeta `web/` es una página estática en la que una persona juega contra cualquier bot del
-registro. No reimplementa ninguna regla: ejecuta en el navegador, con
-[Pyodide](https://pyodide.org), el mismo paquete `reversibounty` que usan los tests.
-
-Para verla en tu ordenador:
-
-```bash
-python scripts/build_web.py          # empaqueta el motor en web/py.zip
-python -m http.server 8000 -d web    # sirve la carpeta web/
-```
-
-Abre <http://localhost:8000>. No abras `index.html` con doble clic: con `file://` el navegador
-no deja arrancar el motor. Vuelve a ejecutar `build_web.py` cada vez que cambies el motor, un bot
-o `web/webglue.py`. `web/py.zip` es un archivo generado y no se sube al repositorio.
-
-Desde la consola del navegador se puede preguntar al motor de Python directamente:
-
-```js
-const inicio = await RB.engine.call("new_game");
-await RB.engine.call("legal_moves", [inicio.state]);  // [[2,3],[3,2],[4,5],[5,4]]
-```
 
 ## Jugar desde Python
 
