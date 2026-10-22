@@ -7,6 +7,9 @@ bot de fuera podría hacer por error o por trampa.
 
 from __future__ import annotations
 
+import sys
+import time
+
 from reversibounty import GameState, Move, Player, legal_moves
 
 
@@ -68,3 +71,47 @@ class ModificaElTablero(_Base):
 
 
 BOTS_ROTOS = [LanzaExcepcion, JugadaIlegal, NoDevuelveNada, ModificaElEstado, ModificaElTablero]
+
+
+# -- Rotos que solo el torneo puede contener --------------------------------- #
+# No están en BOTS_ROTOS, que también usan la prueba de contrato y la web sin la capa de
+# protección del torneo: SeCuelga las dejaría colgadas, SaleDelPrograma cerraría pytest,
+# CambiaDeNombre juega bien y ModificaAEscondidas juega una jugada legal, así que play_game
+# no ve nada raro.
+
+
+class ModificaAEscondidas(_Base):
+    """Se salta el ``frozen`` del estado con ``object.__setattr__`` y juega una jugada legal."""
+
+    def choose_move(self, state: GameState) -> Move:
+        jugada = legal_moves(state)[0]
+        object.__setattr__(state, "player", -state.player)
+        return jugada
+
+
+class SeCuelga(_Base):
+    """No devuelve nunca la jugada: se queda bloqueado."""
+
+    def choose_move(self, state: GameState) -> Move:
+        time.sleep(3600)
+        return legal_moves(state)[0]
+
+
+class SaleDelPrograma(_Base):
+    """Intenta cerrar el programa entero con ``sys.exit()``."""
+
+    def choose_move(self, state: GameState) -> Move:
+        sys.exit("adiós")
+
+
+class CambiaDeNombre(_Base):
+    """Juega bien, pero su nombre cambia cuando se toca ``NOMBRE``: miente sobre quién es."""
+
+    NOMBRE = "cambiadenombre"
+
+    @classmethod
+    def get_name(cls) -> str:
+        return cls.NOMBRE
+
+    def choose_move(self, state: GameState) -> Move:
+        return legal_moves(state)[0]

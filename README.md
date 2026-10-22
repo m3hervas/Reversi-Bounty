@@ -80,6 +80,20 @@ print(score(state), winner(state))
 
 El nombre del paquete es `reversibounty`, todo junto y sin guion bajo.
 
+## Jugar un torneo
+
+Una liguilla entre todos los bots registrados: cada uno juega contra todos los demás, con los
+dos colores y durante varias rondas.
+
+```bash
+reversi-tournament                 # 5 rondas, semilla 0, 1 segundo por jugada
+reversi-tournament --rondas 10     # más partidas por pareja
+```
+
+Imprime la clasificación en el terminal y la guarda en `results/leaderboard.json`. Con la misma
+semilla, el resultado es siempre el mismo. Un bot que falla, hace trampas o se cuelga pierde
+solo sus propias partidas, y el torneo sigue hasta el final.
+
 ## Escribir un bot
 
 Un bot es una subclase de `Player` que declara su nombre, autores, descripción y un emoji, e
