@@ -56,3 +56,5 @@ nav:
       - El ejecutor de partidas: referencia/partidas.md
       - El registro de jugadores: referencia/registro.md
       - El torneo: referencia/torneo.md
+  - Los bots:
+      - El bot minimax: bot-minimax.md
