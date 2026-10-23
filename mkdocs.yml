@@ -50,6 +50,7 @@ nav:
   - Inicio: index.md
   - Reglas del juego: reglas.md
   - Tutorial, escribe tu bot: tutorial.md
+  - Diseño de la pestaña Jugar: diseno-jugar.md
   - Referencia:
       - El motor del juego: referencia/motor.md
       - La API de jugadores: referencia/jugadores.md

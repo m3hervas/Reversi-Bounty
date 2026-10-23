@@ -92,7 +92,7 @@ class ZeffMinmaxPlayer(Player):
 
     @classmethod
     def get_name(cls) -> str:
-        return "zeff-minimax"
+        return "Zeff minimax"
 
     @classmethod
     def get_authors(cls) -> list[str]:
@@ -107,7 +107,7 @@ class ZeffMinmaxPlayer(Player):
 
     @classmethod
     def get_icon(cls) -> str:
-        return "🧠"
+        return "👨‍🍳"
 
     @classmethod
     def create(cls, seed: int) -> ZeffMinmaxPlayer:

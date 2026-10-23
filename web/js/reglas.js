@@ -13,7 +13,6 @@
 
   const RB = window.RB;
   const DATA_URL = "data/reglas.json?v=1";
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   /* Cada grupo de «marcas» del JSON se dibuja con un tipo de marca de board.css. */
   const MARK_KINDS = { volteables: "flip", anclas: "anchor", destino: "target", prohibidas: "deny", esquinas: "corner", x: "x", c: "c" };
   let data = null;
@@ -91,47 +90,9 @@
     }
   }
 
-  // ------------------------------------------------------ índice de la página --- //
-
-  /* Los botones del índice llevan a una sección sin tocar la dirección (que ya la usan las rutas),
-   * y el índice marca la sección que se está leyendo: la última cuyo borde superior ya ha pasado
-   * del tercio superior de la pantalla. Con secciones anidadas (una regla dentro de «Las cuatro
-   * reglas») gana la más profunda, porque va después en el documento. */
-  function initToc() {
-    const buttons = Array.from(document.querySelectorAll(".toc button"));
-    const targets = buttons.map((button) => document.getElementById(button.dataset.scroll));
-    const sectionsInOrder = buttons
-      .map((button, i) => ({ button: button, target: targets[i] }))
-      .filter((item) => item.target)
-      .sort((a, b) => (a.target.compareDocumentPosition(b.target) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
-
-    buttons.forEach((button, i) => {
-      button.addEventListener("click", () => {
-        if (targets[i]) targets[i].scrollIntoView({ behavior: reduceMotion.matches ? "auto" : "smooth", block: "start" });
-      });
-    });
-
-    let queued = false;
-    function mark() {
-      queued = false;
-      if (document.documentElement.dataset.view !== "reglas") return;
-      const line = window.innerHeight * 0.33;
-      let active = null;
-      sectionsInOrder.forEach((item) => { if (item.target.getBoundingClientRect().top <= line) active = item.button; });
-      buttons.forEach((button) => button.toggleAttribute("aria-current", button === active));
-      // En pantallas estrechas el índice es una fila que se desliza: se mantiene a la vista el activo.
-      if (active && active.scrollIntoView && window.matchMedia("(max-width: 1039px)").matches) {
-        const row = active.closest("ol");
-        if (row) row.scrollTo({ left: active.offsetLeft - 24, behavior: reduceMotion.matches ? "auto" : "smooth" });
-      }
-    }
-    window.addEventListener("scroll", () => { if (!queued) { queued = true; requestAnimationFrame(mark); } }, { passive: true });
-    mark();
-  }
-
   function init() {
     showPlaceholders();
-    initToc();
+    RB.toc("reglas");
     RB.engine.on("ready", () => { drawAll(); });
     RB.engine.on("fatal", (error) => showFailure("El motor de Python no arrancó: " + error));
     RB.engine.on("restart", () => { drawn = false; showPlaceholders(); });

@@ -39,6 +39,11 @@ function leer(texto) {
 }
 
 async function boot() {
+  // py.zip se descarga a la vez que Pyodide, no después. «no-cache» revalida con el servidor:
+  // tras publicar un motor nuevo no se usa el viejo.
+  var zipPendiente = fetch(new URL("../py.zip", self.location.href), { cache: "no-cache" });
+  zipPendiente.catch(function () {}); // si falla, se avisa más abajo, al esperarlo
+
   status("Descargando Python…");
   try {
     importScripts(PYODIDE_CDN + "pyodide.js");
@@ -48,16 +53,17 @@ async function boot() {
   var pyodide = await loadPyodide({ indexURL: PYODIDE_CDN });
 
   status("Instalando PyYAML…");
-  await pyodide.loadPackage("pyyaml");
+  var yaml = pyodide.loadPackage("pyyaml");
 
   status("Cargando el motor…");
-  // «no-cache» revalida con el servidor: tras publicar un motor nuevo no se usa el viejo.
-  var resp = await fetch(new URL("../py.zip", self.location.href), { cache: "no-cache" });
+  var resp = await zipPendiente;
   if (!resp.ok) {
     throw new Error("No se encontró py.zip (HTTP " + resp.status + "). Genéralo con: python scripts/build_web.py");
   }
+  var zip = await resp.arrayBuffer();
+  await yaml;
   pyodide.FS.mkdirTree(LIB);
-  pyodide.unpackArchive(await resp.arrayBuffer(), "zip", { extractDir: LIB });
+  pyodide.unpackArchive(zip, "zip", { extractDir: LIB });
   pyodide.runPython("import sys\nsys.path.insert(0, " + JSON.stringify(LIB) + ")");
 
   status("Leyendo el registro de jugadores…");

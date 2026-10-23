@@ -39,13 +39,13 @@ def players_dir(tmp_path: Path) -> Path:
 
 def test_el_ejemplo_del_tutorial_se_registra(players_dir):
     players = load_players(players_dir)
-    assert list(players) == ["esquinero"]
-    assert issubclass(players["esquinero"], Player)
-    assert players["esquinero"].get_icon() == "📐"
+    assert list(players) == ["Esquinero"]
+    assert issubclass(players["Esquinero"], Player)
+    assert players["Esquinero"].get_icon() == "📐"
 
 
 def test_el_ejemplo_del_tutorial_cumple_el_contrato(players_dir):
-    verificar_contrato(load_players(players_dir)["esquinero"])
+    verificar_contrato(load_players(players_dir)["Esquinero"])
 
 
 def test_el_ejemplo_toma_una_esquina_cuando_puede():
