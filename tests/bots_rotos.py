@@ -18,7 +18,7 @@ class _Base(Player):
 
     @classmethod
     def get_name(cls) -> str:
-        return cls.__name__.lower()
+        return cls.__name__
 
     @classmethod
     def get_authors(cls) -> list[str]:
@@ -107,7 +107,7 @@ class SaleDelPrograma(_Base):
 class CambiaDeNombre(_Base):
     """Juega bien, pero su nombre cambia cuando se toca ``NOMBRE``: miente sobre quién es."""
 
-    NOMBRE = "cambiadenombre"
+    NOMBRE = "CambiaDeNombre"
 
     @classmethod
     def get_name(cls) -> str:

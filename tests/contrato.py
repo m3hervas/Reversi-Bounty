@@ -48,6 +48,7 @@ def verificar_contrato(clase: type[Player], semillas: tuple[int, ...] = (0, 1, 2
         AssertionError: con el detalle de lo que hizo mal, si incumple el contrato.
     """
     nombre = clase.get_name()
+    assert nombre[:1].isupper(), f"{nombre!r}: el nombre de un bot empieza siempre por mayúscula"
     for semilla in semillas:
         for color in (BLACK, WHITE):
             vigilado = Vigilante(clase.create(semilla))

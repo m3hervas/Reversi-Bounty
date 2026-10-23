@@ -82,7 +82,7 @@ class GreedyPlayer(Player):
 
     @classmethod
     def get_name(cls) -> str:
-        return "avaricioso"
+        return "Avaricioso"
 
     @classmethod
     def get_authors(cls) -> list[str]:

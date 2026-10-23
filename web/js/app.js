@@ -19,8 +19,12 @@
     jugar: { view: "jugar", title: "Jugar · Reversi Bounty" },
     reglas: { view: "reglas", title: "Reglas · Reversi Bounty" },
     bots: { view: "bots", title: "Bots · Reversi Bounty" },
+    anadir: { view: "anadir", title: "Añade tu bot · Reversi Bounty" },
   };
   const THEME_KEY = "rb-tema";
+  /* Posiciones calculadas de antemano por el motor (scripts/generar_portada.py): se pintan al
+   * instante, sin esperar a que Python arranque en el navegador, que son unos segundos. */
+  RB.portada = fetch("data/portada.json?v=1").then((r) => (r.ok ? r.json() : null)).catch(() => null);
   const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
   function safe(name, fn) {
@@ -105,23 +109,20 @@
 
   // ------------------------------------------------------------- portada --- //
 
-  /* Una apertura jugada por el motor de verdad: prueba visible de que Python está corriendo. */
-  const OPENING = ["f5", "d6", "c3", "d3", "c4"];
-
+  /* La portada enseña una apertura ya calculada, así aparece al instante; mientras, el motor de
+   * Python arranca detrás (el indicador de la cabecera avisa de cuándo está listo). */
   function initHero() {
     const host = document.getElementById("hero-board");
     const caption = document.getElementById("hero-caption");
     RB.paintBoard(host, null, { label: "Tablero vacío" });
-    RB.engine.on("fatal", () => { caption.textContent = "No se pudo arrancar el motor de Python."; });
-    RB.engine.on("ready", async () => {
-      try {
-        let view = await RB.engine.call("new_game");
-        for (const move of OPENING) view = await RB.engine.call("play_move", [view.state, move]);
-        RB.paintBoard(host, view, { last: view.move, label: "Tablero tras la apertura " + OPENING.join(" ") });
-        caption.textContent = "La apertura del tigre (" + OPENING.join(" ") + "), jugada ahora mismo por el motor de Python en tu navegador.";
-      } catch (err) {
-        caption.textContent = "El motor no pudo jugar la apertura: " + err.message;
+    RB.portada.then((data) => {
+      if (!data) {
+        caption.textContent = "";
+        return;
       }
+      const opening = data.apertura.jugadas.join(" ");
+      RB.paintBoard(host, data.apertura.vista, { last: data.apertura.vista.move, label: "Tablero tras la apertura " + opening });
+      caption.textContent = "La apertura del tigre (" + opening + "), calculada por el motor de Python del proyecto.";
     });
   }
 

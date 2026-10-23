@@ -33,213 +33,14 @@
   -webkit-text-stroke: max(1.5px, 0.016em) var(--ink);
 }
 .hero .eyebrow { animation: rise 600ms var(--ease-out) both; }
+.hero__by { margin: -8px 0 22px; font: 500 13px/1.4 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); animation: rise 760ms var(--ease-out) 120ms both; }
+.hero__by b { color: var(--ink); font-weight: 600; }
 .hero__lede { margin-bottom: 28px; animation: rise 760ms var(--ease-out) 160ms both; }
 .hero__cta { display: flex; flex-wrap: wrap; gap: 12px; animation: rise 760ms var(--ease-out) 240ms both; }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
 
 .hero__figure { margin: 0; width: 100%; max-width: 460px; justify-self: end; animation: rise 900ms var(--ease-out) 200ms both; }
-.hero__caption { margin-top: 14px; padding-left: 22px; font-size: 13.5px; line-height: 1.45; color: var(--ink-3); text-wrap: pretty; }
-
-/* ================================================================= JUGAR */
-.play { padding-top: clamp(20px, 3vw, 36px); }
-.play__head { margin-bottom: 18px; }
-.play__head .eyebrow { margin-bottom: 8px; }
-/* El nombre del rival puede ser largo: debe poder partirse, y una palabra sin espacios también. */
-.play__title span { overflow-wrap: anywhere; }
-.play__grid {
-  display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  gap: clamp(18px, 3vw, 36px);
-  align-items: start;
-}
-
-.play__setup { position: sticky; top: calc(var(--header-h) + 16px); padding: 18px; }
-.setup { display: grid; gap: 22px; }
-.setup__group { display: grid; gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; }
-.setup__group legend { margin-bottom: 8px; padding: 0; }
-.setup__hint { font-size: 13px; color: var(--ink-3); }
-.setup__note { margin-top: -10px; font-size: 13px; color: var(--signal-ink); }
-
-.rivals { display: grid; gap: 6px; }
-.rival {
-  position: relative;
-  display: grid; grid-template-columns: 36px minmax(0, 1fr); align-items: center; gap: 10px;
-  min-height: 52px;
-  padding: 7px 10px;
-  border: 1px solid var(--rule);
-  border-radius: 12px;
-  background: var(--paper);
-  cursor: pointer;
-  user-select: none; -webkit-user-select: none;
-  transition: transform 140ms var(--ease-out);
-}
-.rival input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
-.rival:active { transform: scale(0.98); }
-.rival:has(input:checked) { border-color: var(--ink); background: var(--card); box-shadow: inset 0 0 0 1px var(--ink); }
-.rival:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
-.rival__icon {
-  display: grid; place-items: center;
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  background: var(--paper-2);
-  font-size: 19px; line-height: 1;
-}
-.rival__name { display: grid; min-width: 0; line-height: 1.25; }
-.rival__name b { font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rival__name small { font-size: 12.5px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-@media (hover: hover) and (pointer: fine) {
-  .rival:hover { background: var(--card); }
-}
-.rival-desc { margin-top: 2px; font-size: 13.5px; line-height: 1.45; color: var(--ink-2); text-wrap: pretty; }
-.rival-desc:empty { display: none; }
-
-/* El tablero entero siempre a la vista: su ancho también lo limita la altura de la
- * ventana, y las placas y el estado se ajustan al mismo ancho. */
-.play__table {
-  --board-max: max(320px, calc(100svh - var(--header-h) - 250px));
-  display: grid; gap: 12px; min-width: 0;
-}
-.play__table > * { width: 100%; max-width: min(620px, var(--board-max)); }
-
-.plates { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-left: 22px; }
-.plate {
-  position: relative;
-  display: flex; align-items: center; gap: 10px;
-  min-width: 0;
-  padding: 9px 12px;
-  border: 1px solid var(--rule);
-  border-radius: 14px;
-  background: var(--card);
-}
-/* El turno: un marco de tinta que aparece con opacidad (no se anima el borde). */
-.plate::after {
-  content: "";
-  position: absolute; inset: -1px;
-  border: 2px solid var(--ink);
-  border-radius: inherit;
-  opacity: 0;
-  transition: opacity 200ms ease;
-  pointer-events: none;
-}
-.plate[data-turn="true"]::after { opacity: 1; }
-.plate--right { justify-content: flex-end; text-align: right; }
-.plate__disc { width: 18px; height: 18px; }
-.plate__who { display: grid; flex: 1; min-width: 0; line-height: 1.25; }
-.plate__who b {
-  font-size: 15px; font-weight: 700;
-  /* Una línea con «…»: el nombre completo está en el título de la página y en el title de la placa. */
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.plate__who small { font: 500 11px/1.3 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
-.plate__count {
-  min-width: 2ch;
-  font-size: 30px; font-weight: 820; font-stretch: 110%; line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-.plate__think { display: none; gap: 3px; align-items: center; }
-.plate[data-thinking] .plate__think { display: inline-flex; }
-.plate__think i { width: 5px; height: 5px; border-radius: 50%; background: var(--ink-2); animation: think 1100ms ease-in-out infinite; }
-.plate__think i:nth-child(2) { animation-delay: 140ms; }
-.plate__think i:nth-child(3) { animation-delay: 280ms; }
-@keyframes think { 0%, 60%, 100% { transform: translateY(0); opacity: 0.35; } 30% { transform: translateY(-4px); opacity: 1; } }
-
-.board-wrap { position: relative; }
-
-/* Avisos sobre el tablero (pasos de turno, partida recuperada). */
-.board-toast {
-  position: absolute; left: calc(50% + 11px); top: 14%; z-index: 8;
-  max-width: calc(100% - 48px);
-  padding: 10px 16px;
-  border-radius: 999px;
-  background: var(--ink);
-  color: var(--on-ink);
-  font-size: 14px; font-weight: 600;
-  text-align: center;
-  box-shadow: var(--shadow-2);
-  transform: translateX(-50%);
-  animation: toast-in 240ms var(--ease-out) both;
-  pointer-events: none;
-}
-@keyframes toast-in { from { opacity: 0; transform: translate(-50%, -8px); } }
-
-/* Pantalla final, sobre el tablero (sin tapar las coordenadas). */
-.result {
-  position: absolute; inset: 22px 0 0 22px; z-index: 9;
-  display: grid; place-items: center;
-  border-radius: 16px;
-  background: var(--scrim);
-  -webkit-backdrop-filter: blur(3px);
-  backdrop-filter: blur(3px);
-  animation: fade-in 260ms var(--ease-out) both;
-}
-@keyframes fade-in { from { opacity: 0; } }
-.result__card {
-  width: min(100% - 32px, 360px);
-  padding: 22px 22px 20px;
-  border-radius: 18px;
-  background: var(--card);
-  box-shadow: var(--shadow-pop);
-  text-align: center;
-  animation: card-in 320ms var(--ease-out) 60ms both;
-}
-@keyframes card-in { from { opacity: 0; transform: translateY(10px) scale(0.97); } }
-.result .eyebrow { justify-content: center; margin-bottom: 8px; }
-.result__title { font-size: clamp(28px, 3.6vw, 38px); font-weight: 820; font-stretch: 112%; letter-spacing: -0.025em; line-height: 1.05; }
-.result__score { margin: 8px 0 16px; font: 500 15px/1.3 var(--font-mono); color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.result__reason {
-  margin: -4px 0 16px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: var(--signal-soft);
-  color: var(--signal-ink);
-  font-size: 13.5px; line-height: 1.45;
-  text-align: left;
-  overflow-wrap: anywhere;
-}
-.result__actions { display: grid; gap: 8px; }
-
-/* Línea de estado: de quién es el turno, qué pasa, o qué ha fallado. */
-.status {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;
-  min-height: 40px;
-  padding-left: 22px;
-  font-size: 14.5px;
-  color: var(--ink-2);
-}
-.status__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); flex: none; }
-.status > span:nth-child(2) { flex: 1 1 200px; }
-.status[data-state="thinking"] .status__dot,
-.status[data-state="loading"] .status__dot { background: var(--signal); animation: pulse 1000ms ease-in-out infinite; }
-.status[data-state="you"] .status__dot { background: var(--accent); }
-.status[data-state="error"] { color: var(--signal-ink); }
-.status[data-state="error"] .status__dot { background: var(--signal); }
-
-/* ================================================================ móvil */
-@media (max-width: 860px) {
-  .hero { grid-template-columns: minmax(0, 1fr); }
-  .hero__title { font-size: clamp(44px, 13vw, 96px); }
-  .hero__figure { justify-self: start; max-width: 420px; }
-
-  .play__grid { grid-template-columns: minmax(0, 1fr); }
-  .play__setup { position: static; }
-  /* Antes de empezar, primero se elige rival; durante la partida, primero el tablero. */
-  .play__table { order: 1; }
-  .play__setup { order: 2; }
-  .play[data-phase="setup"] .play__setup { order: 0; }
-  .play__table { --board-max: 620px; }
-  .play__table > * { margin-inline: auto; }
-}
-
-@media (max-width: 560px) {
-  .plates { gap: 8px; }
-  .plate { gap: 8px; padding: 8px 10px; }
-  .plate__disc { display: none; }
-  .plate__count { font-size: 24px; }
-  .result { inset: 22px 0 0 22px; }
-  .result__card { padding: 18px 16px 16px; }
-  .result__title { font-size: 28px; }
-}
-
+.hero__caption { margin-top: 14px; padding-inline: var(--bd-side); font-size: 13.5px; line-height: 1.45; color: var(--ink-3); text-wrap: pretty; }
 
 /* =========================================================== páginas de lectura
  * Reglas y Bots comparten el mismo esqueleto: una cabecera, bloques con un título y
@@ -270,17 +71,6 @@
   text-wrap: pretty;
 }
 
-/* Cuatro datos del juego, en una fila que se parte sola. */
-.facts { display: flex; flex-wrap: wrap; gap: 10px; margin: 28px 0 0; padding: 0; list-style: none; }
-.facts li {
-  display: flex; align-items: baseline; gap: 8px;
-  padding: 10px 16px;
-  border: 1px solid var(--rule-2); border-radius: 999px;
-  background: var(--card);
-}
-.facts b { font: 750 17px/1 var(--font-sans); font-stretch: 112%; color: var(--ink); }
-.facts span { font: 500 11.5px/1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); }
-
 /* Cómo se juega aquí: tres pasos. */
 .steps {
   display: grid; gap: 12px;
@@ -310,17 +100,15 @@
 }
 
 /* ================================================ documento: índice + contenido
- * En pantallas anchas, un índice fijo a la izquierda y el texto a la derecha; en estrechas, el
- * índice pasa a ser una fila de botones que se desliza. */
+ * El índice es una fila de botones sobre el texto (se desliza en pantallas estrechas): el texto
+ * ocupa todo el ancho, que es lo que necesitan las tarjetas con sus tableros. */
 .doc { display: block; }
 .doc__body { min-width: 0; }
 .block--first { margin-top: 0; }
 
 .toc { margin-bottom: 28px; }
-.toc__title { display: none; }
 .toc ol { display: flex; gap: 8px; margin: 0; padding: 2px var(--gutter) 10px; list-style: none; overflow-x: auto; scrollbar-width: none; margin-inline: calc(var(--gutter) * -1); }
 .toc ol::-webkit-scrollbar { display: none; }
-.toc__sub { display: none !important; }
 .toc li { flex: none; }
 .toc button {
   min-height: 40px; padding: 0 16px;
@@ -337,87 +125,70 @@
   .toc button:hover { color: var(--ink); background: var(--card); }
 }
 
-@media (min-width: 1040px) {
-  .doc { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: clamp(40px, 5vw, 72px); align-items: start; }
-  .toc { position: sticky; top: calc(var(--header-h) + 28px); margin-bottom: 0; }
-  .toc__title { display: block; margin-bottom: 14px; font: 500 11px/1.2 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); }
-  .toc ol { display: block; margin: 0; padding: 0; overflow: visible; border-left: 1px solid var(--rule); }
-  .toc__sub { display: block !important; margin: 0 0 6px 14px !important; border-left: 0 !important; }
-  .toc li { flex: none; }
-  .toc button {
-    display: block; width: 100%; min-height: 0; margin-left: -1px; padding: 8px 0 8px 16px;
-    border: 0; border-left: 2px solid transparent; border-radius: 0;
-    background: none; text-align: left; white-space: normal;
-    font-size: 14.5px; line-height: 1.3; color: var(--ink-3);
-  }
-  .toc__sub button { padding: 5px 0 5px 14px; font-size: 13.5px; font-weight: 500; }
-  .toc button[aria-current] { border-color: transparent; border-left-color: var(--accent); background: none; color: var(--ink); }
-  .toc button:active { transform: none; }
-}
 
 /* ======================================================= una regla (tarjeta) */
+.rules { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: stretch; }
 .rule {
-  margin-top: 20px;
-  padding: clamp(20px, 3vw, 32px);
+  display: flex; flex-direction: column;
+  min-width: 0;
+  container-type: inline-size;
+  padding: clamp(18px, 2.4vw, 24px);
   border: 1px solid var(--rule); border-radius: var(--radius-l);
   background: var(--card); box-shadow: var(--shadow-1);
   scroll-margin-top: var(--sticky-offset);
 }
-.rule__head { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+.rule__head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
 .rule__head > div { min-width: 0; }
-.rule__head .h3 { margin: 0; }
 .rule__n {
   display: grid; place-items: center; flex: none;
-  width: 44px; height: 44px; border-radius: 14px;
+  width: 38px; height: 38px; border-radius: 12px;
   background: var(--ink); color: var(--on-ink);
-  font: 750 20px/1 var(--font-sans); font-stretch: 112%;
+  font: 750 17px/1 var(--font-sans); font-stretch: 112%;
 }
-.rule__sum { margin-top: 6px; font-size: 16.5px; line-height: 1.5; color: var(--ink-2); text-wrap: pretty; }
-.rule__body {
-  display: grid; align-items: start;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 290px);
-  gap: clamp(20px, 4vw, 40px);
+.rule__head .h3 { font-size: 19px; }
+.rule__sum { margin-top: 4px; font-size: 15px; line-height: 1.5; color: var(--ink-2); text-wrap: pretty; }
+/* Los diagramas, pegados al fondo de la tarjeta: así las dos tarjetas de una fila acaban a la
+ * misma altura y sus tableros quedan alineados, sin huecos en blanco debajo. */
+.rule__figs {
+  display: grid; gap: 12px;
+  margin-top: auto; padding-top: 20px;
 }
-.rule__body--single { grid-template-columns: minmax(0, 1fr); }
-.list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
-.list li { position: relative; padding-left: 22px; font-size: 16.5px; line-height: 1.6; color: var(--ink-2); text-wrap: pretty; }
+.rule__figs > .example__label { margin: 0; }
+.pair { display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.list li { position: relative; padding-left: 20px; font-size: 15px; line-height: 1.55; color: var(--ink-2); text-wrap: pretty; }
 .list li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
 .list strong { font-weight: 650; color: var(--ink); }
 
-/* Un ejemplo: un panel hundido con sus diagramas, su leyenda y lo que pasa, paso a paso. */
-.example { margin-top: 24px; padding: clamp(16px, 3vw, 24px); border: 1px solid var(--rule); border-radius: var(--radius); background: var(--paper-2); }
-.example--plain { padding: 0; border: 0; background: none; }
-.example__label { margin-bottom: 16px; font: 600 11.5px/1.2 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-ink); }
-.example__figures { display: grid; gap: clamp(16px, 3vw, 28px); grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.example__text { max-width: 62ch; margin-top: 16px; font-size: 15.5px; line-height: 1.6; color: var(--ink-2); text-wrap: pretty; }
+.example__label { font: 600 11.5px/1.2 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-ink); }
 
 /* «Ojo»: una excepción que merece su propio recuadro y su propio diagrama. */
 .aside {
   display: grid; align-items: center; gap: 16px 28px;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 190px);
-  margin-top: 20px; padding: 18px 20px;
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: 18px; padding: 18px 20px;
   border: 1px solid var(--rule); border-left: 3px solid var(--signal); border-radius: 4px var(--radius) var(--radius) 4px;
   background: color-mix(in srgb, var(--signal) 7%, var(--card));
 }
 .aside__text { min-width: 0; }
 .aside__label { margin-bottom: 6px; font: 600 11.5px/1.2 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal-ink); }
-.aside p:not(.aside__label) { font-size: 15.5px; line-height: 1.6; color: var(--ink-2); text-wrap: pretty; }
+.aside p:not(.aside__label) { max-width: 62ch; font-size: 15px; line-height: 1.6; color: var(--ink-2); text-wrap: pretty; }
+.aside .figure--small { justify-self: center; width: 100%; max-width: 200px; }
 
 /* Un diagrama con su pie. */
 .figure { min-width: 0; margin: 0; }
-.figure__board { width: 100%; max-width: 340px; margin-inline: auto; }
+.figure__board { width: 100%; max-width: 300px; margin-inline: auto; }
 .figure--small .figure__board { max-width: 190px; }
-.figure figcaption { max-width: 340px; margin: 12px auto 0; font-size: 13.5px; line-height: 1.5; color: var(--ink-3); text-wrap: pretty; }
+.figure figcaption { max-width: 300px; margin: 10px auto 0; font-size: 13px; line-height: 1.5; color: var(--ink-3); text-wrap: pretty; }
 .figure figcaption b { color: var(--ink-2); font-weight: 650; }
 .figure--small figcaption { max-width: 190px; }
 .figure__error { padding: 18px; border: 1px dashed var(--rule-2); border-radius: var(--radius); font-size: 14px; line-height: 1.5; color: var(--ink-2); }
 .figure__board[data-state="loading"] .bd { opacity: 0.55; }
 .figure__board[data-state="ready"] .bd { animation: rise 420ms var(--ease-out) both; }
-.rule__body .figure__board { max-width: 290px; }
 
 /* Leyenda: cada marca del tablero tiene su muestra. La forma (aro, discontinuo, cruz) distingue
  * cada tipo aunque no se distingan los colores. */
-.legend { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 18px 0 0; padding: 0; list-style: none; font-size: 14px; line-height: 1.4; color: var(--ink-2); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 4px 0 0; padding: 0; list-style: none; font-size: 14px; line-height: 1.4; color: var(--ink-2); }
 .legend li { display: flex; align-items: center; gap: 9px; min-width: 0; }
 .legend--stack { flex-direction: column; flex-wrap: nowrap; gap: 12px; margin-top: 16px; }
 .legend--stack li { align-items: flex-start; }
@@ -449,9 +220,9 @@
 .callout h3 { font-size: 17px; font-weight: 750; margin-bottom: 6px; }
 .callout p { max-width: 70ch; font-size: 15.5px; line-height: 1.6; color: var(--ink-2); text-wrap: pretty; }
 
-/* Casos dudosos: un acordeón con el elemento nativo <details>, sin JavaScript. */
+/* Casos dudosos: una lista desplegable con el elemento nativo <details>, sin JavaScript. */
 .faq {
-  max-width: 820px;
+  max-width: 820px; margin-inline: auto;
   border: 1px solid var(--rule); border-radius: var(--radius-l);
   background: var(--card);
   overflow: hidden;
@@ -479,31 +250,156 @@
   .faq summary:hover { background: var(--paper-2); }
 }
 
-/* Estrategia: cinco tarjetas. */
-.ideas { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr)); }
+/* Estrategia: cinco tarjetas cortas, tres y luego dos, centradas. */
+.ideas { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; }
 .idea {
-  display: flex; flex-direction: column; gap: 10px;
-  min-width: 0; padding: 22px;
+  display: flex; flex-direction: column; gap: 8px;
+  flex: 0 1 calc((100% - 32px) / 3);
+  min-width: 0; padding: 20px;
   border: 1px solid var(--rule); border-radius: var(--radius-l);
   background: var(--card);
 }
 .idea__n { font: 650 12px/1 var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); }
 .idea__n::before { content: "Idea "; }
-.idea h3 { font-size: 19px; font-weight: 780; line-height: 1.2; text-wrap: balance; }
-.idea p:not(.idea__n) { font-size: 15.5px; line-height: 1.6; color: var(--ink-2); text-wrap: pretty; }
-.idea .idea__tip { margin-top: auto; padding-top: 14px; border-top: 1px dashed var(--rule-2); font-size: 14.5px; color: var(--ink); }
+.idea h3 { font-size: 18px; font-weight: 780; line-height: 1.2; text-wrap: balance; }
+.idea p.idea__sum { font-size: 15px; line-height: 1.5; color: var(--ink-2); text-wrap: pretty; }
+.idea .idea__tip { margin-top: auto; padding-top: 12px; border-top: 1px dashed var(--rule-2); font-size: 14px; line-height: 1.45; color: var(--ink); }
 .idea__tip b { color: var(--accent-ink); font-weight: 700; }
-.idea p.idea__sum { font-size: 16px; font-weight: 650; line-height: 1.45; color: var(--ink); }
-.idea em { font-style: normal; font-weight: 650; color: var(--ink); }
 
-.glossary {
-  display: grid; margin: 0;
-  gap: 0 40px;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr));
+/* ======================================================= Añade tu bot */
+.block__sub { margin: 32px 0 10px; font-size: 18px; font-weight: 750; }
+.block__text { max-width: 70ch; margin-bottom: 14px; font-size: 15.5px; line-height: 1.65; color: var(--ink-2); text-wrap: pretty; }
+.block__text a { color: var(--accent-ink); text-underline-offset: 3px; }
+.block__text code, .check code, .defs code, .guide code, .send code, .duo__text code, .note code, .callout code, .steps code, .list code, .faq code {
+  padding: 1px 5px; border-radius: 5px; background: var(--paper-2);
+  font: 500 0.88em var(--font-mono); overflow-wrap: anywhere;
 }
-.glossary > div { min-width: 0; padding: 14px 0; border-top: 1px solid var(--rule); }
-.glossary dt { margin-bottom: 4px; font-weight: 700; }
-.glossary dd { margin: 0; font-size: 15.5px; line-height: 1.55; color: var(--ink-2); text-wrap: pretty; }
+.list--wide { margin-bottom: 18px; }
+.list--wide li { font-size: 15.5px; }
+
+/* Un bloque de código: barra con el nombre del archivo y el botón de copiar. Siempre oscuro, como un editor. */
+.code {
+  --code-bg: #15140f; --code-ink: #ece8dd; --code-dim: #8b877b;
+  margin: 0 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius);
+  background: var(--code-bg); color: var(--code-ink);
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+}
+.code__bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 8px 8px 8px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  font: 500 12px/1 var(--font-mono); color: var(--code-dim);
+}
+.code__file { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.code__copy {
+  flex: none; min-height: 32px; padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 8px;
+  background: transparent; color: var(--code-ink);
+  font: 600 12px/1 var(--font-sans); cursor: pointer;
+  transition: transform 140ms var(--ease-out), background-color 160ms ease, border-color 160ms ease;
+}
+.code__copy:active { transform: scale(0.96); }
+.code__copy:focus-visible { outline: 2px solid #9ad8b8; outline-offset: 2px; }
+.code__copy[data-state="ok"] { border-color: #5fbf8f; color: #9ad8b8; }
+.code__copy[data-state="error"] { border-color: var(--signal); color: #ffb59a; }
+@media (hover: hover) and (pointer: fine) {
+  .code__copy:hover { background: rgba(255, 255, 255, 0.08); }
+}
+.code pre {
+  margin: 0; padding: 16px 18px 18px;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  font: 400 13px/1.65 var(--font-mono); tab-size: 4;
+}
+.article .code code { padding: 0; border-radius: 0; background: none; font: inherit; white-space: pre; overflow-wrap: normal; }
+.tok--com { color: #7f7b70; font-style: italic; }
+.tok--str { color: #a9d99a; }
+.tok--kw { color: #f2a07a; }
+.tok--dec { color: #e8c76a; }
+
+/* Lista de requisitos: cada uno con su marca de verificación. */
+.checks { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); margin-bottom: 20px; }
+.check { display: flex; align-items: flex-start; gap: 14px; min-width: 0; padding: 16px 18px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--card); }
+.check > div { min-width: 0; }
+.check h3 { margin-bottom: 4px; font-size: 15.5px; font-weight: 700; line-height: 1.3; text-wrap: balance; }
+.check p { font-size: 14.5px; line-height: 1.55; color: var(--ink-2); text-wrap: pretty; }
+.check__icon {
+  position: relative; flex: none; width: 24px; height: 24px; margin-top: 1px;
+  border-radius: 50%; background: var(--accent-soft);
+}
+.check__icon::after {
+  content: ""; position: absolute; left: 8px; top: 5px; width: 6px; height: 11px;
+  border: solid var(--accent-ink); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg);
+}
+
+@media (max-width: 560px) {
+  .code pre { padding: 14px; font-size: 13px; }
+}
+
+/* ---- Añade tu bot: cabecera sin descripción, el ejemplo a la izquierda y la guía a la derecha. */
+.page-head--tight { margin-bottom: clamp(22px, 3vw, 32px); }
+.page-head--tight .h1 { max-width: 20ch; }
+.intro { display: grid; align-items: start; gap: clamp(24px, 4vw, 48px); grid-template-columns: minmax(0, 1.32fr) minmax(0, 1fr); }
+.intro__code { min-width: 0; }
+.intro__code .code { margin: 0; }
+.intro__how { min-width: 0; padding-top: 6px; }
+.intro__how > .h3 { margin-bottom: 18px; font-size: 21px; }
+/* La guía: cuatro pasos unidos por una línea fina, sin cajas. */
+.guide { position: relative; display: grid; gap: 22px; margin: 0; padding: 0; list-style: none; }
+.guide::before { content: ""; position: absolute; left: 15px; top: 18px; bottom: 18px; width: 1px; background: var(--rule-2); }
+.guide li { position: relative; display: flex; align-items: flex-start; gap: 16px; min-width: 0; }
+.guide li > div { min-width: 0; padding-top: 4px; }
+.guide__n {
+  position: relative; display: grid; place-items: center; flex: none;
+  width: 31px; height: 31px; border-radius: 50%;
+  background: var(--accent-soft); color: var(--accent-ink); box-shadow: 0 0 0 5px var(--paper);
+  font: 650 14px/1 var(--font-mono);
+}
+.guide h3 { margin-bottom: 3px; font-size: 16.5px; font-weight: 750; line-height: 1.3; }
+.guide p { font-size: 15px; line-height: 1.6; color: var(--ink-2); text-wrap: pretty; }
+
+/* Dos bloques en una misma fila, separados por una línea fina. */
+.duo {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: clamp(40px, 6vw, 64px);
+  border: 1px solid var(--rule); border-radius: var(--radius-l);
+  background: var(--card);
+}
+.duo__col { min-width: 0; padding: clamp(20px, 3vw, 30px); }
+.duo__col + .duo__col { border-left: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); }
+.duo__col > .h3 { margin-bottom: 16px; font-size: 19px; }
+.duo__text { margin: -6px 0 14px; font-size: 15px; line-height: 1.6; color: var(--ink-2); text-wrap: pretty; }
+.defs { display: grid; gap: 0; margin: 0; }
+.defs > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 3px; padding: 11px 0; }
+.defs > div + div { border-top: 1px solid var(--rule); }
+.defs > div:first-child { padding-top: 0; }
+.defs dt { min-width: 0; }
+.defs dd { margin: 0; font-size: 15px; line-height: 1.55; color: var(--ink-2); text-wrap: pretty; }
+.defs dd b { color: var(--ink); font-weight: 650; }
+.defs dt code { background: none; padding: 0; color: var(--accent-ink); font-weight: 600; font-size: 0.92em; }
+
+.block--sm { margin-top: clamp(44px, 6vw, 72px); }
+.block--sm .faq { max-width: none; margin-inline: 0; }
+
+/* Cómo enviarlo: cuatro pasos pequeños, de dos en dos. */
+.send { display: grid; gap: 14px 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.send__step { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 18px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--card); }
+.send__step h3 { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 750; }
+.send__n { display: grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-ink); font: 650 12px/1 var(--font-mono); }
+.send__step > p { font-size: 14.5px; line-height: 1.55; color: var(--ink-2); text-wrap: pretty; }
+.send__step a { color: var(--accent-ink); text-underline-offset: 3px; }
+.send__step .code { margin: auto 0 0; box-shadow: none; }
+.code--sm .code__bar { padding-block: 5px; }
+.code--sm pre { padding: 12px 14px; font-size: 12.5px; line-height: 1.6; }
+.code--sm .code__copy { min-height: 28px; }
+
+@media (max-width: 900px) {
+  .intro { grid-template-columns: minmax(0, 1fr); }
+  .duo { grid-template-columns: minmax(0, 1fr); }
+  .duo__col + .duo__col { border-left: 0; border-top: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); }
+  .send { grid-template-columns: minmax(0, 1fr); }
+}
 
 /* Llamada a la acción del final de una página. */
 .cta {
@@ -568,20 +464,25 @@
 .points p { font-size: 15.5px; line-height: 1.6; color: var(--ink-2); text-wrap: pretty; }
 
 /* ===================================================== páginas: pantallas estrechas */
+/* Si una tarjeta es demasiado estrecha para dos tableros uno al lado del otro, se apilan. */
+@container (max-width: 300px) {
+  .pair { grid-template-columns: minmax(0, 1fr); }
+}
+@media (min-width: 640px) {
+  .aside--wide { grid-template-columns: minmax(0, 1fr) 200px; }
+}
+@media (max-width: 1100px) {
+  .idea { flex-basis: calc((100% - 16px) / 2); }
+}
 @media (max-width: 900px) {
-  .rule__body { grid-template-columns: minmax(0, 1fr); align-items: start; }
-  .rule__body .figure__board, .rule__body .figure figcaption { max-width: 340px; margin-inline: 0; }
-  .aside { grid-template-columns: minmax(0, 1fr); }
-  .aside .figure--small { max-width: 190px; }
   .map { grid-template-columns: minmax(0, 1fr); }
   .map .figure__board { margin-inline: 0; }
 }
+@media (max-width: 760px) {
+  .rules { grid-template-columns: minmax(0, 1fr); }
+}
 @media (max-width: 640px) {
-  .example__figures { grid-template-columns: minmax(0, 1fr); }
-  .example__figures .figure__board, .example__figures .figure figcaption { max-width: 340px; margin-inline: 0; }
-  .rule__head { gap: 12px; }
-  .rule__n { width: 38px; height: 38px; border-radius: 12px; font-size: 17px; }
-  .rule__sum, .list li { font-size: 16px; }
+  .idea { flex-basis: 100%; }
 }
 @media (max-width: 560px) {
   .steps li, .idea, .bot-card { padding: 18px; }

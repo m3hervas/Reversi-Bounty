@@ -1,0 +1,103 @@
+/* Reversi Bounty — el avatar del rival: sus bucles tranquilos, sus caras y su brazo.
+ *
+ * Reglas de movimiento (ver también js/stage.js):
+ *   - Todo lo que se mueve es transform u opacity: se compone en la GPU y no recalcula el diseño.
+ *   - Los bucles (respirar, mecerse, parpadear) son CSS puro: corren fuera del hilo principal,
+ *     así que no se entrecortan mientras Python arranca o un bot piensa.
+ *   - Son suaves a propósito: el personaje está en pantalla toda la partida y no debe distraer
+ *     de quien juega. Lo vistoso (el salto, los destellos) solo sale en momentos puntuales.
+ *   - Con «reducir movimiento» (base.css) las animaciones duran 1 ms: el personaje cambia de cara
+ *     pero no se mueve. Todos los fotogramas finales son el estado de reposo.
+ *
+ * Los ejes de giro están en unidades del viewBox del dibujo (400 × 480), que es lo que usan los
+ * elementos SVG para transform-origin.
+ */
+
+.av { display: block; width: 100%; height: 100%; overflow: visible; }
+.av__body, .av__head, .av__hair-back, .av__lids, .av__brow, .av__iris, .av__tear, .av__spark { transform-box: view-box; }
+
+/* ------------------------------------------------------------ bucles tranquilos */
+.av__body { transform-origin: 200px 480px; animation: av-breathe 4.2s ease-in-out infinite; }
+.av__head { transform-origin: 200px 290px; animation: av-sway 6.4s ease-in-out infinite; }
+.av__hair-back { transform-origin: 200px 170px; animation: av-hair 5.2s ease-in-out infinite; }
+.av__lids { transform-origin: 200px 190px; transform: scaleY(0); animation: av-blink 5.4s infinite; }
+.av__iris { transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1); }
+
+@keyframes av-breathe { 50% { transform: translateY(-3px) scale(1.008); } }
+@keyframes av-sway { 0%, 100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
+@keyframes av-hair { 50% { transform: scale(1.014) rotate(0.5deg); } }
+@keyframes av-blink { 0%, 91%, 100% { transform: scaleY(0); } 94% { transform: scaleY(1); } }
+
+/* ----------------------------------------------------------------- las caras */
+/* Por defecto se ve la cara neutral: ojos abiertos y labios cerrados. */
+.av__eyes-happy, .av__tear, .av__spark, .m-grin, .m-o, .m-sad { opacity: 0; }
+.av__brow { transform-origin: 200px 160px; transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1); }
+
+/* pensando: ladea la cabeza, una ceja arriba y la boca pequeña */
+.av[data-mood="think"] .av__head { animation: av-think 2.4s ease-in-out infinite; }
+.av[data-mood="think"] .av__brow--r { transform: translateY(-9px) rotate(-8deg); }
+.av[data-mood="think"] .av__iris { transform: translate(-4px, -3px); }
+.av[data-mood="think"] .m-closed { opacity: 0; }
+.av[data-mood="think"] .m-o { opacity: 1; transform: scale(0.6); transform-origin: 200px 264px; transform-box: view-box; }
+@keyframes av-think { 0%, 100% { transform: rotate(5deg); } 50% { transform: rotate(8deg) translateY(1px); } }
+
+/* contento: ojos en arco, sonrisa de oreja a oreja y destellos */
+.av[data-mood="happy"] .av__eyes, .av[data-mood="happy"] .av__lids, .av[data-mood="happy"] .m-closed { opacity: 0; }
+.av[data-mood="happy"] .av__eyes-happy, .av[data-mood="happy"] .m-grin { opacity: 1; }
+.av[data-mood="happy"] .av__brow { transform: translateY(-5px); }
+.av[data-mood="happy"] .av__spark { opacity: 1; animation: av-twinkle 900ms ease-in-out infinite; }
+.av[data-mood="happy"] .av__spark path:nth-child(2n) { animation: av-twinkle 900ms ease-in-out 300ms infinite; }
+@keyframes av-twinkle { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+
+/* sorprendido: cejas arriba y la boca en «o» */
+.av[data-mood="surprised"] .av__brow { transform: translateY(-11px); }
+.av[data-mood="surprised"] .m-closed { opacity: 0; }
+.av[data-mood="surprised"] .m-o { opacity: 1; }
+
+/* triste: cejas caídas, boca hacia abajo, lágrimas y la cabeza un poco gacha */
+.av[data-mood="sad"] .av__head { animation: none; transform: translateY(8px) rotate(-2deg); }
+.av[data-mood="sad"] .av__brow--l { transform: translateY(2px) rotate(-14deg); }
+.av[data-mood="sad"] .av__brow--r { transform: translateY(2px) rotate(14deg); }
+.av[data-mood="sad"] .m-closed { opacity: 0; }
+.av[data-mood="sad"] .m-sad { opacity: 1; }
+.av[data-mood="sad"] .av__tear { opacity: 0.95; animation: av-tear 1.5s ease-in infinite; }
+.av[data-mood="sad"] .av__tear--r { animation-delay: 600ms; }
+@keyframes av-tear { 0% { transform: translateY(-4px); opacity: 0; } 25% { opacity: 0.95; } 100% { transform: translateY(26px); opacity: 0; } }
+
+/* --------------------------------------------------------------- los gestos */
+/* Después de mover ficha: un saltito con el pelo (una vez; stage.js reinicia la clase). */
+.av.is-flourish .av__body { animation: av-flourish 520ms cubic-bezier(0.23, 1, 0.32, 1); }
+.av.is-flourish .av__head { animation: av-flourish-head 520ms cubic-bezier(0.23, 1, 0.32, 1); }
+@keyframes av-flourish { 35% { transform: translateY(-9px) scale(1.012); } }
+@keyframes av-flourish-head { 35% { transform: rotate(-4deg) translateY(-3px); } 70% { transform: rotate(3deg); } }
+
+/* Ganó: salta con alegría mientras se ve el resultado (momento raro: ahí sí hay función). */
+.av.is-win .av__body { animation: av-hop 760ms cubic-bezier(0.23, 1, 0.32, 1) infinite; }
+@keyframes av-hop { 40% { transform: translateY(-14px); } }
+
+/* Mientras el brazo estirado está en el aire, el de reposo desaparece. */
+.av__arm--r { transition: opacity 90ms ease; }
+.av.is-reach .av__arm--r { opacity: 0; }
+
+/* ---------------------------------------------------- el brazo estirado (fx) */
+.reach { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 8; transform-origin: 0 0; pointer-events: none; }
+.reach[hidden] { display: none; }
+.reach__arm {
+  position: absolute; left: 0; top: -13px;
+  width: 0; height: 26px;
+  border-radius: 13px;
+  background: linear-gradient(#ffffff, #dcd8f2);
+  box-shadow: 0 0 0 2.5px #c6c1e8, 0 10px 16px -4px rgba(0, 0, 0, 0.45);
+  transform-origin: 0 50%;
+  transform: scaleX(0.16);
+}
+.reach__hand {
+  position: absolute; left: 0; top: 0;
+  width: 54px; height: 54px; margin: -27px 0 0 -27px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #ffffff, #ebe8f8);
+  box-shadow: inset 0 0 0 6px #ff7ac8, 0 10px 16px -4px rgba(0, 0, 0, 0.5);
+}
+/* La ficha que lleva en la mano. */
+.reach__disc { position: absolute; inset: 11px; border-radius: 50%; background: var(--disc-black); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18); }
+.reach__disc[data-color="-1"] { background: var(--disc-white); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2); }

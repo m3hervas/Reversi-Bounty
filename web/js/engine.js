@@ -13,7 +13,7 @@
   "use strict";
 
   const RB = (window.RB = window.RB || {});
-  const WORKER_URL = "js/worker.js?v=1";
+  const WORKER_URL = "js/worker.js?v=2";
   const listeners = { status: [], ready: [], fatal: [], restart: [] };
   const pending = new Map();
   let worker = null;

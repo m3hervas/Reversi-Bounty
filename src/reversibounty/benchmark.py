@@ -10,7 +10,7 @@ partidas se han jugado. Se lanza con::
 
     python -m reversibounty.benchmark
     python -m reversibounty.benchmark --partidas 40 --semilla 3
-    python -m reversibounty.benchmark --jugadores aleatorio avaricioso
+    python -m reversibounty.benchmark --jugadores Aleatorio Avaricioso
 """
 
 from __future__ import annotations
@@ -171,10 +171,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.jugadores is None:
         elegidos = registrados
     else:
-        desconocidos = [n for n in args.jugadores if n not in registrados]
+        # Los nombres empiezan por mayúscula, pero en la terminal se aceptan escritos como sea.
+        por_nombre = {nombre.casefold(): nombre for nombre in registrados}
+        desconocidos = [n for n in args.jugadores if n.casefold() not in por_nombre]
         if desconocidos:
             parser.error(f"jugadores desconocidos: {', '.join(desconocidos)}")
-        elegidos = {n: registrados[n] for n in args.jugadores}
+        nombres = [por_nombre[n.casefold()] for n in args.jugadores]
+        elegidos = {n: registrados[n] for n in nombres}
     if len(elegidos) < 2:
         parser.error("hacen falta al menos dos jugadores")
 

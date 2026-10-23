@@ -54,6 +54,11 @@
     try { return JSON.parse(localStorage.getItem(key) || "null"); } catch (e) { return null; }
   }
 
+  /* El escenario (el avatar del rival) es teatro: si falta o falla, la partida sigue igual. */
+  function act(name, ...args) {
+    try { return RB.stage && RB.stage[name] ? RB.stage[name](...args) : undefined; } catch (err) { return undefined; }
+  }
+
   /* Un efecto de sonido. Si el sonido no está o está apagado, no hace nada. */
   function cue(kind, extra) {
     if (RB.sound) RB.sound.play(kind, extra);
@@ -95,9 +100,11 @@
       const plate = document.getElementById("plate-" + color);
       const isHuman = color === seat.human;
       const who = document.getElementById("who-" + color);
-      who.textContent = isHuman ? "Tú" : (seat.bot ? seat.bot.icon + " " + seat.bot.name : "Bot");
+      who.textContent = isHuman ? "Tú" : (seat.bot ? seat.bot.name : "Bot");
       who.title = who.textContent; // la placa recorta con «…»: el nombre completo está aquí
+      document.getElementById("avatar-" + color).textContent = isHuman ? "🙂" : (seat.bot ? seat.bot.icon : "🤖");
       document.getElementById("count-" + color).textContent = String(score[i]);
+      plate.dataset.role = isHuman ? "you" : "rival";
       plate.dataset.turn = String(!!view && game.phase === "playing" && view.turn === color);
       plate.toggleAttribute("data-thinking", game.phase === "playing" && game.busy && !isHuman && !!view && view.turn === color);
     });
@@ -138,6 +145,8 @@
     ui.toast.hidden = true;
     ui.note.hidden = true;
     ui.rival.textContent = game.bot.name;
+    act("reset");
+    act("hello");
     setStatus("loading", "Preparando la partida…");
     try {
       await RB.engine.call("start_game", [game.bot.name, -game.human, game.seed]);
@@ -160,6 +169,7 @@
     if (view.turn === game.human) {
       if (view.passed && view.mover === game.human) {
         cue("pass");
+        act("passed", "bot");
         toast(game.bot.name + " no tiene jugada y pasa. Te vuelve a tocar.");
       }
       game.busy = false;
@@ -180,6 +190,7 @@
       save();
       render(true);
       cue("move", { flips: view.flipped.length });
+      act("humanMoved", view.flipped.length, view.move);
       continueGame(token);
     }, (err) => {
       if (token !== game.token) return;
@@ -193,6 +204,7 @@
     game.busy = true;
     render(false);
     setStatus("thinking", game.bot.name + " está pensando…");
+    act("think", true);
     await wait(BOT_DELAY_MS);
     if (token !== game.token) return;
     let view;
@@ -200,6 +212,7 @@
       view = await RB.engine.call("bot_move", [game.view.state], { timeout: BOT_TIMEOUT_MS });
     } catch (err) {
       if (token !== game.token) return;
+      act("think", false);
       if (err.code === "timeout") {
         // El worker se ha reiniciado: el bot pierde, como si hubiera fallado.
         game.view = Object.assign({}, game.view, {
@@ -211,13 +224,20 @@
       return failed("El motor no pudo mover al bot: " + message(err));
     }
     if (token !== game.token) return;
+    act("think", false);
+    if (!view.forfeit) await act("reach", view.move, -game.human); // el brazo lleva la ficha y, al llegar, se pinta
+    if (token !== game.token) return;
     game.view = view;
     save();
     render(!view.forfeit);
-    if (!view.forfeit) cue("move", { flips: view.flipped.length });
+    if (!view.forfeit) {
+      cue("move", { flips: view.flipped.length });
+      act("botMoved", view.flipped.length);
+    }
     if (!view.over && view.turn !== game.human) {
       // La persona no tiene jugada: pasa y el bot vuelve a mover.
       cue("pass");
+      act("passed", "human");
       toast("No tienes jugadas posibles: pasas.");
       setStatus("thinking", "Pasas. " + game.bot.name + " vuelve a mover…");
       await wait(PASS_DELAY_MS);
@@ -237,6 +257,8 @@
       : "Fin de la partida. " + (view.winner === 0 ? "Empate." : view.winner === game.human ? "Has ganado." : "Gana " + game.bot.name + "."));
     showResult();
     cue(view.forfeit || view.winner === game.human ? "win" : view.winner === 0 ? "draw" : "lose");
+    if (view.forfeit) act("forfeit");
+    else act("finish", view.winner === 0 ? "draw" : view.winner === game.human ? "human" : "bot");
   }
 
   /* Un error que no es culpa del bot (el motor, la red…): se cuenta y se puede seguir. */
@@ -333,6 +355,7 @@
     game.view = await RB.engine.call("new_game").catch(() => null);
     render(false);
     setStatus("idle", "Elige rival y color, y pulsa «Empezar partida».");
+    act("hello");
   }
 
   function onFatal(error) {
@@ -358,7 +381,15 @@
       resultReason: document.getElementById("result-reason"),
     });
 
+    act("init");
     render(false);
+    // Antes de que Python arranque, el tablero ya enseña la posición de salida (precalculada).
+    RB.portada.then((data) => {
+      if (data && !game.view && game.phase === "setup") {
+        game.view = data.inicio;
+        render(false);
+      }
+    });
     ui.form.addEventListener("submit", (event) => { event.preventDefault(); newGame(); });
     ui.form.addEventListener("change", onFormChange);
     ui.rematch.addEventListener("click", newGame);

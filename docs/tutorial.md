@@ -74,7 +74,7 @@ class Esquinero(Player):
 
     @classmethod
     def get_name(cls) -> str:
-        return "esquinero"
+        return "Esquinero"
 
     @classmethod
     def get_authors(cls) -> list[str]:
@@ -104,7 +104,7 @@ Un bot es una subclase de `Player`. Hay cinco cosas obligatorias:
 
 | Método | Qué devuelve |
 |---|---|
-| `get_name()` | Un nombre **único** entre todos los jugadores. Se ve en la clasificación. |
+| `get_name()` | Un nombre **único** entre todos los jugadores, que **siempre empieza por mayúscula** (`"Esquinero"`, no `"esquinero"`). Se ve en la clasificación. |
 | `get_authors()` | Una lista no vacía con los autores. |
 | `get_description()` | Una frase que describa la estrategia. |
 | `get_icon()` | **Un único emoji** que acompaña al nombre. |
@@ -131,7 +131,7 @@ sin tocar el tuyo) y `score(state)`. Están todas en la
 
 - **Devolver siempre una jugada legal**, como `(fila, columna)` con números del 0 al 7.
 - **No modificar** el estado que recibe.
-- **Un nombre único.** El proyecto rechaza un nombre que ya use otro jugador.
+- **Un nombre único, que empieza por mayúscula.** El proyecto rechaza un nombre que ya use otro jugador, y la prueba de contrato falla si tu nombre empieza por minúscula (`"Esquinero"`, no `"esquinero"`).
 - **Solo la biblioteca estándar de Python y `reversibounty`.** Nada de librerías externas.
 - **Sin red, sin archivos, sin procesos.** Tu `choose_move` debe depender solo del tablero.
 - **Ser razonablemente rápido.** Un bot que se cuelga no puede jugar un torneo.
@@ -185,7 +185,7 @@ from reversibounty import play_game
 from reversibounty.bots import RandomPlayer
 from reversibounty.manifest import load_players
 
-Esquinero = load_players()["esquinero"]
+Esquinero = load_players()["Esquinero"]
 resultado = play_game(Esquinero.create(seed=1), RandomPlayer.create(seed=2))
 print(resultado.winner, resultado.score)  # 1 = ganan las negras, el bot
 ```
@@ -229,6 +229,7 @@ Estos son los errores más habituales y cómo se arreglan:
 | `no se puede crear: Can't instantiate abstract class ... method 'x'` | Te falta implementar el método `x`. | Impleméntalo (ver la tabla del punto 3). |
 | `get_icon() debe devolver un único emoji` | El icono es texto, o son varios emojis. | Devuelve un solo emoji, como `"📐"`. |
 | `el nombre 'x' ya lo usa ...` | Otro jugador tiene el mismo nombre. | Cambia `get_name()` por uno único. |
+| `el nombre de un bot empieza siempre por mayúscula` | `get_name()` devuelve algo como `"esquinero"`. | Empieza el nombre por mayúscula: `"Esquinero"`. |
 | `devolvió una jugada ilegal` | Tu bot eligió una casilla que no encierra ninguna ficha. | Elige siempre entre las de `legal_moves(state)`. |
 | `modificó el estado que recibió` | Tu bot intentó cambiar el tablero. | Trabaja con copias, o con `apply_move`, que devuelve un estado nuevo. |
 | `lanzó RuntimeError: ...` | Tu bot falló con una excepción. | Lee el mensaje, que dice qué línea y qué error, y corrígelo. |

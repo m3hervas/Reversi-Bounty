@@ -75,7 +75,7 @@ sigue con el siguiente emparejamiento.
   "standings": [
     {
       "rank": 1,
-      "name": "avaricioso",
+      "name": "Avaricioso",
       "icon": "💰",
       "authors": ["Reversi Bounty"],
       "description": "Captura lo máximo posible, ...",
@@ -88,10 +88,10 @@ sigue con el siguiente emparejamiento.
   "games": [
     {
       "round": 1,
-      "black": "aleatorio",
-      "white": "avaricioso",
+      "black": "Aleatorio",
+      "white": "Avaricioso",
       "seeds": [123, 456],
-      "winner": "avaricioso",
+      "winner": "Avaricioso",
       "score": [20, 44],
       "moves": ["d3", "c5", "..."],
       "forfeit": null

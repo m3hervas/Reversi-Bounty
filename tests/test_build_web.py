@@ -89,7 +89,7 @@ def test_lo_descomprimido_se_importa_en_un_python_limpio(zip_web, tmp_path):
     datos = json.loads(salida.stdout)
     assert Path(datos["paquete"]).resolve().is_relative_to(carpeta.resolve())
     assert datos["respuesta"]["ok"], datos["respuesta"]
-    assert "aleatorio" in [j["name"] for j in datos["respuesta"]["result"]]
+    assert "Aleatorio" in [j["name"] for j in datos["respuesta"]["result"]]
 
 
 def test_tambien_se_importa_directamente_desde_el_zip(zip_web):

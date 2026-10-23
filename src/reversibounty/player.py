@@ -12,7 +12,7 @@ Ejemplo mínimo::
     class MiBot(Player):
         @classmethod
         def get_name(cls) -> str:
-            return "mi-bot"
+            return "Mi bot"
 
         @classmethod
         def get_authors(cls) -> list[str]:
@@ -54,7 +54,11 @@ class Player(ABC):
     @classmethod
     @abstractmethod
     def get_name(cls) -> str:
-        """Nombre único y legible del jugador. Se mostrará en la clasificación."""
+        """Nombre único y legible del jugador. Se mostrará en la clasificación.
+
+        Es un nombre propio, así que **siempre empieza por mayúscula**: ``"Aleatorio"``,
+        ``"Esquinero"``, ``"Mi bot"``.
+        """
 
     @classmethod
     @abstractmethod
