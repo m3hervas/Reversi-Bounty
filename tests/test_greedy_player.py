@@ -9,7 +9,7 @@ from reversibounty.bots.greedy_player import evaluate_move
 
 def test_greedy_player_es_un_player_con_identidad_valida():
     assert issubclass(GreedyPlayer, Player)
-    assert GreedyPlayer.get_name() == "avaricioso"
+    assert GreedyPlayer.get_name() == "Avaricioso"
     assert GreedyPlayer.get_authors()
     assert GreedyPlayer.get_description()
     assert GreedyPlayer.get_icon() == "💰"

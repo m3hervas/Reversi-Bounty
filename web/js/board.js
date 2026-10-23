@@ -141,9 +141,11 @@
       class: "bd",
       dataset: { human: opts.human ? String(opts.human) : "", turn: playable.size ? "human" : "wait" },
     },
-      h("div", { class: "bd__cols", "aria-hidden": "true" }, Array.from(COLS, (ch) => h("span", { text: ch }))),
-      h("div", { class: "bd__rows", "aria-hidden": "true" }, Array.from({ length: SIZE }, (_, i) => h("span", { text: String(i + 1) }))),
+      labels("bd__cols bd__cols--top", Array.from(COLS)),
+      labels("bd__rows bd__rows--left", Array.from({ length: SIZE }, (_, i) => String(i + 1))),
       h("div", { class: "bd__frame" }, grid),
+      labels("bd__rows bd__rows--right", Array.from({ length: SIZE }, (_, i) => String(i + 1))),
+      labels("bd__cols bd__cols--bottom", Array.from(COLS)),
     );
     container.replaceChildren(root);
     container.dataset.focus = focusKey;
@@ -151,6 +153,11 @@
       const target = grid.querySelector('[tabindex="0"]');
       if (target) target.focus({ preventScroll: true });
     }
+  }
+
+  /* Una fila (o columna) de coordenadas: decorativa, los lectores de pantalla usan el nombre de cada casilla. */
+  function labels(className, texts) {
+    return h("div", { class: className, "aria-hidden": "true" }, texts.map((text) => h("span", { text: text })));
   }
 
   /* Flechas para moverse por el tablero (Intro o espacio pulsan la casilla: son botones). */

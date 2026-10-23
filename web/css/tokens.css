@@ -44,13 +44,14 @@
   --hint: rgba(255, 255, 255, 0.36);
 
   /* Fichas: el degradado radial y el canto oscuro les dan grosor. */
-  --disc-black: radial-gradient(circle at 34% 28%, #55534f 0%, #1b1a18 46%, #0b0b0a 100%);
-  --disc-white: radial-gradient(circle at 34% 28%, #ffffff 0%, #f1ede3 44%, #cfc8b8 100%);
+  --disc-black: radial-gradient(circle at 50% 36%, #4d4b47 0%, #1d1c1a 50%, #0b0b0a 100%);
+  --disc-white: radial-gradient(circle at 50% 36%, #ffffff 0%, #f3efe6 48%, #d3ccbc 100%);
 
   /* ------------------------------------------------------- sombras */
   --shadow-1: 0 1px 0 rgba(22, 21, 19, 0.03), 0 1px 3px rgba(22, 21, 19, 0.06);
   --shadow-2: 0 18px 40px -20px rgba(22, 21, 19, 0.35);
-  --shadow-board: 0 34px 60px -30px rgba(10, 34, 25, 0.6), 0 2px 0 rgba(255, 255, 255, 0.4) inset;
+  --shadow-board: 0 26px 46px -30px rgba(10, 34, 25, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  --bd-side: 20px; /* lo que ocupan las coordenadas a cada lado del tablero */
   --shadow-pop: 0 24px 48px -16px rgba(22, 21, 19, 0.32), 0 0 0 1px var(--rule);
 
   /* ------------------------------------------------------ tipografía */
@@ -97,7 +98,7 @@
     --felt-frame: #0b2c21;
     --shadow-1: 0 1px 0 rgba(0, 0, 0, 0.3);
     --shadow-2: 0 18px 40px -18px rgba(0, 0, 0, 0.7);
-    --shadow-board: 0 34px 60px -26px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+    --shadow-board: 0 26px 46px -28px rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
     --shadow-pop: 0 24px 48px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--rule-2);
   }
 }
@@ -126,6 +127,6 @@
   --felt-frame: #0b2c21;
   --shadow-1: 0 1px 0 rgba(0, 0, 0, 0.3);
   --shadow-2: 0 18px 40px -18px rgba(0, 0, 0, 0.7);
-  --shadow-board: 0 34px 60px -26px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  --shadow-board: 0 26px 46px -28px rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
   --shadow-pop: 0 24px 48px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--rule-2);
 }

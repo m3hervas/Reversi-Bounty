@@ -5,23 +5,30 @@
 
 .bd {
   --pad: clamp(5px, 1.9cqi, 11px);
+  --lab: 16px;
   display: grid;
-  grid-template-columns: 16px minmax(0, 1fr);
-  grid-template-rows: 16px auto;
-  gap: 6px;
+  grid-template-columns: var(--lab) minmax(0, 1fr) var(--lab);
+  grid-template-rows: var(--lab) auto var(--lab);
+  gap: 4px;
   width: 100%;
   container-type: inline-size;
 }
 
-/* Coordenadas: letras arriba, números a la izquierda, como en docs/reglas.md. */
+/* Coordenadas: letras arriba y abajo, números a izquierda y derecha, como en docs/reglas.md. Van
+ * por los cuatro lados para que el tablero quede centrado y simétrico. */
 .bd__cols, .bd__rows {
   display: grid;
   font: 500 11px/1 var(--font-mono);
   color: var(--ink-3);
+  opacity: 0.85;
   user-select: none; -webkit-user-select: none;
 }
-.bd__cols { grid-column: 2; grid-row: 1; grid-template-columns: repeat(8, 1fr); padding: 0 var(--pad); }
-.bd__rows { grid-column: 1; grid-row: 2; grid-template-rows: repeat(8, 1fr); padding: var(--pad) 0; }
+.bd__cols { grid-column: 2; grid-template-columns: repeat(8, 1fr); padding: 0 var(--pad); }
+.bd__cols--top { grid-row: 1; }
+.bd__cols--bottom { grid-row: 3; }
+.bd__rows { grid-row: 2; grid-template-rows: repeat(8, 1fr); padding: var(--pad) 0; }
+.bd__rows--left { grid-column: 1; }
+.bd__rows--right { grid-column: 3; }
 .bd__cols span, .bd__rows span { display: grid; place-items: center; }
 
 .bd__frame {
@@ -42,6 +49,13 @@
   background: var(--felt-line);
   border-radius: clamp(4px, 1.2cqi, 8px);
   overflow: hidden;
+}
+/* Una viñeta suave y centrada: el paño es un poco más claro en el medio, igual por los cuatro lados. */
+.bd__grid::before {
+  content: "";
+  position: absolute; inset: 0; z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.05) 0%, transparent 55%, rgba(0, 0, 0, 0.16) 100%);
 }
 /* Los cuatro puntos de un tablero de Othello de verdad (en las esquinas de c3, f3, c6, f6). */
 .bd__grid::after {
@@ -145,8 +159,8 @@
   pointer-events: none;
   filter: drop-shadow(0 2px 1.5px rgba(0, 0, 0, 0.45));
 }
-.disc[data-color="1"] { background: var(--disc-black); box-shadow: inset 0 -1.5px 2px rgba(255, 255, 255, 0.07); }
-.disc[data-color="-1"] { background: var(--disc-white); box-shadow: inset 0 -1.5px 3px rgba(0, 0, 0, 0.16); }
+.disc[data-color="1"] { background: var(--disc-black); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07), inset 0 -2px 3px rgba(255, 255, 255, 0.05); }
+.disc[data-color="-1"] { background: var(--disc-white); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08), inset 0 -2px 4px rgba(0, 0, 0, 0.12); }
 
 /* Colocar: cae desde un poco más arriba y asienta. */
 .disc[data-anim="place"] { animation: place 340ms var(--ease-out) both; }

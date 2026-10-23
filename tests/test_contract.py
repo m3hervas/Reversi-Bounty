@@ -35,7 +35,7 @@ def test_un_bot_correcto_cumple_el_contrato_sin_pruebas_propias():
     class PrimeraJugada(Player):
         @classmethod
         def get_name(cls) -> str:
-            return "primera"
+            return "Primera"
 
         @classmethod
         def get_authors(cls) -> list[str]:
@@ -55,8 +55,33 @@ def test_un_bot_correcto_cumple_el_contrato_sin_pruebas_propias():
     verificar_contrato(PrimeraJugada)
 
 
+def test_el_nombre_de_un_bot_empieza_por_mayuscula():
+    class EnMinuscula(Player):
+        @classmethod
+        def get_name(cls) -> str:
+            return "minuscula"
+
+        @classmethod
+        def get_authors(cls) -> list[str]:
+            return ["Tests"]
+
+        @classmethod
+        def get_description(cls) -> str:
+            return "Un bot correcto cuyo nombre no empieza por mayúscula."
+
+        @classmethod
+        def get_icon(cls) -> str:
+            return "🔡"
+
+        def choose_move(self, state: GameState) -> Move:
+            return legal_moves(state)[0]
+
+    with pytest.raises(AssertionError, match="mayúscula"):
+        verificar_contrato(EnMinuscula)
+
+
 def test_el_mensaje_de_error_explica_que_hizo_mal_el_bot():
     from bots_rotos import JugadaIlegal
 
-    with pytest.raises(AssertionError, match="jugadailegal.*ilegal"):
+    with pytest.raises(AssertionError, match="JugadaIlegal.*ilegal"):
         verificar_contrato(JugadaIlegal)

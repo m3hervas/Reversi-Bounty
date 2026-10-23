@@ -15,7 +15,7 @@ class _Base(Player):
 
     @classmethod
     def get_name(cls) -> str:
-        return cls.__name__.lower()
+        return cls.__name__
 
     @classmethod
     def get_authors(cls) -> list[str]:

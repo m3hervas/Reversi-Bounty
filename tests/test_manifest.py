@@ -65,7 +65,7 @@ def lista(*entradas: str) -> str:
 
 def test_el_registro_real_carga_y_todos_son_player():
     players = load_players()
-    assert "aleatorio" in players
+    assert "Aleatorio" in players
     assert all(issubclass(cls, Player) for cls in players.values())
 
 
@@ -89,7 +89,7 @@ def test_carga_una_clase_de_un_modulo_importable(tmp_path):
         tmp_path,
         builtin=lista("{module: reversibounty.bots.random_player, class: RandomPlayer}"),
     )
-    assert list(load_players(base)) == ["aleatorio"]
+    assert list(load_players(base)) == ["Aleatorio"]
 
 
 def test_primero_los_de_referencia_y_luego_los_enviados(tmp_path):
@@ -99,7 +99,7 @@ def test_primero_los_de_referencia_y_luego_los_enviados(tmp_path):
         custom=lista("{file: mi_bot.py, class: MiBot}"),
         mi_bot=bot(),
     )
-    assert list(load_players(base)) == ["aleatorio", "mi-bot"]
+    assert list(load_players(base)) == ["Aleatorio", "mi-bot"]
 
 
 def test_una_lista_vacia_es_valida(tmp_path):
@@ -206,9 +206,9 @@ def test_un_nombre_ya_usado_por_uno_de_referencia_se_rechaza(tmp_path):
         tmp_path,
         builtin=lista("{module: reversibounty.bots.random_player, class: RandomPlayer}"),
         custom=lista("{file: mi_bot.py, class: MiBot}"),
-        mi_bot=bot(nombre="aleatorio"),
+        mi_bot=bot(nombre="Aleatorio"),
     )
-    with pytest.raises(ManifestError, match="'aleatorio' ya lo usa"):
+    with pytest.raises(ManifestError, match="'Aleatorio' ya lo usa"):
         load_players(base)
 
 

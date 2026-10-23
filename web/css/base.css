@@ -103,7 +103,8 @@ h1, h2 { margin: 0; }
 html[data-view="inicio"] .view[data-view="inicio"],
 html[data-view="jugar"] .view[data-view="jugar"],
 html[data-view="reglas"] .view[data-view="reglas"],
-html[data-view="bots"] .view[data-view="bots"] { display: block; animation: view-in 260ms var(--ease-out); }
+html[data-view="bots"] .view[data-view="bots"],
+html[data-view="anadir"] .view[data-view="anadir"] { display: block; animation: view-in 260ms var(--ease-out); }
 @keyframes view-in { from { opacity: 0; transform: translateY(8px); } }
 
 /* ============================================================ cabecera */
@@ -336,7 +337,7 @@ html[data-view="bots"] .view[data-view="bots"] { display: block; animation: view
   .engine-chip { width: 32px; height: 32px; padding: 0; justify-content: center; }
   .engine-chip__text { display: none; }
   .nav { order: 3; flex: 1 0 100%; justify-content: space-between; margin: 2px 0 0; gap: 0; }
-  .nav a { flex: 1; justify-content: center; padding: 0 6px; min-height: 42px; }
+  .nav a { flex: 1 1 auto; justify-content: center; padding: 0 6px; min-height: 42px; white-space: nowrap; font-size: 14.5px; }
   .nav a::after { left: 22%; right: 22%; bottom: 5px; }
 }
 

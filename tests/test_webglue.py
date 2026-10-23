@@ -95,9 +95,9 @@ def con_bot(monkeypatch, cls: type[Player]) -> None:
 
 def test_init_devuelve_los_jugadores_del_registro():
     jugadores = ok("init", str(PLAYERS_DIR))
-    aleatorio = next(j for j in jugadores if j["name"] == "aleatorio")
+    aleatorio = next(j for j in jugadores if j["name"] == "Aleatorio")
     assert aleatorio == {
-        "name": "aleatorio",
+        "name": "Aleatorio",
         "icon": RandomPlayer.get_icon(),
         "authors": RandomPlayer.get_authors(),
         "description": RandomPlayer.get_description(),
@@ -115,7 +115,7 @@ def test_la_lista_de_jugadores_sale_del_registro(tmp_path):
         "players:\n  - {module: reversibounty.bots.random_player, class: RandomPlayer}\n",
         encoding="utf-8",
     )
-    assert [j["name"] for j in ok("init", str(tmp_path))] == ["aleatorio"]
+    assert [j["name"] for j in ok("init", str(tmp_path))] == ["Aleatorio"]
 
 
 def test_un_registro_roto_da_un_error_claro(tmp_path):
@@ -236,12 +236,12 @@ def test_un_argumento_que_no_es_texto_da_un_error_claro():
 @pytest.mark.parametrize(
     ("args", "mensaje"),
     [
-        (("no-existe", WHITE, 1), "aleatorio"),
+        (("no-existe", WHITE, 1), "Aleatorio"),
         ((3, WHITE, 1), "ningún jugador"),
-        (("aleatorio", 0, 1), "bot_color"),
-        (("aleatorio", True, 1), "bot_color"),
-        (("aleatorio", WHITE, "1"), "seed"),
-        (("aleatorio", WHITE), "espera 3 argumentos"),
+        (("Aleatorio", 0, 1), "bot_color"),
+        (("Aleatorio", True, 1), "bot_color"),
+        (("Aleatorio", WHITE, "1"), "seed"),
+        (("Aleatorio", WHITE), "espera 3 argumentos"),
     ],
 )
 def test_start_game_rechaza_entradas_malas(args, mensaje):
@@ -253,7 +253,7 @@ def test_bot_move_sin_partida_da_un_error_claro():
 
 
 def test_bot_move_fuera_de_su_turno_da_un_error_claro():
-    ok("start_game", "aleatorio", WHITE, 1)
+    ok("start_game", "Aleatorio", WHITE, 1)
     assert "turno" in error("bot_move", initial_state().to_dict())  # mueven negras
 
 
@@ -269,13 +269,13 @@ def test_un_fallo_inesperado_tambien_vuelve_como_json(monkeypatch):
 
 
 def test_start_game_crea_el_bot_y_devuelve_su_identidad():
-    partida = ok("start_game", "aleatorio", WHITE, 5)
-    assert partida["bot"]["name"] == "aleatorio"
+    partida = ok("start_game", "Aleatorio", WHITE, 5)
+    assert partida["bot"]["name"] == "Aleatorio"
     assert partida["bot_color"] == WHITE
 
 
 def test_bot_move_juega_una_jugada_legal():
-    ok("start_game", "aleatorio", BLACK, 5)
+    ok("start_game", "Aleatorio", BLACK, 5)
     vista = ok("bot_move", initial_state().to_dict())
     assert vista["move"] in [list(m) for m in legal_moves(initial_state())]
     assert vista["mover"] == BLACK and vista["turn"] == WHITE
@@ -284,9 +284,9 @@ def test_bot_move_juega_una_jugada_legal():
 
 def test_con_la_misma_semilla_el_bot_repite_sus_jugadas():
     """Lo que hace la página al recargar: misma semilla, mismas decisiones."""
-    ok("start_game", "aleatorio", BLACK, 9)
+    ok("start_game", "Aleatorio", BLACK, 9)
     primera = ok("bot_move", initial_state().to_dict())["move"]
-    ok("start_game", "aleatorio", BLACK, 9)
+    ok("start_game", "Aleatorio", BLACK, 9)
     assert ok("bot_move", initial_state().to_dict())["move"] == primera
 
 
@@ -327,7 +327,7 @@ def test_una_partida_completa_a_traves_del_puente_es_la_de_play_game(color_bot):
     :func:`play_game` y los mismos jugadores: el puente no añade ni cambia ninguna regla.
     """
     semilla = 2026
-    ok("start_game", "aleatorio", color_bot, semilla)
+    ok("start_game", "Aleatorio", color_bot, semilla)
     vista = ok("new_game")
     jugadas = []
     while not vista["over"]:
