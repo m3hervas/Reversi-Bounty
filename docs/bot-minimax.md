@@ -1,6 +1,6 @@
-# El bot minimax (🧠 zeff-minimax)
+# El bot minimax (👨‍🍳 Zeff minimax)
 
-Esta página explica cómo decide su jugada el bot `zeff-minimax`, con el detalle suficiente
+Esta página explica cómo decide su jugada el bot `Zeff minimax`, con el detalle suficiente
 para que alguien ajeno al equipo pueda reimplementarlo. El código está en
 `src/reversibounty/bots/zeff_minmax.py`.
 
@@ -70,7 +70,7 @@ profundidad media que alcanza en cada fase de la partida, así que no doy cifras
 
 ## Qué hay que escribir para reimplementarlo
 
-Un `Player` con las cuatro funciones de identidad (nombre `zeff-minimax`, icono 🧠, autor
+Un `Player` con las cuatro funciones de identidad (nombre `Zeff minimax`, icono 👨‍🍳, autor
 y una descripción), un `create(seed)` que guarde un `random.Random(seed)`, y un
 `choose_move` con los pasos de arriba. La evaluación y los valores (`DEFAULT_TIME_LIMIT = 0.5`,
 `MAX_DEPTH = 8`, `MOBILITY_WEIGHT = 5`) son los de las constantes al principio del archivo.
@@ -80,7 +80,7 @@ y una descripción), un `create(seed)` que guarde un `random.Random(seed)`, y un
 El script de medición compara a este bot con los demás en los dos sentidos:
 
 ```bash
-python -m reversibounty.benchmark --partidas 40 --jugadores aleatorio avaricioso zeff-minimax
+python -m reversibounty.benchmark --partidas 40 --jugadores aleatorio avaricioso "Zeff minimax"
 ```
 
 ## Referencia
