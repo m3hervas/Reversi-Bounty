@@ -37,3 +37,29 @@ def test_publica_solo_la_carpeta_web():
 def test_termina_con_el_paso_de_despliegue():
     assert "deploy-pages" in PASOS[-1]["uses"]
     assert PASOS[-1]["id"] == "deployment"
+
+
+# -- Paso 5.4: volver a publicar cuando hay clasificación nueva ------------ #
+
+
+def test_se_vuelve_a_publicar_al_terminar_el_torneo():
+    # Un commit hecho por un workflow no genera "push": hay que escuchar al torneo.
+    disparadores = FLUJO.get("on") or FLUJO[True]
+    torneo = yaml.safe_load((RAIZ / ".github" / "workflows" / "torneo.yml").read_text("utf-8"))
+    assert disparadores["workflow_run"]["workflows"] == [torneo["name"]]
+    assert disparadores["workflow_run"]["types"] == ["completed"]
+
+
+def test_no_publica_si_el_torneo_fallo():
+    condicion = FLUJO["jobs"]["deploy"]["if"]
+    assert "workflow_run.conclusion == 'success'" in condicion
+    assert "github.event_name != 'workflow_run'" in condicion  # push y a mano, siempre
+
+
+def test_copia_la_clasificacion_de_la_rama_marcador_antes_de_subir_la_web():
+    ordenes = [paso.get("run", paso.get("uses", "")) for paso in PASOS]
+    copiar = next(i for i, o in enumerate(ordenes) if "web/leaderboard.json" in o)
+    subir = next(i for i, o in enumerate(ordenes) if "upload-pages-artifact" in o)
+    assert copiar < subir
+    assert "origin marcador" in ordenes[copiar]
+    assert "else" in ordenes[copiar]  # sin rama marcador todavía, la web se publica igual

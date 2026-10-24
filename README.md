@@ -94,6 +94,10 @@ Imprime la clasificación en el terminal y la guarda en `results/leaderboard.jso
 semilla, el resultado es siempre el mismo. Un bot que falla, hace trampas o se cuelga pierde
 solo sus propias partidas, y el torneo sigue hasta el final.
 
+Además, GitHub juega el torneo **cada noche** de forma automática y guarda la clasificación en la
+rama [`marcador`](https://github.com/m3hervas/Reversi-Bounty/tree/marcador). También se puede
+lanzar a mano desde **Actions** → **Torneo** → **Run workflow**.
+
 ## Escribir un bot
 
 Un bot es una subclase de `Player` que declara su nombre, autores, descripción y un emoji, e

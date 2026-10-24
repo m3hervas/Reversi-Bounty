@@ -1,0 +1,62 @@
+name: Torneo
+
+# Juega el torneo cada noche (paso 5.4) y también a mano desde la pestaña Actions.
+#
+# La clasificación se guarda en la rama "marcador", que solo contiene
+# results/leaderboard.json, y no en main: main exige un pull request aprobado
+# para cualquier cambio, así que un workflow no puede escribir en ella.
+#
+# Un commit hecho por un workflow no genera ningún evento push, así que Pages
+# no se enteraría de la clasificación nueva. Por eso pages.yml escucha además
+# a este workflow con "workflow_run": el nombre "Torneo" debe coincidir.
+on:
+  schedule:
+    - cron: "17 3 * * *"  # cada día a las 03:17 UTC (fuera de la hora en punto, menos cola)
+  workflow_dispatch:
+
+# Solo puede escribir contenido del repositorio, y solo hace push a "marcador".
+permissions:
+  contents: write
+
+# Un torneo cada vez: si se lanza otro a mano mientras corre el nocturno, espera.
+concurrency:
+  group: torneo
+  cancel-in-progress: false
+
+jobs:
+  torneo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Instalar
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+      - name: Jugar el torneo
+        run: reversi-tournament --salida "$RUNNER_TEMP/leaderboard.json"
+      - name: Guardar la clasificación en la rama marcador
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin marcador > /dev/null; then
+            git fetch --depth=1 origin marcador
+            git switch --force -C marcador FETCH_HEAD
+          else
+            git switch --orphan marcador  # la primera vez: una rama vacía, sin el código
+          fi
+          mkdir -p results
+          cp "$RUNNER_TEMP/leaderboard.json" results/leaderboard.json
+          # -f porque results/ está en .gitignore (en main no se debe subir a mano).
+          git add -f results/leaderboard.json
+          if git diff --cached --quiet; then
+            echo "La clasificación no ha cambiado."
+            exit 0
+          fi
+          git commit -m "Clasificación del torneo ($(date -u +%Y-%m-%d))"
+          git push origin marcador

@@ -24,6 +24,38 @@ ejecución regenera el archivo desde cero.
 | `--salida RUTA` | Dónde guardar la clasificación. | `results/leaderboard.json` |
 | `--jugadores DIR` | Carpeta con `builtin/` y `custom/`. | `players/` del repositorio |
 
+## Ejecución automática
+
+El workflow `.github/workflows/torneo.yml` juega el torneo **cada noche**, a las 03:17 UTC. También
+se puede lanzar a mano desde la pestaña **Actions** de GitHub: workflow **Torneo** → **Run
+workflow**. Así, un bot fusionado hoy aparece en la clasificación al día siguiente sin que nadie
+haga nada.
+
+```text
+main ── cada noche ──▶ workflow Torneo ──commit──▶ rama marcador
+                                     │
+                                     └── al terminar (workflow_run) ──▶ workflow Pages
+                                                                          copia leaderboard.json
+                                                                          y publica la web
+```
+
+**La clasificación se guarda en la rama `marcador`, no en `main`.** `main` exige un pull request
+aprobado para cualquier cambio, así que un workflow no puede escribir en ella. La rama `marcador`
+solo contiene `results/leaderboard.json`, con un commit por cada torneo: su historial es el
+historial de la clasificación. Se crea sola la primera vez que se ejecuta el torneo, y **nunca
+se fusiona en `main`**.
+
+!!! note "Por qué Pages escucha al torneo"
+    Un commit hecho por un workflow no genera ningún evento `push`, así que el workflow que
+    publica la web no se enteraría de que hay una clasificación nueva. Por eso `pages.yml` se
+    lanza también cuando termina el workflow del torneo (`workflow_run`), y solo si ha terminado
+    bien. Al publicar, copia el archivo de la rama `marcador` a `web/leaderboard.json`.
+
+!!! warning "GitHub pausa los workflows programados en repositorios inactivos"
+    Si nadie hace ningún commit en el repositorio durante 60 días, GitHub desactiva los
+    workflows con `schedule`. Se vuelven a activar desde la pestaña **Actions**. Además, la hora
+    programada es orientativa: en momentos de mucha carga, GitHub puede retrasar la ejecución.
+
 ## Puntos y desempates
 
 Una victoria vale **1 punto**, un empate **0,5** y una derrota **0**. Si dos jugadores empatan a
