@@ -360,3 +360,66 @@ def test_las_fichas_volteadas_son_las_que_calcula_el_motor():
             respuesta = ok("play_move", state.to_dict(), list(jugada))
             esperadas = sorted(flips(state.board, state.player, jugada))
             assert sorted(map(tuple, respuesta["flipped"])) == esperadas
+
+
+# -- Cada lado, una persona o un bot: start_match -------------------------- #
+
+
+def test_start_match_crea_los_bots_de_cada_lado_y_deja_a_none_para_las_personas():
+    partida = ok("start_match", "Aleatorio", None, 3)
+    assert partida["black"]["name"] == "Aleatorio"
+    assert partida["white"] is None
+
+
+def test_start_match_con_dos_personas_no_crea_ningun_bot():
+    assert ok("start_match", None, None, 1) == {"black": None, "white": None}
+    assert "turno" in error("bot_move", initial_state().to_dict())
+
+
+def test_con_una_persona_el_bot_solo_mueve_en_su_turno():
+    ok("start_match", None, "Aleatorio", 1)  # las negras son una persona
+    assert "turno" in error("bot_move", initial_state().to_dict())
+    vista = ok("play_move", initial_state().to_dict(), [2, 3])
+    assert ok("bot_move", vista["state"])["move"] is not None
+
+
+def test_start_match_rechaza_nombres_que_no_existen():
+    assert "ningún jugador" in error("start_match", "no-existe", None, 1)
+    assert "ningún jugador" in error("start_match", None, "no-existe", 1)
+
+
+def test_dos_bots_juegan_una_partida_entera_y_se_repite_con_la_misma_semilla():
+    def partida(semilla):
+        ok("start_match", "Aleatorio", "Avaricioso", semilla)
+        vista = ok("new_game")
+        jugadas = []
+        while not vista["over"]:
+            vista = ok("bot_move", vista["state"])
+            jugadas.append(tuple(vista["move"]))
+        return jugadas, vista
+
+    jugadas, vista = partida(7)
+    assert sum(vista["score"]) > 4 and vista["winner"] in (BLACK, WHITE, 0)
+    assert partida(7)[0] == jugadas
+
+
+def test_dos_bots_iguales_no_juegan_la_misma_partida_porque_cada_uno_tiene_su_semilla():
+    ok("start_match", "Aleatorio", "Aleatorio", 11)
+    vista = ok("new_game")
+    jugadas = []
+    while not vista["over"]:
+        vista = ok("bot_move", vista["state"])
+        jugadas.append(tuple(vista["move"]))
+    ok("start_match", "Aleatorio", "Aleatorio", 11)
+    # con la misma semilla en los dos lados la partida sería simétrica: aquí no lo es
+    assert len(set(jugadas)) > 4
+
+
+def test_si_el_bot_de_las_blancas_se_rompe_ganan_las_negras(monkeypatch):
+    roto = BOTS_ROTOS[0]
+    con_bot(monkeypatch, roto)
+    ok("start_match", "Aleatorio", roto.get_name(), 1)
+    vista = ok("play_move", initial_state().to_dict(), [2, 3])
+    vista = ok("bot_move", vista["state"])
+    assert vista["over"] is True and vista["winner"] == BLACK
+    assert vista["forfeit"].startswith(roto.get_name())

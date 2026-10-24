@@ -3,85 +3,83 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Reversi Bounty</title>
-  <meta name="description" content="Juega al Reversi contra bots escritos en Python. El motor del juego se ejecuta en tu navegador.">
+  <title>Reversi Bounty · Grand Line</title>
+  <meta name="description" content="Reversi en alta mar: sombreros de paja contra calaveras, rivales con cartel de recompensa y un motor de Python que se ejecuta en tu navegador.">
   <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3efe6">
-  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121210">
+  <meta name="theme-color" content="#0d2a47">
   <script>
-    /* Antes de pintar nada: tema guardado y apartado de la dirección (sin parpadeo), y un
-     * aviso visible para cualquier error que nadie haya capturado. Una web estática no
-     * tiene registros en un servidor: si un error no se enseña, nadie se entera. */
+    /* Antes de pintar: tema guardado, vista inicial y red de seguridad para errores sin capturar. */
     (function () {
       var d = document.documentElement;
-      d.classList.add("js");
-      try {
-        var t = localStorage.getItem("rb-tema");
-        if (t === "light" || t === "dark") d.dataset.theme = t;
-      } catch (e) {}
+      var t = null;
+      try { t = localStorage.getItem("bb-tema"); } catch (e) {}
+      if (t !== "light" && t !== "dark") t = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      d.dataset.theme = t;
       var m = /^#\/?([a-z-]*)/.exec(location.hash);
       d.dataset.view = m && ["jugar", "reglas", "bots", "anadir"].indexOf(m[1]) >= 0 ? m[1] : "inicio";
-
       var RB = (window.RB = window.RB || {});
       RB.reportError = function (err) {
         var text = err && err.message ? err.message : String(err || "Error desconocido");
         if (window.console) console.error(err);
-        var box = document.getElementById("fatal");
-        if (!box) return;
-        document.getElementById("fatal-text").textContent = text;
-        box.hidden = false;
+        var box = document.getElementById("fatal"); if (!box) return;
+        document.getElementById("fatal-text").textContent = text; box.hidden = false;
       };
       window.addEventListener("error", function (e) { RB.reportError(e.error || e.message); });
       window.addEventListener("unhandledrejection", function (e) { RB.reportError(e.reason); });
     })();
   </script>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e6b51'/%3E%3Ccircle cx='12.5' cy='16' r='7' fill='%23161513'/%3E%3Ccircle cx='19.5' cy='16' r='7' fill='%23f6f3ec'/%3E%3C/svg%3E">
-  <!-- Python (Pyodide) se descarga de este CDN: abrir la conexión ya, antes de que arranque el worker. -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='11' fill='%230d2a47'/%3E%3Cellipse cx='24' cy='31' rx='20' ry='8' fill='%23ffc928'/%3E%3Cpath d='M11 30C11 12 37 12 37 30Z' fill='%23ffc928'/%3E%3Cpath d='M11.4 26c6 3 19.200 3 25.200 0l.4 4c-8 3.400-18 3.400-26 0z' fill='%23d8302a'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
-  <!-- Cache-buster: al cambiar un .css o un .js, sube su ?v= para que nadie vea la versión vieja. -->
-  <link rel="stylesheet" href="css/tokens.css?v=3">
-  <link rel="stylesheet" href="css/base.css?v=5">
-  <link rel="stylesheet" href="css/board.css?v=5">
-  <link rel="stylesheet" href="css/views.css?v=20">
-  <link rel="stylesheet" href="css/jugar.css?v=6">
-  <link rel="stylesheet" href="css/avatar.css?v=1">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Rye&family=Titan+One&display=swap">
+  <link rel="stylesheet" href="css/theme.css?v=1792843182">
+  <link rel="stylesheet" href="css/pages.css?v=1792843182">
+  <link rel="stylesheet" href="css/play.css?v=1792843182">
 </head>
 <body>
   <a class="skip" href="#main">Saltar al contenido</a>
-
   <div class="fatal" id="fatal" role="alert" hidden>
     <p><strong>Algo ha fallado.</strong> <span id="fatal-text"></span></p>
-    <button class="btn btn--small btn--light" type="button" onclick="location.reload()">Recargar</button>
+    <button class="btn btn--sm btn--gold" type="button" onclick="location.reload()">Recargar</button>
   </div>
 
+  <!-- ===== Símbolos reutilizables ===== -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="hat" viewBox="0 0 64 48">
+        <ellipse cx="32" cy="34" rx="30" ry="10" fill="#ffc928" stroke="#2b1a0f" stroke-width="3"/>
+        <path d="M13 32C11 8 53 8 51 32Z" fill="#ffd95a" stroke="#2b1a0f" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M13.600 26c9 4 28 4 36.800 0l.6 6c-10 4.500-27 4.500-38 0z" fill="#d8302a" stroke="#2b1a0f" stroke-width="2.600" stroke-linejoin="round"/>
+        <path d="M18 40c9 3 19 3 28 0" stroke="#b97a08" stroke-width="2" fill="none" stroke-linecap="round" opacity=".6"/>
+      </symbol>
+      <symbol id="wave" viewBox="0 0 2400 120" preserveAspectRatio="none">
+        <path d="M0 60Q150 8 300 60T600 60T900 60T1200 60T1500 60T1800 60T2100 60T2400 60V120H0Z"/>
+      </symbol>
+    </defs>
+  </svg>
+
   <header class="topbar">
-    <div class="topbar__inner">
+    <div class="topbar__in">
       <a class="brand" href="#/" aria-label="Reversi Bounty, inicio">
-        <span class="brand__mark" aria-hidden="true"><i></i><i></i></span>
-        <span class="brand__name">Reversi <span>Bounty</span></span>
+        <svg viewBox="0 0 64 48" aria-hidden="true"><use href="#hat"/></svg>
+        <span>Reversi <b>Bounty</b></span>
       </a>
-      <!-- Cada apartado es un enlace #/nombre y una <section data-view="nombre">; ver js/app.js. -->
       <nav class="nav" aria-label="Apartados">
-        <a href="#/jugar" data-route="jugar">Jugar</a>
-        <a href="#/reglas" data-route="reglas">Reglas</a>
-        <a href="#/bots" data-route="bots">Bots</a>
-        <a href="#/anadir" data-route="anadir">Añade tu bot</a>
+        <a href="#/jugar" data-route="jugar">Lucha</a>
+        <a href="#/bots" data-route="bots">Rivales</a>
+        <a href="#/reglas" data-route="reglas">Leyes del mar</a>
+        <a href="#/anadir" data-route="anadir">Añade tu Bot</a>
       </nav>
       <div class="tools">
-        <span class="engine-chip" id="engine-chip" data-state="loading" title="El motor del juego es el paquete Python del proyecto, ejecutándose en tu navegador">
-          <span class="engine-chip__dot" aria-hidden="true"></span>
-          <span class="engine-chip__text" id="engine-chip-text">Python…</span>
-        </span>
-        <button class="icon-btn" type="button" id="sound-btn" aria-pressed="true" aria-label="Silenciar los sonidos" data-on="true">
-          <svg class="i-sound-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.6l4.4 3.8V5.7L7.6 9.5H4z"/><path d="M15.6 9.2a4 4 0 0 1 0 5.6M18.2 6.6a7.6 7.6 0 0 1 0 10.8"/></svg>
-          <svg class="i-sound-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.6l4.4 3.8V5.7L7.6 9.5H4z"/><path d="M16 9.7l4.6 4.6M20.6 9.7L16 14.3"/></svg>
+        <span class="chip" id="engine-chip" data-state="loading" title="El motor es el paquete Python del proyecto, ejecutándose en tu navegador"><i></i><span id="engine-text">Python…</span></span>
+        <button class="icon-btn" type="button" id="sound-btn" data-on="true" aria-pressed="true" aria-label="Silenciar los sonidos">
+          <svg viewBox="0 0 24 24" class="i-on" aria-hidden="true"><path d="M4 9.500v5h3.600l4.400 3.800V5.700L7.600 9.500H4z"/><path d="M15.600 9.200a4 4 0 0 1 0 5.600M18.200 6.600a7.600 7.600 0 0 1 0 10.800"/></svg>
+          <svg viewBox="0 0 24 24" class="i-off" aria-hidden="true"><path d="M4 9.500v5h3.600l4.400 3.800V5.700L7.600 9.500H4z"/><path d="M16 9.700l4.600 4.600M20.600 9.700L16 14.300"/></svg>
         </button>
-        <button class="icon-btn" type="button" id="theme-btn" aria-label="Cambiar a tema oscuro">
-          <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
-          <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>
+        <button class="icon-btn" type="button" id="theme-btn" aria-label="Cambiar entre día y noche">
+          <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.500A8 8 0 0 1 9.500 4a8 8 0 1 0 10.500 10.500z"/></svg>
+          <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.500v2M12 19.500v2M2.500 12h2M19.500 12h2M5.300 5.300l1.400 1.400M17.300 17.300l1.400 1.400M5.300 18.700l1.400-1.400M17.300 6.700l1.400-1.400"/></svg>
         </button>
       </div>
     </div>
@@ -89,430 +87,327 @@
 
   <main id="main" tabindex="-1">
 
-    <!-- ============================================================= INICIO -->
+    <!-- ============================================================ INICIO -->
     <section class="view" data-view="inicio" aria-labelledby="t-inicio">
-      <div class="wrap hero">
-        <div class="hero__text">
-          <p class="eyebrow">Inteligencia Artificial · CUNEF · 2026/27</p>
-          <h1 class="hero__title display" id="t-inicio" tabindex="-1">
-            <span class="hero__line">Reversi</span>
-            <span class="hero__line hero__line--2">Bounty</span>
-          </h1>
-          <p class="hero__by">Un proyecto de <b>Manuel</b>, <b>Juan Bosco</b> y <b>Marcos</b></p>
-          <p class="lede hero__lede">Juega al Reversi contra bots escritos en Python. No hay que instalar nada: el motor del proyecto se ejecuta aquí mismo, en tu navegador.</p>
-          <div class="hero__cta">
-            <a class="btn btn--primary" href="#/jugar">Jugar una partida
-              <svg class="btn__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5"/></svg>
-            </a>
-            <a class="btn btn--secondary" href="#/reglas">Cómo se juega</a>
+      <div class="hero">
+        <div class="sun" aria-hidden="true"></div>
+        <div class="stars" aria-hidden="true"></div>
+        <i class="cloud cloud--1" aria-hidden="true"></i><i class="cloud cloud--2" aria-hidden="true"></i><i class="cloud cloud--3" aria-hidden="true"></i>
+        <svg class="ship" viewBox="0 0 150 130" aria-hidden="true">
+          <path d="M72 8v84" stroke="#2b1a0f" stroke-width="5" stroke-linecap="round"/>
+          <path d="M72 14c30 6 42 28 40 52-14 6-28 6-40 0z" fill="#fffaf0" stroke="#2b1a0f" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M72 18C46 24 34 40 36 62c12 5 24 5 36 0z" fill="#fff4d6" stroke="#2b1a0f" stroke-width="4" stroke-linejoin="round"/>
+          <use href="#hat" x="76" y="34" width="30" height="22"/>
+          <path d="M72 8l-18 6 18 6z" fill="#d8302a" stroke="#2b1a0f" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M8 90h134c-6 24-24 36-48 36H48C26 126 12 112 8 90z" fill="#c26a2c" stroke="#2b1a0f" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M14 100h122" stroke="#ffc928" stroke-width="5"/>
+          <circle cx="40" cy="110" r="4" fill="#2b1a0f"/><circle cx="68" cy="112" r="4" fill="#2b1a0f"/><circle cx="96" cy="112" r="4" fill="#2b1a0f"/>
+        </svg>
+        <div class="wrap hero__grid">
+          <div class="hero__text">
+            <p class="hero__kicker">IA · CUNEF 2026/27 · Grand Line</p>
+            <h1 class="hero__title" id="t-inicio" tabindex="-1"><span>Reversi</span><span class="l2">Bounty</span></h1>
+            <p class="hero__by">Una aventura de <b>Manuel</b>, <b>Juan Bosco</b> y <b>Marcos</b></p>
+            <p class="hero__lede">Sombreros de paja contra calaveras. Cada rival es un bot de Python con su cartel de recompensa: véncelos y sube tu propia cabeza en el tablón.</p>
+            <div class="hero__cta">
+              <a class="btn" href="#/jugar">¡A luchar!</a>
+              <a class="btn btn--gold" href="#/bots">Ver carteles</a>
+            </div>
+          </div>
+          <div class="coin-stage" aria-hidden="true">
+            <div class="coin"><span class="face face--hat"></span><span class="face face--skull"></span></div>
+            <p class="coin-bubble">¿Sombrero o calavera?</p>
           </div>
         </div>
-        <figure class="hero__figure">
-          <div class="hero__board" id="hero-board"></div>
-          <figcaption class="hero__caption" id="hero-caption"></figcaption>
-        </figure>
+        <div class="waves" aria-hidden="true">
+          <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style="fill:var(--sea-1)"><use href="#wave"/></svg>
+          <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style="fill:var(--sea-2)"><use href="#wave"/></svg>
+        </div>
+      </div>
+
+      <div class="wrap section">
+        <p class="eyebrow">Elige tu rumbo</p>
+        <h2 class="h2">Tres puertos, una sola regla: gana quien tenga más fichas</h2>
+        <div class="adventures">
+          <a class="adv paper" href="#/jugar"><span class="adv__ico" aria-hidden="true">⚓</span><h3>Lucha</h3><p>Una partida contra cualquier rival, o míralos pelear entre ellos.</p><span class="adv__go">Luchar →</span></a>
+          <a class="adv paper" href="#/bots" ><span class="adv__ico" aria-hidden="true">📜</span><h3>Carteles de rivales</h3><p>Quién es cada bot, cómo piensa y cuánto vale su cabeza.</p><span class="adv__go">Ver carteles →</span></a>
+          <a class="adv paper" href="#/reglas"><span class="adv__ico" aria-hidden="true">🧭</span><h3>Leyes del mar</h3><p>Las cuatro reglas del Reversi y cinco consejos de lobo de mar.</p><span class="adv__go">Aprender →</span></a>
+        </div>
+      </div>
+
+      <div class="wrap section">
+        <div class="mine">
+          <div class="mine__poster">
+            <div class="wanted paper" id="my-poster">
+              <div class="wanted__top">SE BUSCA</div>
+              <div class="wanted__pic sel" style="--c:#e0372e">
+                <i class="sel__floor"></i><img class="sel__char" src="img/luffy.png?v=2" alt="" width="308" height="547" decoding="async"><i class="sel__shine"></i><span class="sel__tag">👤</span>
+                <span class="stamp" id="my-stamp">¡Subida!</span>
+              </div>
+              <div class="wanted__sub">VIVO O DERROTADO</div>
+              <div class="wanted__name" id="my-name">Capitán Anónimo</div>
+              <div class="wanted__money"><span id="my-berries">0</span><small>BERRIES</small></div>
+              <div class="wanted__foot">Solo sube ganando</div>
+            </div>
+          </div>
+          <div class="mine__side">
+            <div>
+              <p class="eyebrow">Tu cartel</p>
+              <h2 class="h2">Cada victoria sube tu recompensa</h2>
+              <p class="lede">Se guarda en este navegador. Cuanto más temible el rival, más berries ganas: vencer a Zeff vale mucho más que a quien juega al azar.</p>
+            </div>
+            <div class="field"><label for="name-in">Nombre de pirata</label><input id="name-in" maxlength="22" autocomplete="off" placeholder="¿Cómo te llaman en el mar?"></div>
+            <div class="rank">
+              <div class="rank__txt" id="rank-txt">Grumete</div>
+              <div class="rank__bar" role="progressbar" aria-label="Progreso hacia el siguiente rango" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="rank-bar"><i></i></div>
+              <div class="rank__txt" style="font-weight:700;color:var(--ink-soft)" id="rank-next"></div>
+            </div>
+            <div class="stats" aria-label="Tu historial">
+              <div class="stat"><b id="st-w">0</b><span>Victorias</span></div>
+              <div class="stat"><b id="st-d">0</b><span>Empates</span></div>
+              <div class="stat"><b id="st-l">0</b><span>Derrotas</span></div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- ============================================================== JUGAR -->
+    <!-- ============================================================ JUGAR -->
     <section class="view" data-view="jugar" aria-labelledby="t-jugar">
-      <div class="wrap play" id="play" data-phase="setup">
-        <div class="play__layout">
+      <h1 class="sr-only" id="t-jugar" tabindex="-1">Jugar al Reversi</h1>
+      <div class="play" id="play">
+        <div class="wrap play__grid">
 
-          <!-- El panel: elegir rival y color, y ver cómo va la partida. -->
-          <aside class="play__setup card" aria-label="Preparar la partida">
-            <header class="play__head">
-              <p class="eyebrow">Jugar</p>
-              <h1 class="h1 play__title" id="t-jugar" tabindex="-1">Tú contra <span id="play-rival">un bot</span></h1>
-              <p class="play__sub">Te desafía <b id="avatar-name">Mr. 2</b>.</p>
-            </header>
-
-            <p class="status" id="status" data-state="loading">
-              <span class="status__dot" aria-hidden="true"></span>
-              <span id="status-text" role="status" aria-live="polite">Cargando el motor de Python…</span>
-              <button class="btn btn--small btn--secondary" type="button" id="retry" hidden>Reintentar</button>
-            </p>
-
-            <form class="setup" id="setup" autocomplete="off">
-              <fieldset class="setup__group">
-                <legend class="label">Rival</legend>
-                <div class="rivals" id="rivals" aria-live="polite">
-                  <p class="setup__hint">Cargando los jugadores del registro…</p>
-                </div>
-                <p class="rival-desc" id="rival-desc"></p>
-              </fieldset>
-
-              <fieldset class="setup__group">
-                <legend class="label">Juegas con</legend>
-                <div class="seg">
-                  <label><input type="radio" name="color" value="1" checked><span><i class="dot dot--black"></i>Negras</span></label>
-                  <label><input type="radio" name="color" value="-1"><span><i class="dot dot--white"></i>Blancas</span></label>
-                </div>
-                <p class="setup__hint">Las negras mueven primero.</p>
-              </fieldset>
-
-              <button class="btn btn--primary btn--block" type="submit" id="start" disabled>Cargando el motor…</button>
-              <p class="setup__note" id="setup-note" hidden>Los cambios se aplican en la próxima partida.</p>
-            </form>
+          <aside class="poster-col" id="pcol-1" aria-label="Jugador de las calaveras">
+            <label class="pick"><span class="token token--flag"><span class="face face--skull" style="transform:none"></span></span><span class="pick__txt"><small>Calaveras · mueven primero</small><select id="seat-1" disabled><option>Cargando…</option></select></span></label>
+            <div class="rcard" id="rcard-1" data-mood="neutral">
+              <div class="wanted paper">
+                <div class="wanted__top" style="font-size:2rem">SE BUSCA</div>
+                <div class="wanted__pic" id="pp-1-pic" aria-hidden="true">🏴‍☠️</div>
+                <div class="wanted__sub" id="pp-1-aka">…</div>
+                <div class="wanted__name" id="pp-1-name">…</div>
+                <div class="wanted__money"><span id="pp-1-bounty">?</span><small>BERRIES</small></div>
+                <div class="wanted__foot" id="pp-1-foot"></div>
+              </div>
+            </div>
+            <div class="say" id="say-1" hidden role="status" aria-live="polite"></div>
           </aside>
 
-          <!-- El escenario: el rival al fondo y, delante, el tablero inclinado como una pantalla. -->
-          <div class="stage" id="stage">
-            <div class="stage__bg" aria-hidden="true"></div>
-            <div class="stage__spot" aria-hidden="true"></div>
-            <div class="stage__avatar" id="avatar" aria-hidden="true"></div>
-            <div class="stage__bubble" id="bubble" aria-hidden="true"><span id="bubble-text"></span><i class="stage__dots"><i></i><i></i><i></i></i></div>
-            <div class="stage__table" aria-hidden="true"></div>
-
-            <div class="plate" id="plate-1">
-              <span class="plate__avatar" id="avatar-1" aria-hidden="true">🙂</span>
-              <span class="plate__who"><b id="who-1">Tú</b><small>negras</small></span>
-              <span class="plate__think" aria-hidden="true"><i></i><i></i><i></i></span>
-              <b class="plate__count" id="count-1" aria-label="Fichas negras">2</b>
-            </div>
-            <div class="plate plate--right" id="plate--1">
-              <b class="plate__count" id="count--1" aria-label="Fichas blancas">2</b>
-              <span class="plate__think" aria-hidden="true"><i></i><i></i><i></i></span>
-              <span class="plate__who"><b id="who--1">Bot</b><small>blancas</small></span>
-              <span class="plate__avatar" id="avatar--1" aria-hidden="true">🤖</span>
+          <div class="deck">
+            <!-- El marcador, encima del tablero. -->
+            <div class="panel scorebar">
+              <div class="crews">
+                <div class="crewcard" id="cc-1"><span class="token token--flag"><span class="face face--skull" style="transform:none"></span></span><div><span class="crewcard__side">Calaveras</span><span class="crewcard__name" id="cn-1">—</span></div><b class="crewcard__n" id="cs-1">2</b></div>
+                <button class="btn btn--gold btn--sm" type="button" id="again" disabled>Nueva partida</button>
+                <div class="crewcard crewcard--r" id="cc--1"><b class="crewcard__n" id="cs--1">2</b><div><span class="crewcard__side">Sombreros</span><span class="crewcard__name" id="cn--1">—</span></div><span class="token token--flag"><span class="face face--hat"></span></span></div>
+              </div>
+              <div class="meter" aria-hidden="true"><i class="m-sk" id="m-sk"></i><i class="m-ht" id="m-ht"></i></div>
             </div>
 
-            <div class="stage__board">
-              <div class="board-tilt"><div id="board"></div></div>
-              <div class="board-toast" id="toast" role="status" hidden></div>
-              <div class="result" id="result" hidden>
-                <div class="result__card" role="dialog" aria-labelledby="result-title" aria-describedby="result-score">
-                  <p class="eyebrow eyebrow--plain">Fin de la partida</p>
-                  <p class="result__title" id="result-title">Has ganado</p>
-                  <p class="result__score" id="result-score">40 – 24</p>
-                  <p class="result__reason" id="result-reason" hidden></p>
-                  <div class="result__actions">
-                    <button class="btn btn--primary" type="button" id="rematch">Nueva partida</button>
-                    <button class="btn btn--secondary" type="button" id="change">Cambiar rival o color</button>
+            <div class="chart" id="chart" data-human="">
+              <div class="chart__in">
+                <div class="coords coords--top" aria-hidden="true"><span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span></div>
+                <div class="coords coords--left" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div>
+                <div class="grid" id="board" role="group" aria-label="Tablero de la partida"></div>
+              </div>
+              <p class="sfx" id="sfx" aria-hidden="true"></p>
+              <p class="toast" id="toast" role="status" hidden></p>
+
+              <div class="overlay" id="intro">
+                <div class="sheet paper">
+                  <h2 class="sheet__title">¿Luchamos?</h2>
+                  <p class="sheet__text">Elige arriba quién pelea con cada bandera: tú contra un rival, o dos bots entre ellos para verlos luchar.</p>
+                  <button class="btn" type="button" id="start" disabled>Cargando el motor…</button>
+                  <p class="sheet__hint" id="intro-hint">Python se está descargando; la primera vez tarda unos segundos.</p>
+                </div>
+              </div>
+
+              <div class="overlay result" id="result" hidden>
+                <div class="sheet paper" role="dialog" aria-labelledby="res-title" aria-describedby="res-score">
+                  <p class="eyebrow">Fin de la batalla</p>
+                  <p class="result__title" id="res-title">¡Victoria!</p>
+                  <p class="result__score" id="res-score">40 – 24</p>
+                  <p class="result__reason" id="res-reason" hidden></p>
+                  <div class="result__earn" id="res-earn" hidden><span id="res-earn-txt">Recompensa</span><b id="res-earn-n">+0</b></div>
+                  <div class="result__btns">
+                    <button class="btn" type="button" id="rematch">Revancha</button>
+                    <button class="btn btn--paper btn--sm" type="button" id="change">Cambiar jugadores</button>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- El brazo estirado del rival cuando lleva una ficha a su casilla (lo mueve js/stage.js). -->
-            <div class="reach" id="reach" hidden aria-hidden="true">
-              <div class="reach__arm"></div>
-              <div class="reach__hand"><i class="reach__disc" data-color="-1"></i></div>
+            <div class="panel statusbar">
+              <p class="status" id="status" data-state="loading"><span class="status__dot" aria-hidden="true"></span><span id="status-text" role="status" aria-live="polite">Cargando el motor de Python…</span></p>
+              <button class="btn btn--paper btn--sm" type="button" id="retry" hidden>Reintentar el motor</button>
+            </div>
+            <div class="panel logbook">
+              <h3>Diario de a bordo</h3>
+              <ol id="logbook"><li class="empty">Aún no se ha movido ninguna ficha.</li></ol>
             </div>
           </div>
 
+          <aside class="poster-col" id="pcol--1" aria-label="Jugador de las sombreros">
+            <label class="pick"><span class="token token--flag"><span class="face face--hat"></span></span><span class="pick__txt"><small>Sombreros de paja</small><select id="seat--1" disabled><option>Cargando…</option></select></span></label>
+            <div class="rcard" id="rcard--1" data-mood="neutral">
+              <div class="wanted paper">
+                <div class="wanted__top" style="font-size:2rem">SE BUSCA</div>
+                <div class="wanted__pic" id="pp--1-pic" aria-hidden="true">🏴‍☠️</div>
+                <div class="wanted__sub" id="pp--1-aka">…</div>
+                <div class="wanted__name" id="pp--1-name">…</div>
+                <div class="wanted__money"><span id="pp--1-bounty">?</span><small>BERRIES</small></div>
+                <div class="wanted__foot" id="pp--1-foot"></div>
+              </div>
+            </div>
+            <div class="say" id="say--1" hidden role="status" aria-live="polite"></div>
+          </aside>
+        </div>
+        <div class="waves" aria-hidden="true" style="margin-top:34px">
+          <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style="fill:var(--sea-1)"><use href="#wave"/></svg>
+          <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style="fill:var(--sea-2)"><use href="#wave"/></svg>
         </div>
       </div>
     </section>
 
-    <!-- ============================================================== REGLAS -->
+    <!-- ============================================================ REGLAS -->
     <section class="view" data-view="reglas" aria-labelledby="t-reglas">
-      <div class="wrap article">
+      <div class="wrap">
         <header class="page-head">
-          <p class="eyebrow">Reglas</p>
+          <p class="eyebrow">Leyes del mar</p>
           <h1 class="h1" id="t-reglas" tabindex="-1">Cómo se juega al Reversi</h1>
-          <p class="lede">Un tablero, cuatro reglas y ninguna casualidad. En cinco minutos sabrás lo suficiente para jugar tu primera partida.</p>
+          <p class="lede">Un tablero, cuatro leyes y ninguna casualidad. En cinco minutos sabrás lo justo para plantar cara a cualquier capitán.</p>
         </header>
 
-        <div class="doc">
-          <nav class="toc" aria-label="En esta página">
-            <ol>
-              <li><button type="button" data-scroll="r-web">Cómo se juega aquí</button></li>
-              <li><button type="button" data-scroll="r-reglas">Las cuatro reglas</button></li>
-              <li><button type="button" data-scroll="r-dudas">Casos dudosos</button></li>
-              <li><button type="button" data-scroll="r-estrategia">Estrategia</button></li>
-            </ol>
-          </nav>
+        <div class="laws">
+          <article class="law law--sm paper">
+            <span class="law__n" aria-hidden="true">1</span>
+            <div>
+              <h3>El mar y la salida</h3>
+              <p>Un tablero de 8 × 8 casillas y cuatro fichas en el centro, en diagonal. Cada ficha tiene dos caras: <b>calavera</b> y <b>sombrero de paja</b>.</p>
+              <ul>
+                <li>Las casillas se nombran como en ajedrez: <code>d3</code> es la columna d, fila 3.</li>
+                <li><b>Mueven primero las calaveras.</b> Sus cuatro primeras jugadas: <code>d3</code>, <code>c4</code>, <code>f5</code> y <code>e6</code>.</li>
+              </ul>
+            </div>
+            <figure class="law__fig"><div class="mini" data-mini="........|........|...t....|..ths...|...sht..|....t...|........|........"></div><figcaption>Los círculos de puntos son las jugadas posibles de las calaveras.</figcaption></figure>
+          </article>
 
-          <div class="doc__body">
+          <article class="law law--sm paper">
+            <span class="law__n" aria-hidden="true">2</span>
+            <div>
+              <h3>Capturar: encerrar y dar la vuelta</h3>
+              <p>Solo puedes jugar donde <b>encierres al menos una ficha rival</b> entre la nueva y otra tuya, en línea recta sin huecos: horizontal, vertical o diagonal.</p>
+              <ul>
+                <li>Todas las fichas encerradas se dan la vuelta, aunque sea en varias direcciones a la vez.</li>
+                <li>Ejemplo: las calaveras juegan <code>f3</code> y voltean <code>e3</code> y <code>e4</code>.</li>
+              </ul>
+            </div>
+            <figure class="law__fig law__fig--pair">
+              <div class="mini" data-mini="........|........|...sht..|...sh...|...s....|........|........|........"></div>
+              <div class="mini" data-mini="........|........|...sSs..|...sS...|...s....|........|........|........"></div>
+              <figcaption><b>Antes</b> y <b>después</b>. El aro rojo marca las fichas que se han volteado.</figcaption>
+            </figure>
+          </article>
 
-            <section class="block block--first" id="r-web" aria-labelledby="h-web">
-              <h2 class="h2" id="h-web">Cómo se juega aquí</h2>
-              <ol class="steps">
-                <li>
-                  <span class="steps__n" aria-hidden="true">1</span>
-                  <div><h3>Elige rival y color</h3><p>Cada rival es un bot escrito en Python. Las negras mueven primero.</p></div>
-                </li>
-                <li>
-                  <span class="steps__n" aria-hidden="true">2</span>
-                  <div><h3>Pulsa una casilla marcada</h3><p>Los puntos claros señalan dónde puedes jugar. También puedes moverte con las flechas y pulsar Intro.</p></div>
-                </li>
-                <li>
-                  <span class="steps__n" aria-hidden="true">3</span>
-                  <div><h3>Espera su respuesta</h3><p>El bot juega solo, tras una breve pausa. Si alguien no tiene jugada, pasa, y el juego te lo avisa.</p></div>
-                </li>
-              </ol>
-              <p class="note">El tema y los sonidos se cambian con los botones de la esquina superior derecha. Tu partida se guarda sola: si recargas la página, sigue donde estaba.</p>
-              <a class="btn btn--primary" href="#/jugar">Jugar una partida
-                <svg class="btn__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5"/></svg>
-              </a>
-            </section>
+          <article class="law law--sm paper">
+            <span class="law__n" aria-hidden="true">3</span>
+            <div>
+              <h3>Si no puedes capturar, pasas</h3>
+              <p>Sin ninguna jugada posible pierdes el turno y vuelve a mover el rival. Puede pasar varias veces seguidas.</p>
+              <ul>
+                <li><b>Pasar nunca es voluntario:</b> si tienes alguna jugada, es obligatorio hacerla.</li>
+                <li>En esta web el paso es automático y te avisamos.</li>
+              </ul>
+            </div>
+            <figure class="law__fig"><div class="mini" data-mini="........|........|........|......s.|.....tsh|........|........|........"></div><figcaption><b>Ejemplo.</b> Las calaveras no pueden capturar: <b>pasan</b> y juegan los sombreros (<code>f5</code>).</figcaption></figure>
+          </article>
 
-            <section class="block" id="r-reglas" aria-labelledby="h-reglas">
-              <h2 class="h2" id="h-reglas">Las cuatro reglas</h2>
+          <article class="law law--sm paper">
+            <span class="law__n" aria-hidden="true">4</span>
+            <div>
+              <h3>El final</h3>
+              <p>La partida termina cuando <b>ninguno de los dos puede mover</b>, casi siempre con el tablero lleno. Gana quien tenga más fichas de su bandera; si hay las mismas, es empate.</p>
+              <ul>
+                <li>Si acaba antes de llenarse, las casillas vacías no cuentan para nadie.</li>
+                <li>Una jugada ilegal de un bot es una derrota inmediata para él.</li>
+              </ul>
+            </div>
+            <figure class="law__fig law__fig--pair">
+              <div class="mini" data-mini="ssshshhh|ssshhhhh|hshhhhhh|sssshhhh|ssshhhhh|ssshhhhh|sssshhhh|sssshhhh"></div>
+              <div class="mini" data-mini="........|........|..sss...|..ssss..|..sssss.|...s....|........|........"></div>
+              <figcaption><b>Habitual:</b> lleno, 38 a 26 para los sombreros. <b>Anticipado:</b> 13 a 0 para las calaveras, con 51 casillas vacías.</figcaption>
+            </figure>
+          </article>
+        </div>
 
-              <div class="rules">
-                <!-- regla 1 -->
-                <article class="rule" id="r-1" aria-labelledby="h-r1">
-                  <header class="rule__head">
-                    <span class="rule__n" aria-hidden="true">1</span>
-                    <div>
-                      <h3 class="h3" id="h-r1">El tablero y la salida</h3>
-                      <p class="rule__sum">Un tablero de 8 × 8, cuatro fichas en el centro y empiezan las negras.</p>
-                    </div>
-                  </header>
-                  <ul class="list">
-                    <li>El tablero tiene 64 casillas. Las fichas son negras por una cara y blancas por la otra.</li>
-                    <li>Cada casilla se nombra con su columna (<code>a–h</code>) y su fila (<code>1–8</code>), como en el ajedrez: <code>d3</code> es la columna d, fila 3.</li>
-                    <li>Se empieza con cuatro fichas en el centro, en diagonal.</li>
-                    <li><strong>Mueven primero las negras.</strong> Sus cuatro jugadas posibles son <code>d3</code>, <code>c4</code>, <code>f5</code> y <code>e6</code>.</li>
-                  </ul>
-                  <div class="rule__figs">
-                    <figure class="figure" data-diagram="inicio">
-                      <div class="figure__board" role="group"></div>
-                      <figcaption>Posición inicial. Los puntos claros son las jugadas posibles de las negras.</figcaption>
-                    </figure>
-                  </div>
-                </article>
-
-                <!-- regla 2 -->
-                <article class="rule" id="r-2" aria-labelledby="h-r2">
-                  <header class="rule__head">
-                    <span class="rule__n" aria-hidden="true">2</span>
-                    <div>
-                      <h3 class="h3" id="h-r2">Capturar: encerrar y dar la vuelta</h3>
-                      <p class="rule__sum">Solo puedes jugar donde encierres fichas del rival, y las encerradas se dan la vuelta.</p>
-                    </div>
-                  </header>
-                  <ul class="list">
-                    <li>Pones una ficha de tu color en una casilla vacía.</li>
-                    <li>Debe <strong>encerrar al menos una ficha rival</strong>: una línea recta de fichas rivales, sin huecos, entre la ficha nueva y otra tuya. Vale en horizontal, vertical y diagonal.</li>
-                    <li>Todas las fichas encerradas se dan la vuelta, aunque sea en varias direcciones a la vez.</li>
-                  </ul>
-                  <div class="rule__figs">
-                    <p class="example__label">Ejemplo · las negras juegan f3</p>
-                    <div class="pair">
-                      <figure class="figure" data-diagram="antes-f3">
-                        <div class="figure__board" role="group"></div>
-                        <figcaption><b>Antes.</b> Las blancas <code>e3</code> y <code>e4</code> quedan entre <code>f3</code> y las negras <code>d3</code> y <code>d5</code>.</figcaption>
-                      </figure>
-                      <figure class="figure" data-diagram="despues-f3">
-                        <div class="figure__board" role="group"></div>
-                        <figcaption><b>Después.</b> <code>e3</code> y <code>e4</code> se dan la vuelta. <code>e5</code> no: no queda encerrada.</figcaption>
-                      </figure>
-                    </div>
-                    <ul class="legend" aria-label="Leyenda de los diagramas">
-                      <li><i class="sw sw--target" aria-hidden="true"></i>Dónde se juega</li>
-                      <li><i class="sw sw--flip" aria-hidden="true"></i>Se voltea</li>
-                      <li><i class="sw sw--anchor" aria-hidden="true"></i>Cierra la línea</li>
-                    </ul>
-                  </div>
-                </article>
-
-                <!-- regla 3 -->
-                <article class="rule" id="r-3" aria-labelledby="h-r3">
-                  <header class="rule__head">
-                    <span class="rule__n" aria-hidden="true">3</span>
-                    <div>
-                      <h3 class="h3" id="h-r3">Si no puedes capturar, pasas</h3>
-                      <p class="rule__sum">Sin ninguna jugada posible pierdes el turno. Pasar nunca es voluntario.</p>
-                    </div>
-                  </header>
-                  <ul class="list">
-                    <li>Si ninguna casilla vacía encierra fichas de tu rival, pierdes el turno y vuelve a mover él. Puede pasar varias veces seguidas.</li>
-                    <li><strong>No se puede pasar por gusto:</strong> si tienes alguna jugada, es obligatorio hacerla.</li>
-                    <li>En esta web el paso es automático y te lo avisamos.</li>
-                  </ul>
-                  <div class="rule__figs">
-                    <figure class="figure" data-diagram="paso">
-                      <div class="figure__board" role="group"></div>
-                      <figcaption>Las blancas acaban de jugar <code>c1</code>. Ninguna casilla vacía encierra una ficha blanca: las negras <b>pasan</b> y vuelven a mover las blancas.</figcaption>
-                    </figure>
-                  </div>
-                </article>
-
-                <!-- regla 4 -->
-                <article class="rule" id="r-4" aria-labelledby="h-r4">
-                  <header class="rule__head">
-                    <span class="rule__n" aria-hidden="true">4</span>
-                    <div>
-                      <h3 class="h3" id="h-r4">El final</h3>
-                      <p class="rule__sum">La partida termina cuando nadie puede mover. Gana quien tenga más fichas.</p>
-                    </div>
-                  </header>
-                  <ul class="list">
-                    <li>La partida acaba cuando <strong>ninguno de los dos puede mover</strong>.</li>
-                    <li>Casi siempre es porque el tablero está lleno (64 fichas); a veces acaba antes.</li>
-                    <li>Gana quien tenga más fichas de su color. Si hay las mismas, es empate.</li>
-                  </ul>
-                  <div class="rule__figs">
-                    <p class="example__label">Dos finales posibles</p>
-                    <div class="pair">
-                      <figure class="figure" data-diagram="final-lleno">
-                        <div class="figure__board" role="group"></div>
-                        <figcaption><b>Habitual.</b> Tablero lleno: ganan las blancas, 38 a 26.</figcaption>
-                      </figure>
-                      <figure class="figure" data-diagram="final-temprano">
-                        <div class="figure__board" role="group"></div>
-                        <figcaption><b>Anticipado.</b> Las blancas se quedan sin fichas: ganan las negras, 13 a 0, con 51 casillas vacías.</figcaption>
-                      </figure>
-                    </div>
-                  </div>
-                </article>
-              </div>
-
-              <aside class="aside aside--wide">
-                <div class="aside__text">
-                  <p class="aside__label">Ojo</p>
-                  <p>No se puede jugar donde no se encierra nada. Por ejemplo <code>c3</code> en la posición inicial: está pegada a la ficha blanca <code>d4</code>, pero detrás de ella, en esa diagonal, no hay ninguna ficha negra.</p>
-                </div>
-                <figure class="figure figure--small" data-diagram="c3-prohibida">
-                  <div class="figure__board" role="group"></div>
-                  <figcaption><i class="sw sw--deny" aria-hidden="true"></i> <code>c3</code> no encierra nada: no se puede jugar.</figcaption>
-                </figure>
-              </aside>
-
-              <aside class="callout">
-                <h3>Sin azar ni información oculta</h3>
-                <p>En el Reversi no hay dados ni cartas, y los dos jugadores ven siempre el tablero completo. La misma jugada en la misma posición da siempre el mismo resultado: gana quien juega mejor.</p>
-              </aside>
-            </section>
-
-            <section class="block" id="r-dudas" aria-labelledby="h-dudas">
-              <h2 class="h2" id="h-dudas">Casos dudosos</h2>
-              <p class="block__lede">Las respuestas que sigue este proyecto. Coinciden con lo que hace el motor de Python que está jugando tus partidas.</p>
-              <div class="faq">
-                <details><summary>¿Qué pasa si un jugador no puede mover pero el otro sí?</summary><p>El que no puede mover pasa y vuelve a mover el otro. La partida no termina.</p></details>
-                <details><summary>¿Y si la partida acaba antes de llenarse el tablero?</summary><p>Las casillas vacías no cuentan para nadie: se cuentan solo las fichas que hay y gana quien tenga más.</p></details>
-                <details><summary>¿Cómo se decide un empate?</summary><p>Si los dos tienen el mismo número de fichas, es empate. No hay desempate.</p></details>
-                <details><summary>¿Se puede pasar voluntariamente?</summary><p>No. Solo se pasa cuando no hay ninguna jugada legal, y el motor lo hace solo.</p></details>
-                <details><summary>¿Se pueden acabar las fichas de un jugador?</summary><p>No. Hay tantas fichas como casillas (64), así que nunca faltan.</p></details>
-                <details><summary>¿Qué es una jugada ilegal?</summary><p>Cualquiera que no cumpla las reglas: una casilla ocupada, una casilla fuera del tablero o una casilla que no encierra ninguna ficha rival.</p></details>
-                <details><summary>¿Qué hace el motor con una jugada ilegal?</summary><p>La rechaza con un error: nunca coloca una ficha donde no se puede. Si es un bot quien la intenta, pierde esa partida.</p></details>
-              </div>
-            </section>
-
-            <section class="block" id="r-estrategia" aria-labelledby="h-estrategia">
-              <h2 class="h2" id="h-estrategia">Estrategia: cinco ideas</h2>
-              <p class="block__lede">Las reglas son sencillas, pero jugar bien no lo es. Estas ideas ayudan a quien empieza, y son también las que suelen usar los bots para valorar una posición.</p>
-
-              <div class="map card">
-                <figure class="figure" data-diagram="mapa">
-                  <div class="figure__board" role="group"></div>
-                </figure>
-                <div class="map__text">
-                  <h3 class="h3">El mapa del tablero</h3>
-                  <p>No todas las casillas valen lo mismo. Estas son las que más importan:</p>
-                  <ul class="legend legend--stack" aria-label="Leyenda del mapa">
-                    <li><i class="sw sw--corner" aria-hidden="true"></i><span><b>Esquinas.</b> Las mejores casillas del tablero.</span></li>
-                    <li><i class="sw sw--x" aria-hidden="true"></i><span><b>Casillas X.</b> En diagonal a una esquina: <code>b2</code>, <code>g2</code>, <code>b7</code> y <code>g7</code>.</span></li>
-                    <li><i class="sw sw--c" aria-hidden="true"></i><span><b>Casillas C.</b> Las del borde pegadas a una esquina, como <code>b1</code> o <code>a2</code>.</span></li>
-                  </ul>
-                </div>
-              </div>
-
-              <div class="ideas">
-                <article class="idea">
-                  <p class="idea__n" aria-hidden="true">1</p>
-                  <h3>Las esquinas mandan</h3>
-                  <p class="idea__sum">Una ficha en una esquina no se puede voltear nunca.</p>
-                  <p class="idea__tip"><b>Consejo.</b> Si puedes coger una, hazlo.</p>
-                </article>
-                <article class="idea">
-                  <p class="idea__n" aria-hidden="true">2</p>
-                  <h3>Cuidado con las casillas X</h3>
-                  <p class="idea__sum">Jugar en una casilla X suele regalar la esquina.</p>
-                  <p class="idea__tip"><b>Consejo.</b> Con la esquina vacía, evita las X.</p>
-                </article>
-                <article class="idea">
-                  <p class="idea__n" aria-hidden="true">3</p>
-                  <h3>Movilidad, no fichas</h3>
-                  <p class="idea__sum">Importa cuántas jugadas tienes, no cuántas fichas.</p>
-                  <p class="idea__tip"><b>Consejo.</b> A veces la mejor jugada es la que voltea menos.</p>
-                </article>
-                <article class="idea">
-                  <p class="idea__n" aria-hidden="true">4</p>
-                  <h3>La frontera</h3>
-                  <p class="idea__sum">Tus fichas junto a casillas vacías le dan jugadas a tu rival.</p>
-                  <p class="idea__tip"><b>Consejo.</b> Prefiere jugadas que no abran la frontera.</p>
-                </article>
-                <article class="idea">
-                  <p class="idea__n" aria-hidden="true">5</p>
-                  <h3>Paridad</h3>
-                  <p class="idea__sum">Al final, quien juega la última en una zona vacía gana terreno.</p>
-                  <p class="idea__tip"><b>Consejo.</b> Con pocas casillas, juega en las zonas impares.</p>
-                </article>
-              </div>
-            </section>
-
-            <section class="cta card" aria-labelledby="h-cta-reglas">
-              <div>
-                <h2 class="h2" id="h-cta-reglas">¿Listo para jugar?</h2>
-                <p>Pon en práctica lo que acabas de leer contra uno de los bots del proyecto.</p>
-              </div>
-              <a class="btn btn--primary" href="#/jugar">Jugar una partida
-                <svg class="btn__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5"/></svg>
-              </a>
-            </section>
-
+        <section class="block" aria-labelledby="h-tips">
+          <h2 class="h2" id="h-tips">Los 5 consejos de los guerreros del mar</h2>
+          <p class="lede" style="margin-bottom:20px">No todas las casillas valen lo mismo. Este es el mapa de las aguas del tablero: aprende dónde está el tesoro y dónde acechan los peligros.</p>
+          <div class="seamap paper">
+            <div class="mini mini--map" data-mini="KCEEEECK|CX....XC|E......E|E......E|E......E|E......E|CX....XC|KCEEEECK"></div>
+            <ul class="seamap__legend">
+              <li><i class="sw sw--k" aria-hidden="true">👑</i><span><b>Tesoro</b> (las 4 esquinas). Una ficha ahí no se voltea jamás.</span></li>
+              <li><i class="sw sw--x" aria-hidden="true">🌀</i><span><b>Torbellinos</b> (<code>b2</code>, <code>g2</code>, <code>b7</code>, <code>g7</code>). Jugar ahí suele regalar la esquina.</span></li>
+              <li><i class="sw sw--c" aria-hidden="true">🪨</i><span><b>Arrecifes</b> (el borde pegado a una esquina, como <code>b1</code> o <code>a2</code>). Peligrosos con la esquina vacía.</span></li>
+              <li><i class="sw sw--e" aria-hidden="true">🏝️</i><span><b>Costa</b> (el resto del borde). Sus fichas solo se voltean a lo largo del borde, así que aguantan mejor que las del centro.</span></li>
+            </ul>
           </div>
+          <div class="tips">
+            <article class="tip paper"><div class="tip__ico" aria-hidden="true">👑</div><h3>Las esquinas son el tesoro</h3><p>Una ficha en una esquina no se puede voltear jamás. Si puedes tomar una, hazlo.</p></article>
+            <article class="tip paper"><div class="tip__ico" aria-hidden="true">🌀</div><h3>Esquiva los torbellinos</h3><p>Las casillas en diagonal a una esquina (<code>b2</code>, <code>g2</code>, <code>b7</code>, <code>g7</code>) suelen regalarla.</p></article>
+            <article class="tip paper"><div class="tip__ico" aria-hidden="true">🧭</div><h3>Movilidad, no botín</h3><p>Importa cuántas jugadas tienes, no cuántas fichas. A veces la mejor jugada es la que voltea menos.</p></article>
+            <article class="tip paper"><div class="tip__ico" aria-hidden="true">🔭</div><h3>Vigila la frontera</h3><p>Tus fichas junto a casillas vacías le dan jugadas al rival. No abras la frontera sin motivo.</p></article>
+            <article class="tip paper"><div class="tip__ico" aria-hidden="true">⏳</div><h3>La última palabra</h3><p>Al final gana terreno quien juega la última en una zona vacía. Con pocas casillas, busca las zonas impares.</p></article>
+          </div>
+        </section>
+
+        <section class="block" aria-labelledby="h-dudas">
+          <h2 class="h2" id="h-dudas">Dudas de grumete</h2>
+          <div class="faq">
+            <details><summary>¿Qué pasa si uno no puede mover pero el otro sí?</summary><p>El que no puede mover pasa y vuelve a mover el otro. La partida no termina.</p></details>
+            <details><summary>¿Cómo se decide un empate?</summary><p>Si los dos tienen el mismo número de fichas, es empate. No hay desempate.</p></details>
+            <details><summary>¿Se pueden acabar las fichas de un jugador?</summary><p>Sí puede quedarse sin fichas sobre el tablero (y entonces pierde); lo que nunca falta son fichas para jugar, hay tantas como casillas.</p></details>
+            <details><summary>¿Qué hace el motor con una jugada ilegal?</summary><p>La rechaza: nunca coloca una ficha donde no se puede. Si es un bot quien lo intenta, pierde la partida.</p></details>
+          </div>
+        </section>
+
+        <div class="cta">
+          <div><h2>¿Ya sabes lo básico?</h2><p>Ponlo en práctica contra uno de los capitanes del tablón.</p></div>
+          <div class="cta__act"><a class="btn btn--gold" href="#/jugar">¡A luchar!</a></div>
         </div>
       </div>
     </section>
 
-    <!-- ================================================================ BOTS -->
+    <!-- ============================================================ RIVALES -->
     <section class="view" data-view="bots" aria-labelledby="t-bots">
-      <div class="wrap article">
+      <div class="wrap">
         <header class="page-head">
-          <p class="eyebrow">Bots</p>
+          <p class="eyebrow">Tablón de recompensas</p>
           <h1 class="h1" id="t-bots" tabindex="-1">Los rivales</h1>
-          <p class="lede">Cada bot es una clase de Python que, dado el tablero, elige una jugada. Estos son los que el proyecto tiene admitidos.</p>
-          <p class="count" id="bots-count" aria-live="polite">Cargando los jugadores del registro…</p>
+          <p class="lede">Cada bot es una clase de Python que, dado el tablero, elige una jugada. La lista sale del registro del proyecto: un bot admitido aparece aquí solo, con su cartel.</p>
+          <p class="eyebrow" id="bots-count" aria-live="polite" style="color:var(--ink-soft)">Cargando los carteles…</p>
         </header>
-
-        <div class="bots" id="bots-grid" aria-live="polite">
-          <div class="bot-card bot-card--skeleton" aria-hidden="true"></div>
+        <div class="rivals" id="rivals"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+        <div class="cta">
+          <div><h2>¿Quieres que tu bot tenga cartel?</h2><p>Un bot es un archivo de Python y una línea en el registro. En cuanto lo admitan, aparecerá aquí con su recompensa.</p></div>
+          <div class="cta__act"><a class="btn btn--gold" href="#/anadir">Añade tu Bot</a></div>
         </div>
-
-        <section class="block" aria-labelledby="h-como">
-          <h2 class="h2" id="h-como">Cómo funciona un bot</h2>
-          <ul class="points">
-            <li><h3>Recibe el tablero</h3><p>En cada turno ve la posición completa y devuelve una casilla. No necesita saber nada más del juego.</p></li>
-            <li><h3>Si hace trampas, pierde</h3><p>Una jugada ilegal o una excepción hacen perder la partida, pero la web sigue funcionando.</p></li>
-            <li><h3>La lista sale del registro</h3><p>Un bot nuevo aparece aquí solo cuando se admite en la carpeta <code>players/</code> del proyecto.</p></li>
-          </ul>
-        </section>
-
-        <section class="cta card" aria-labelledby="h-cta-bots">
-          <div>
-            <h2 class="h2" id="h-cta-bots">¿Quieres añadir el tuyo?</h2>
-            <p>Un bot es un archivo de Python y una línea en el registro. El tutorial te lleva desde cero hasta tu primer pull request.</p>
-          </div>
-          <div class="cta__actions">
-            <a class="btn btn--primary" href="#/anadir">Añade tu bot</a>
-            <a class="btn btn--secondary" href="https://reversi-bounty.readthedocs.io/es/latest/tutorial/">Leer el tutorial</a>
-          </div>
-        </section>
       </div>
     </section>
 
-    <!-- ======================================================== AÑADE TU BOT -->
+    <!-- ============================================================ ÚNETE -->
     <section class="view" data-view="anadir" aria-labelledby="t-anadir">
-      <div class="wrap article">
-        <header class="page-head page-head--tight">
-          <p class="eyebrow">Añade tu bot</p>
-          <h1 class="h1" id="t-anadir" tabindex="-1">Crea un bot y juega con él en la web</h1>
+      <div class="wrap">
+        <header class="page-head">
+          <p class="eyebrow">Añade tu Bot</p>
+          <h1 class="h1" id="t-anadir" tabindex="-1">Súmate a la simulación</h1>
+          <p class="lede">Un bot completo cabe en unas veinte líneas de Python. Cuatro pasos y tu capitán estará en el tablón.</p>
         </header>
 
-        <!-- El ejemplo a la izquierda y, a la derecha, lo que hay que hacer para tenerlo funcionando. -->
-        <div class="intro">
-          <div class="intro__code">
-            <figure class="code" data-lang="python" data-code="bot">
-                <figcaption class="code__bar">
-                  <span class="code__file">players/custom/mi_bot.py</span>
-                  <button class="code__copy" type="button" aria-label="Copiar el código de players/custom/mi_bot.py">Copiar</button>
-                </figcaption>
-                <pre><code>import random
+        <div class="anadir-split">
+          <figure class="code" style="margin-inline:0">
+          <figcaption class="code__bar"><span>players/custom/mi_bot.py</span><button class="code__copy" type="button" data-copy="bot">Copiar</button></figcaption>
+<pre><code id="code-bot">import random
 
 from reversibounty import GameState, Move, Player, legal_moves
 
@@ -539,181 +434,86 @@ class MiBot(Player):
     def choose_move(self, state: GameState) -&gt; Move:
         return random.choice(legal_moves(state))
 </code></pre>
-              </figure>
-          </div>
-
-          <section class="intro__how" id="a-como" aria-labelledby="h-a-como">
-            <h2 class="h3" id="h-a-como">Cómo funciona</h2>
-            <ol class="guide">
-              <li>
-                <span class="guide__n" aria-hidden="true">1</span>
-                <div><h3>Copia el ejemplo</h3><p>Guárdalo como <code>players/custom/mi_bot.py</code>. Ya es un bot completo.</p></div>
-              </li>
-              <li>
-                <span class="guide__n" aria-hidden="true">2</span>
-                <div><h3>Haz que sea tuyo</h3><p>Cambia el nombre (empieza por mayúscula), los autores, la descripción y el emoji. Después escribe tu idea en <code>choose_move</code>.</p></div>
-              </li>
-              <li>
-                <span class="guide__n" aria-hidden="true">3</span>
-                <div><h3>Regístralo</h3><p>Añade una línea en <code>players/custom/players.yaml</code>. Nada se descubre solo: lo que no está en esa lista no juega.</p></div>
-              </li>
-              <li>
-                <span class="guide__n" aria-hidden="true">4</span>
-                <div><h3>Envíalo</h3><p>Abre un pull request. Con los tests en verde y otra persona que lo apruebe, tu bot entra y aparece en la web.</p></div>
-              </li>
-            </ol>
-          </section>
+        </figure>
+          <div class="crew-steps">
+          <div class="cstep paper"><h3>Copia el ejemplo</h3><p>Guárdalo como <code>players/custom/mi_bot.py</code>. Ya es un bot completo.</p></div>
+          <div class="cstep paper"><h3>Hazlo tuyo</h3><p>Cambia nombre (con mayúscula), autores, descripción y emoji. Escribe tu idea en <code>choose_move</code>.</p></div>
+          <div class="cstep paper"><h3>Regístralo</h3><p>Una línea en <code>players/custom/players.yaml</code>. Lo que no está en la lista no juega.</p></div>
+          <div class="cstep paper"><h3>Envíalo</h3><p>Abre un pull request. Con los tests en verde y una revisión, tu bot entra y sale su cartel.</p></div>
+        </div>
         </div>
 
-        <!-- Los cinco métodos y lo que recibe el bot: dos bloques de la misma fila, con una línea fina entre ellos. -->
-        <section class="duo" id="a-metodos" aria-label="Los métodos de un bot y lo que recibe">
-          <div class="duo__col">
+        <div class="duo">
+          <div class="paper">
             <h2 class="h3">Los cinco métodos</h2>
-            <dl class="defs">
-              <div><dt><code>get_name()</code></dt><dd>Un nombre <b>único</b> que <b>empieza por mayúscula</b>: <code>"Mi bot"</code>.</dd></div>
-              <div><dt><code>get_authors()</code></dt><dd>La lista de autores, que no puede estar vacía.</dd></div>
-              <div><dt><code>get_description()</code></dt><dd>Una frase que cuente la <b>estrategia</b>.</dd></div>
-              <div><dt><code>get_icon()</code></dt><dd><b>Un solo emoji</b>, que va junto al nombre.</dd></div>
-              <div><dt><code>choose_move(state)</code></dt><dd>La jugada, como <code>(fila, columna)</code> del 0 al 7.</dd></div>
+            <dl>
+              <div><dt><code>get_name()</code></dt><dd>Nombre <b>único</b> que <b>empieza por mayúscula</b>.</dd></div>
+              <div><dt><code>get_authors()</code></dt><dd>Lista de autores, no vacía.</dd></div>
+              <div><dt><code>get_description()</code></dt><dd>Una frase que cuente la estrategia.</dd></div>
+              <div><dt><code>get_icon()</code></dt><dd>Un solo emoji: será la cara de tu cartel.</dd></div>
+              <div><dt><code>choose_move(state)</code></dt><dd>La jugada como <code>(fila, columna)</code>, del 0 al 7.</dd></div>
             </dl>
           </div>
-          <div class="duo__col">
+          <div class="paper">
             <h2 class="h3">Qué recibe tu bot</h2>
-            <p class="duo__text"><code>choose_move</code> recibe un <code>GameState</code>: la posición completa, porque en el Reversi no hay información oculta.</p>
-            <dl class="defs">
-              <div><dt><code>state.board</code></dt><dd><code>board[fila][columna]</code> vale <code>1</code> (negras), <code>-1</code> (blancas) o <code>0</code> (vacía).</dd></div>
-              <div><dt><code>state.player</code></dt><dd><b>Tu color</b> en este turno.</dd></div>
-              <div><dt><code>legal_moves(state)</code></dt><dd>Las jugadas permitidas. Siempre hay al menos una cuando te toca.</dd></div>
+            <dl>
+              <div><dt><code>state.board</code></dt><dd><code>1</code> calavera, <code>-1</code> sombrero, <code>0</code> vacía.</dd></div>
+              <div><dt><code>state.player</code></dt><dd>Tu color en este turno.</dd></div>
+              <div><dt><code>legal_moves(state)</code></dt><dd>Jugadas permitidas; siempre hay una cuando te toca.</dd></div>
               <div><dt><code>apply_move(state, jugada)</code></dt><dd>El estado siguiente, sin tocar el tuyo.</dd></div>
               <div><dt><code>score(state)</code></dt><dd>El recuento de fichas.</dd></div>
             </dl>
           </div>
-        </section>
+        </div>
 
-        <section class="block block--sm" id="a-reglas" aria-labelledby="h-a-reglas">
-          <h2 class="h2" id="h-a-reglas">Las reglas que debe cumplir</h2>
-          <div class="checks">
-            <div class="check"><i class="check__icon" aria-hidden="true"></i><div><h3>Siempre una jugada legal</h3><p>Elige entre las de <code>legal_moves(state)</code>.</p></div></div>
-            <div class="check"><i class="check__icon" aria-hidden="true"></i><div><h3>No modifica el estado</h3><p>Es inmutable: usa copias o <code>apply_move</code>.</p></div></div>
-            <div class="check"><i class="check__icon" aria-hidden="true"></i><div><h3>Nombre único, con mayúscula</h3><p>Ningún otro bot puede llamarse igual.</p></div></div>
-            <div class="check"><i class="check__icon" aria-hidden="true"></i><div><h3>Solo biblioteca estándar</h3><p>Python y <code>reversibounty</code>, sin librerías externas.</p></div></div>
-            <div class="check"><i class="check__icon" aria-hidden="true"></i><div><h3>Sin red, archivos ni procesos</h3><p>La jugada depende solo del tablero.</p></div></div>
-            <div class="check"><i class="check__icon" aria-hidden="true"></i><div><h3>Razonablemente rápido</h3><p>Un bot que se cuelga no juega un torneo.</p></div></div>
-          </div>
-          <p class="note">Un bot que lanza una excepción o devuelve una jugada ilegal pierde esa partida. La web sigue funcionando: solo pierde tu bot.</p>
-        </section>
+        <h2 class="h2">El código de honor</h2>
+        <div class="checks">
+          <div class="check"><span>Siempre una jugada legal, de <code>legal_moves(state)</code>.</span></div>
+          <div class="check"><span>No modifica el estado: es inmutable.</span></div>
+          <div class="check"><span>Nombre único y con mayúscula.</span></div>
+          <div class="check"><span>Solo biblioteca estándar de Python.</span></div>
+          <div class="check"><span>Sin red, archivos ni procesos.</span></div>
+          <div class="check"><span>Razonablemente rápido: un bot colgado no juega un torneo.</span></div>
+        </div>
 
-        <section class="block block--sm" id="a-fallos" aria-labelledby="h-a-fallos">
-          <h2 class="h2" id="h-a-fallos">Si algo falla</h2>
-          <div class="faq">
-            <details><summary>«no existe la clase 'X'» o «no existe el archivo»</summary><p>El nombre de <code>class</code> o de <code>file</code> en el registro no coincide con tu código. Copia el nombre exacto de la clase y comprueba que el archivo está en <code>players/custom/</code>.</p></details>
-            <details><summary>«no es una subclase de Player»</summary><p>Tu clase no hereda de <code>Player</code>. Escribe <code>class MiBot(Player):</code>.</p></details>
-            <details><summary>«Can't instantiate abstract class»</summary><p>Te falta implementar alguno de los cinco métodos. El mensaje dice cuál.</p></details>
-            <details><summary>«get_icon() debe devolver un único emoji»</summary><p>El icono es texto o son varios emojis. Devuelve uno solo, como <code>"🎲"</code>.</p></details>
-            <details><summary>«el nombre de un bot empieza siempre por mayúscula»</summary><p><code>get_name()</code> devuelve algo como <code>"mi bot"</code>. Empiézalo por mayúscula: <code>"Mi bot"</code>.</p></details>
-            <details><summary>«el nombre 'X' ya lo usa …»</summary><p>Otro bot tiene el mismo nombre. Cámbialo por uno único.</p></details>
-            <details><summary>«devolvió una jugada ilegal»</summary><p>Tu bot eligió una casilla que no encierra ninguna ficha. Elige siempre entre las de <code>legal_moves(state)</code>.</p></details>
-            <details><summary>«modificó el estado que recibió»</summary><p>El estado es inmutable. Trabaja con copias, o con <code>apply_move</code>, que devuelve un estado nuevo.</p></details>
-          </div>
-        </section>
-
-        <section class="block block--sm" id="a-enviar" aria-labelledby="h-a-enviar">
-          <h2 class="h2" id="h-a-enviar">Cómo enviarlo</h2>
-          <div class="send">
-            <div class="send__step">
-              <h3><span class="send__n" aria-hidden="true">1</span>Prepara tu copia</h3>
-              <p>Haz un <em>fork</em> del <a href="https://github.com/m3hervas/Reversi-Bounty">repositorio</a>, clónalo e instálalo (cambia <code>TU-USUARIO</code>).</p>
-              <figure class="code code--sm" data-lang="bash" data-code="preparar">
-                <figcaption class="code__bar">
-                  <span class="code__file">terminal</span>
-                  <button class="code__copy" type="button" aria-label="Copiar el código de terminal">Copiar</button>
-                </figcaption>
-                <pre><code>git clone https://github.com/TU-USUARIO/Reversi-Bounty.git
+        <h2 class="h2">Cómo enviarlo</h2>
+        <figure class="code" style="margin-inline:0">
+          <figcaption class="code__bar"><span>terminal</span><button class="code__copy" type="button" data-copy="git">Copiar</button></figcaption>
+<pre><code id="code-git">git clone https://github.com/TU-USUARIO/Reversi-Bounty.git
 cd Reversi-Bounty
 pip install -e ".[dev]"
-git checkout -b bot-mi-bot</code></pre>
-              </figure>
-            </div>
-            <div class="send__step">
-              <h3><span class="send__n" aria-hidden="true">2</span>Regístralo</h3>
-              <p>La línea de <code>players/custom/players.yaml</code>: tu archivo y el nombre de tu clase.</p>
-              <figure class="code code--sm" data-lang="yaml" data-code="registro">
-                <figcaption class="code__bar">
-                  <span class="code__file">players/custom/players.yaml</span>
-                  <button class="code__copy" type="button" aria-label="Copiar el código de players/custom/players.yaml">Copiar</button>
-                </figcaption>
-                <pre><code>players:
-  - file: mi_bot.py
-    class: MiBot
-</code></pre>
-              </figure>
-            </div>
-            <div class="send__step">
-              <h3><span class="send__n" aria-hidden="true">3</span>Compruébalo</h3>
-              <p>La primera es la prueba de contrato: juega tu bot de verdad. Las otras son las que hará GitHub.</p>
-              <figure class="code code--sm" data-lang="bash" data-code="comprobar">
-                <figcaption class="code__bar">
-                  <span class="code__file">terminal</span>
-                  <button class="code__copy" type="button" aria-label="Copiar el código de terminal">Copiar</button>
-                </figcaption>
-                <pre><code>pytest tests/test_contract.py -v
-pytest -q
-ruff check .</code></pre>
-              </figure>
-            </div>
-            <div class="send__step">
-              <h3><span class="send__n" aria-hidden="true">4</span>Súbelo</h3>
-              <p>Después pulsa <strong>Compare &amp; pull request</strong> en GitHub y rellena la plantilla.</p>
-              <figure class="code code--sm" data-lang="bash" data-code="subir">
-                <figcaption class="code__bar">
-                  <span class="code__file">terminal</span>
-                  <button class="code__copy" type="button" aria-label="Copiar el código de terminal">Copiar</button>
-                </figcaption>
-                <pre><code>git add players/custom
+git checkout -b bot-mi-bot
+pytest tests/test_contract.py -v
+git add players/custom
 git commit -m "Añade el bot Mi bot"
 git push -u origin bot-mi-bot</code></pre>
-              </figure>
-            </div>
-          </div>
-        </section>
+        </figure>
 
-        <section class="cta card" aria-labelledby="h-cta-anadir">
-          <div>
-            <h2 class="h2" id="h-cta-anadir">¿Listo para crear el tuyo?</h2>
-            <p>El tutorial completo, con un bot de ejemplo más elaborado, está en la documentación.</p>
+        <div class="cta">
+          <div><h2>¿Listo para luchar?</h2><p>El tutorial completo, con un bot más elaborado, está en la documentación.</p></div>
+          <div class="cta__act">
+            <a class="btn btn--gold" href="https://reversi-bounty.readthedocs.io/es/latest/tutorial/">Leer el tutorial</a>
+            <a class="btn btn--paper" href="#/bots">Ver los rivales</a>
           </div>
-          <div class="cta__actions">
-            <a class="btn btn--primary" href="https://reversi-bounty.readthedocs.io/es/latest/tutorial/">Leer el tutorial</a>
-            <a class="btn btn--secondary" href="#/bots">Ver los bots</a>
-          </div>
-        </section>
+        </div>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <div class="wrap footer__inner">
+    <div class="wrap footer__in">
       <p><b>Reversi Bounty</b> · Manuel, Juan Bosco y Marcos · Práctica de IA, CUNEF 2026/27</p>
-      <p class="footer__engine" id="footer-engine">Las reglas y los bots son el paquete Python del proyecto, ejecutado con Pyodide.</p>
-      <p class="footer__links">
-        <a href="https://github.com/m3hervas/Reversi-Bounty">Código</a>
-        <a href="https://reversi-bounty.readthedocs.io">Documentación</a>
-      </p>
+      <p id="footer-engine">Las reglas y los bots son el paquete Python del proyecto, ejecutado con Pyodide.</p>
+      <p><a href="https://github.com/m3hervas/Reversi-Bounty">Código</a> · <a href="https://reversi-bounty.readthedocs.io">Documentación</a></p>
+      <small>Maqueta de diseño (BETA) inspirada en <i>One Piece</i>. Proyecto universitario sin ánimo de lucro y sin relación con Eiichiro Oda, Shueisha ni Toei Animation; todos los dibujos son originales y las recompensas, de fantasía.</small>
     </div>
   </footer>
 
-  <noscript><p class="noscript">Esta web necesita JavaScript para ejecutar el motor del juego.</p></noscript>
+  <noscript><p style="padding:20px;text-align:center">Esta web necesita JavaScript para ejecutar el motor del juego.</p></noscript>
 
-  <script src="js/engine.js?v=1" defer></script>
-  <script src="js/board.js?v=4" defer></script>
-  <script src="js/sound.js?v=1" defer></script>
-  <script src="js/avatars.js?v=1" defer></script>
-  <script src="js/stage.js?v=1" defer></script>
-  <script src="js/play.js?v=5" defer></script>
-  <script src="js/toc.js?v=1" defer></script>
-  <script src="js/reglas.js?v=5" defer></script>
-  <script src="js/anadir.js?v=2" defer></script>
-  <script src="js/bots.js?v=2" defer></script>
-  <script src="js/app.js?v=4" defer></script>
+  <script src="js/engine.js?v=1792843182" defer></script>
+  <script src="js/crew.js?v=1792843182" defer></script>
+  <script src="js/app.js?v=1792843182" defer></script>
+  <script src="js/play.js?v=1792843182" defer></script>
 </body>
 </html>

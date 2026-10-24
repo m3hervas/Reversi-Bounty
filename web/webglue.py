@@ -42,6 +42,7 @@ __all__ = [
     "play_move",
     "players",
     "start_game",
+    "start_match",
     "view",
 ]
 
@@ -52,11 +53,13 @@ class BridgeError(ValueError):
 
 @dataclass
 class _Partida:
-    """El bot de la partida en curso. Se crea una vez por partida, como en el torneo."""
+    """Los bots de la partida en curso, uno por color: ``color -> (nombre, bot)``.
 
-    nombre: str
-    color: int
-    bot: Player
+    Puede haber dos (bot contra bot), uno (persona contra bot) o ninguno (dos personas: el puente
+    solo hace falta para las reglas). Se crean una vez por partida, como en el torneo.
+    """
+
+    bots: dict[int, tuple[str, Player]]
 
 
 #: Jugadores admitidos en el registro, ``nombre -> clase``. Los rellena :func:`init`.
@@ -276,6 +279,19 @@ def play_move(state: object, move: object) -> dict[str, Any]:
 # ------------------------------------------------------------------------- bots --- #
 
 
+def _crear_bot(nombre: object, semilla: int) -> tuple[str, Player]:
+    """El bot con ese nombre, creado con ``create(semilla)``; un error claro si no se puede."""
+    if not _JUGADORES:
+        raise BridgeError("no hay jugadores cargados: llama antes a init")
+    if not isinstance(nombre, str) or nombre not in _JUGADORES:
+        disponibles = ", ".join(_JUGADORES)
+        raise BridgeError(f"no hay ningún jugador llamado {nombre!r}; los hay: {disponibles}")
+    try:
+        return nombre, _JUGADORES[nombre].create(seed=semilla)
+    except Exception as error:  # código ajeno: lo contamos, no lo dejamos escapar
+        raise BridgeError(f"{nombre} no se pudo crear: {type(error).__name__}: {error}") from None
+
+
 @_puente
 def start_game(bot: object, bot_color: object, seed: object) -> dict[str, Any]:
     """Crea el bot rival de una partida nueva, con ``create(seed)`` como en el torneo.
@@ -284,21 +300,34 @@ def start_game(bot: object, bot_color: object, seed: object) -> dict[str, Any]:
     página vuelve a llamar aquí con la misma semilla y sigue desde la posición guardada.
     """
     global _PARTIDA
-    if not _JUGADORES:
-        raise BridgeError("no hay jugadores cargados: llama antes a init")
-    if not isinstance(bot, str) or bot not in _JUGADORES:
-        disponibles = ", ".join(_JUGADORES)
-        raise BridgeError(f"no hay ningún jugador llamado {bot!r}; los hay: {disponibles}")
     color = _entero(bot_color, "bot_color")
     if color not in (game.BLACK, game.WHITE):
         raise BridgeError("bot_color debe ser 1 (negras) o -1 (blancas)")
     semilla = _entero(seed, "seed")
-    try:
-        jugador = _JUGADORES[bot].create(seed=semilla)
-    except Exception as error:  # código ajeno: lo contamos, no lo dejamos escapar
-        raise BridgeError(f"{bot} no se pudo crear: {type(error).__name__}: {error}") from None
-    _PARTIDA = _Partida(nombre=bot, color=color, bot=jugador)
-    return {"bot": _ficha(_JUGADORES[bot]), "bot_color": color}
+    nombre, jugador = _crear_bot(bot, semilla)
+    _PARTIDA = _Partida(bots={color: (nombre, jugador)})
+    return {"bot": _ficha(_JUGADORES[nombre]), "bot_color": color}
+
+
+@_puente
+def start_match(black: object, white: object, seed: object) -> dict[str, Any]:
+    """Prepara una partida en la que cada color lo juega un bot, o nadie (una persona).
+
+    ``black`` y ``white`` son el nombre de un bot o ``None`` si ese lado lo juega una persona. Con
+    dos bots, cada uno se crea con su propia semilla (``seed`` para las negras y ``seed + 1`` para
+    las blancas), así que dos bots iguales no juegan idéntico y la partida se puede repetir.
+    """
+    global _PARTIDA
+    semilla = _entero(seed, "seed")
+    bots: dict[int, tuple[str, Player]] = {}
+    for color, nombre, desplazamiento in ((game.BLACK, black, 0), (game.WHITE, white, 1)):
+        if nombre is not None:
+            bots[color] = _crear_bot(nombre, semilla + desplazamiento)
+    _PARTIDA = _Partida(bots=bots)
+    return {
+        "black": _ficha(_JUGADORES[bots[game.BLACK][0]]) if game.BLACK in bots else None,
+        "white": _ficha(_JUGADORES[bots[game.WHITE][0]]) if game.WHITE in bots else None,
+    }
 
 
 @_puente
@@ -315,23 +344,24 @@ def bot_move(state: object) -> dict[str, Any]:
     antes = _estado(state)
     if game.is_terminal(antes):
         raise BridgeError("la partida ya ha terminado")
-    if antes.player != _PARTIDA.color:
-        raise BridgeError("no es el turno del bot")
+    if antes.player not in _PARTIDA.bots:
+        raise BridgeError("no es el turno de un bot")
+    nombre, bot = _PARTIDA.bots[antes.player]
     try:
-        jugada = request_move(_PARTIDA.bot, antes)
+        jugada = request_move(bot, antes)
     except Forfeit as forfeit:
-        return _abandono(_PARTIDA, antes, forfeit.reason)
+        return _abandono(antes.player, nombre, antes, forfeit.reason)
     return _jugar(antes, jugada)
 
 
-def _abandono(partida: _Partida, state: game.GameState, motivo: str) -> dict[str, Any]:
-    """La partida termina porque el bot ha incumplido las reglas: gana la persona."""
+def _abandono(color: int, nombre: str, state: game.GameState, motivo: str) -> dict[str, Any]:
+    """La partida termina porque un bot ha incumplido las reglas: gana el otro lado."""
     vista = _vista(state)
     vista.update(
         turn=None,
         legal=[],
         over=True,
-        winner=game.opponent(partida.color),
-        forfeit=f"{partida.nombre} {motivo}",
+        winner=game.opponent(color),
+        forfeit=f"{nombre} {motivo}",
     )
     return vista

@@ -1,147 +1,236 @@
-/* Arranque de la página: rutas, tema, indicador del motor y portada.
+/* La página: rutas por hash, tema, sonido, cartel personal, tablón de rivales y utilidades.
  *
- * Rutas por hash (#/jugar): la web es un solo index.html servido tal cual, sin servidor
- * que entienda direcciones como /jugar. Cada apartado es:
- *   1. una entrada en ROUTES,
- *   2. una <section class="view" data-view="nombre"> en index.html,
- *   3. un enlace en la navegación,
- *   4. opcionalmente, un módulo RB.views.nombre = { init(), enter() } en su propio .js.
- * Para añadir un apartado nuevo (Torneo, por ejemplo) no hay que tocar nada de lo que ya existe.
- *
- * Cada parte arranca por separado (ver `safe`): si una falla, se avisa y las demás siguen.
+ * Rutas (igual que el proyecto): #/jugar  #/reglas  #/bots  #/anadir  y #/ para la portada.
+ * El estado de la vista vive en <html data-view>; el CSS enseña la sección que toca.
+ * El motor de Python se arranca en cuanto carga la página: así, cuando alguien llega a
+ * «Lucha», el motor ya está listo.
  */
 (function () {
   "use strict";
 
   const RB = window.RB;
-  const ROUTES = {
-    "": { view: "inicio", title: "Reversi Bounty" },
-    jugar: { view: "jugar", title: "Jugar · Reversi Bounty" },
-    reglas: { view: "reglas", title: "Reglas · Reversi Bounty" },
-    bots: { view: "bots", title: "Bots · Reversi Bounty" },
-    anadir: { view: "anadir", title: "Añade tu bot · Reversi Bounty" },
+  const crew = RB.crew;
+  const VIEWS = ["inicio", "jugar", "reglas", "bots", "anadir"];
+  const $ = (id) => document.getElementById(id);
+
+  /* h("div", { class: "x", text: "…" }, hijo, …) */
+  RB.h = function h(tag, attrs, ...children) {
+    const node = document.createElement(tag);
+    Object.entries(attrs || {}).forEach(([key, value]) => {
+      if (value === null || value === undefined || value === false) return;
+      if (key === "class") node.className = value;
+      else if (key === "text") node.textContent = value;
+      else if (key === "dataset") Object.assign(node.dataset, value);
+      else if (key.startsWith("on")) node.addEventListener(key.slice(2), value);
+      else node.setAttribute(key, value === true ? "" : value);
+    });
+    children.flat().forEach((c) => { if (c !== null && c !== undefined && c !== false) node.append(c instanceof Node ? c : document.createTextNode(String(c))); });
+    return node;
   };
-  const THEME_KEY = "rb-tema";
-  /* Posiciones calculadas de antemano por el motor (scripts/generar_portada.py): se pintan al
-   * instante, sin esperar a que Python arranque en el navegador, que son unos segundos. */
-  RB.portada = fetch("data/portada.json?v=1").then((r) => (r.ok ? r.json() : null)).catch(() => null);
-  const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  const h = RB.h;
 
-  function safe(name, fn) {
-    try { fn(); } catch (err) { RB.reportError(new Error("No se pudo iniciar «" + name + "»: " + err.message)); }
+  // ------------------------------------------------------------------ sonido --- //
+
+  const sound = { on: true, ctx: null };
+  try { sound.on = localStorage.getItem("bb-sonido") !== "off"; } catch (e) { /* ok */ }
+
+  function tone(freq, start, dur, type, gain) {
+    const ctx = sound.ctx;
+    const osc = ctx.createOscillator();
+    const amp = ctx.createGain();
+    osc.type = type || "triangle";
+    osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
+    amp.gain.setValueAtTime(0.0001, ctx.currentTime + start);
+    amp.gain.exponentialRampToValueAtTime(gain || 0.12, ctx.currentTime + start + 0.01);
+    amp.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + start + dur);
+    osc.connect(amp).connect(ctx.destination);
+    osc.start(ctx.currentTime + start);
+    osc.stop(ctx.currentTime + start + dur + 0.05);
   }
 
-  // ------------------------------------------------------------------ rutas --- //
+  sound.play = function (kind, extra) {
+    if (!sound.on) return;
+    try {
+      sound.ctx = sound.ctx || new (window.AudioContext || window.webkitAudioContext)();
+      if (sound.ctx.state === "suspended") sound.ctx.resume();
+      if (kind === "move") {
+        tone(220, 0, 0.09, "square", 0.05);
+        const n = Math.min((extra && extra.flips) || 0, 6);
+        for (let i = 0; i < n; i++) tone(440 + i * 70, 0.08 + i * 0.05, 0.1, "triangle", 0.08);
+      } else if (kind === "pass") { tone(300, 0, 0.18, "sine"); tone(240, 0.16, 0.22, "sine"); }
+      else if (kind === "win") [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, i * 0.11, 0.3, "triangle", 0.12));
+      else if (kind === "lose") [392, 330, 262, 196].forEach((f, i) => tone(f, i * 0.16, 0.34, "sawtooth", 0.06));
+      else if (kind === "draw") { tone(392, 0, 0.25); tone(392, 0.28, 0.35); }
+      else if (kind === "stamp") { tone(110, 0, 0.18, "square", 0.14); tone(80, 0.05, 0.25, "sawtooth", 0.08); }
+    } catch (e) { /* sin audio: no pasa nada */ }
+  };
+  RB.sound = sound;
 
-  let current = null;
+  function syncSoundBtn() {
+    const btn = $("sound-btn");
+    btn.dataset.on = String(sound.on);
+    btn.setAttribute("aria-pressed", String(sound.on));
+    btn.setAttribute("aria-label", sound.on ? "Silenciar los sonidos" : "Activar los sonidos");
+  }
+
+  // -------------------------------------------------------------------- tema --- //
+
+  function toggleTheme() {
+    const d = document.documentElement;
+    const dark = d.dataset.theme ? d.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    d.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("bb-tema", d.dataset.theme); } catch (e) { /* ok */ }
+  }
+
+  // ------------------------------------------------------------------ router --- //
+
   function route() {
-    const match = /^#\/?([a-z-]*)/.exec(location.hash);
-    let name = match ? match[1] : "";
-    if (!(name in ROUTES)) {
-      name = "";
-      history.replaceState(null, "", "#/"); // una dirección desconocida lleva a la portada
+    const m = /^#\/?([a-z-]*)/.exec(location.hash);
+    const name = m && VIEWS.includes(m[1]) && m[1] ? m[1] : "inicio";
+    document.documentElement.dataset.view = name;
+    const titles = { inicio: "Reversi Bounty · Grand Line", jugar: "Lucha", reglas: "Leyes del mar", bots: "Rivales", anadir: "Añade tu Bot" };
+    document.title = name === "inicio" ? titles.inicio : titles[name] + " · Reversi Bounty";
+    window.scrollTo(0, 0);
+    const heading = document.querySelector('.view[data-view="' + name + '"] [tabindex="-1"]');
+    if (heading) heading.focus({ preventScroll: true });
+  }
+
+  // ----------------------------------------------------------- cartel personal --- //
+
+  function renderProfile(stamp) {
+    const p = crew.profile;
+    $("my-name").textContent = p.name || "Capitán Anónimo";
+    $("my-berries").textContent = crew.fmt(p.berries);
+    $("st-w").textContent = p.w; $("st-d").textContent = p.d; $("st-l").textContent = p.l;
+    const r = crew.rank(p.berries);
+    $("rank-txt").textContent = "Rango: " + r.title;
+    $("rank-next").textContent = r.next ? "Te faltan " + crew.fmt(r.nextAt - p.berries) + " berries para «" + r.next + "»." : "Has llegado a lo más alto del mar.";
+    $("rank-bar").setAttribute("aria-valuenow", String(r.pct));
+    $("rank-bar").firstElementChild.style.width = r.pct + "%";
+    if (stamp) {
+      const s = $("my-stamp");
+      s.classList.remove("on");
+      void s.offsetWidth;
+      s.classList.add("on");
+      setTimeout(() => s.classList.remove("on"), 2400);
     }
-    const { view, title } = ROUTES[name];
-    const first = current === null;
-    document.documentElement.dataset.view = view;
-    document.title = title;
-    document.querySelectorAll(".nav a").forEach((a) => {
-      if (a.dataset.route === view) a.setAttribute("aria-current", "page");
-      else a.removeAttribute("aria-current");
+  }
+  RB.renderProfile = renderProfile;
+
+  /* Una victoria, un empate o una derrota de la persona frente a un bot. Devuelve los berries ganados. */
+  RB.recordResult = function (bot, outcome, diff) {
+    const p = crew.profile;
+    const earned = crew.reward(bot, diff, outcome);
+    p.berries += earned;
+    if (outcome === "win") p.w++; else if (outcome === "draw") p.d++; else p.l++;
+    crew.save();
+    renderProfile(false);
+    return earned;
+  };
+
+  // ------------------------------------------------------- tablón de rivales --- //
+
+  /* La foto del cartel: si el rival tiene personaje, una "pantalla de selección" translúcida con
+   * él de pie; si no (un bot nuevo del registro), su emoji de siempre. */
+  RB.fillPic = function (el, bot, fallback, persona) {
+    const p = persona || crew.persona(bot);
+    el.classList.toggle("sel", !!(bot && p.img));
+    el.style.removeProperty("--c");
+    if (!bot || !p.img) { el.replaceChildren(document.createTextNode(bot ? bot.icon : fallback)); return; }
+    el.style.setProperty("--c", p.accent);
+    el.replaceChildren(
+      h("i", { class: "sel__floor" }),
+      h("img", { class: "sel__char", src: p.img, alt: "", width: "300", height: "400", decoding: "async" }),
+      h("i", { class: "sel__shine" }),
+      h("span", { class: "sel__tag", text: bot.icon }),
+    );
+  };
+
+  function wantedCard(bot, extra) {
+    const p = crew.persona(bot);
+    const pic = h("div", { class: "wanted__pic", "aria-hidden": "true" });
+    RB.fillPic(pic, bot, "🏴‍☠️");
+    return h("article", { class: "rival" },
+      h("div", { class: "wanted paper" },
+        h("div", { class: "wanted__top", text: "SE BUSCA", style: "font-size:2rem" }),
+        pic,
+        h("div", { class: "wanted__sub", text: p.aka.toUpperCase() }),
+        h("div", { class: "wanted__name", text: bot.name }),
+        h("div", { class: "wanted__money" }, h("span", { text: crew.fmt(p.bounty) }), h("small", { text: "BERRIES" })),
+      ),
+      h("p", { class: "rival__desc", text: bot.description }),
+      extra,
+    );
+  }
+
+  function renderRivals(players) {
+    const box = $("rivals");
+    box.replaceChildren(...players.map((bot) => wantedCard(bot,
+      h("a", { class: "btn btn--sm", href: "#/jugar", onclick: () => RB.play && RB.play.challenge(bot.name), text: "¡Retarlo!" }))));
+    $("bots-count").textContent = players.length + (players.length === 1 ? " rival admitido" : " rivales admitidos") + " en el registro";
+  }
+
+  // ------------------------------------------------- mini tableros de las reglas --- //
+
+  /* . vacía · h sombrero · s calavera · t jugada · S calavera volteada · H sombrero volteado
+   · mapa: K tesoro · X torbellino · C arrecife · E costa */
+  function renderMinis() {
+    document.querySelectorAll("[data-mini]").forEach((box) => {
+      const rows = box.dataset.mini.split("|");
+      const cells = [];
+      rows.forEach((row) => Array.from(row).forEach((ch) => {
+        const cls = { h: "h", s: "s", t: "t", S: "s f", H: "h f", K: "k", X: "x", C: "c", E: "e" }[ch] || "";
+        cells.push(h("i", { class: cls }));
+      }));
+      box.replaceChildren(...cells);
+      box.setAttribute("role", "img");
+      box.setAttribute("aria-label", "Tablero de ejemplo");
     });
-    if (view !== current) {
-      current = view;
-      if (!first) {
-        // Al cambiar de apartado: arriba del todo y el foco en el título (lectores de pantalla).
-        window.scrollTo(0, 0);
-        const heading = document.querySelector('.view[data-view="' + view + '"] h1');
-        if (heading) heading.focus({ preventScroll: true });
-      }
-      const module = RB.views && RB.views[view];
-      if (module && module.enter) module.enter();
-    }
   }
 
-  // ------------------------------------------------------------------- tema --- //
+  // ------------------------------------------------------------------- init --- //
 
-  /* Por defecto sigue al sistema. Al pulsar el botón se fija el contrario y se guarda. */
-  function effectiveTheme() {
-    return document.documentElement.dataset.theme || (darkQuery.matches ? "dark" : "light");
-  }
-
-  function paintThemeButton() {
-    const btn = document.getElementById("theme-btn");
-    const dark = effectiveTheme() === "dark";
-    btn.dataset.current = dark ? "dark" : "light";
-    btn.setAttribute("aria-label", dark ? "Cambiar a tema claro" : "Cambiar a tema oscuro");
-  }
-
-  function initTheme() {
-    document.getElementById("theme-btn").addEventListener("click", () => {
-      const next = effectiveTheme() === "dark" ? "light" : "dark";
-      document.documentElement.dataset.theme = next;
-      try { localStorage.setItem(THEME_KEY, next); } catch (e) { /* no se recordará */ }
-      paintThemeButton();
+  function init() {
+    syncSoundBtn();
+    $("sound-btn").addEventListener("click", () => {
+      sound.on = !sound.on;
+      try { localStorage.setItem("bb-sonido", sound.on ? "on" : "off"); } catch (e) { /* ok */ }
+      syncSoundBtn();
+      if (sound.on) sound.play("move", { flips: 2 });
     });
-    darkQuery.addEventListener("change", paintThemeButton);
-    paintThemeButton();
-  }
+    $("theme-btn").addEventListener("click", toggleTheme);
 
-  // -------------------------------------------------------------- motor --- //
+    window.addEventListener("hashchange", route);
+    route();
 
-  function initEngineChip() {
-    const chip = document.getElementById("engine-chip");
-    const text = document.getElementById("engine-chip-text");
-    const set = (state, label, title) => {
-      chip.dataset.state = state;
-      text.textContent = label;
-      if (title) chip.title = title;
-    };
-    RB.engine.on("status", (msg) => set("loading", "Python…", msg));
-    RB.engine.on("restart", () => set("loading", "Python…", "Reiniciando el motor"));
-    RB.engine.on("fatal", (err) => set("error", "Sin motor", err));
+    const nameIn = $("name-in");
+    nameIn.value = crew.profile.name;
+    nameIn.addEventListener("input", () => { crew.profile.name = nameIn.value.trim(); crew.save(); renderProfile(false); if (RB.refreshPosters) RB.refreshPosters(); });
+    renderProfile(false);
+    renderMinis();
+
+    document.querySelectorAll("[data-copy]").forEach((btn) => btn.addEventListener("click", async () => {
+      const text = $("code-" + btn.dataset.copy).textContent;
+      try { await navigator.clipboard.writeText(text); btn.textContent = "¡Copiado!"; } catch (e) { btn.textContent = "Selecciona y copia"; }
+      setTimeout(() => { btn.textContent = "Copiar"; }, 1800);
+    }));
+
+    const chip = $("engine-chip");
+    RB.engine.on("status", (t) => { $("engine-text").textContent = t; });
     RB.engine.on("ready", (info) => {
-      set("ready", "Python " + info.python, "Python " + info.python + " con Pyodide " + info.pyodide + ", listo en " + (info.ms / 1000).toFixed(1) + " s");
-      document.getElementById("footer-engine").textContent =
-        "Las reglas y los bots son el paquete Python del proyecto: Python " + info.python + " con Pyodide " + info.pyodide + ", en tu navegador.";
+      chip.dataset.state = "ready";
+      $("engine-text").textContent = "Python " + info.python;
+      $("footer-engine").textContent = "Las reglas y los bots son el paquete Python del proyecto: Python " + info.python + " con Pyodide " + info.pyodide + ", cargado en " + (info.ms / 1000).toFixed(1) + " s.";
+      renderRivals(info.players);
     });
+    RB.engine.on("fatal", (msg) => {
+      chip.dataset.state = "error";
+      $("engine-text").textContent = "Sin motor";
+      $("bots-count").textContent = "No se pudo cargar el registro: " + msg;
+      $("rivals").replaceChildren();
+    });
+    RB.engine.start();
   }
 
-  // ------------------------------------------------------------- portada --- //
-
-  /* La portada enseña una apertura ya calculada, así aparece al instante; mientras, el motor de
-   * Python arranca detrás (el indicador de la cabecera avisa de cuándo está listo). */
-  function initHero() {
-    const host = document.getElementById("hero-board");
-    const caption = document.getElementById("hero-caption");
-    RB.paintBoard(host, null, { label: "Tablero vacío" });
-    RB.portada.then((data) => {
-      if (!data) {
-        caption.textContent = "";
-        return;
-      }
-      const opening = data.apertura.jugadas.join(" ");
-      RB.paintBoard(host, data.apertura.vista, { last: data.apertura.vista.move, label: "Tablero tras la apertura " + opening });
-      caption.textContent = "La apertura del tigre (" + opening + "), calculada por el motor de Python del proyecto.";
-    });
-  }
-
-  // ------------------------------------------------------------- arranque --- //
-
-  function boot() {
-    safe("el tema", initTheme);
-    safe("el sonido", () => RB.sound.init());
-    safe("el indicador del motor", initEngineChip);
-    safe("la portada", initHero);
-    Object.entries(RB.views || {}).forEach(([name, module]) => {
-      if (module.init) safe(name, module.init);
-    });
-    safe("las rutas", () => {
-      window.addEventListener("hashchange", route);
-      route();
-    });
-    RB.engine.start(); // el último paso: cuando ya escucha todo el mundo
-  }
-
-  boot();
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();
