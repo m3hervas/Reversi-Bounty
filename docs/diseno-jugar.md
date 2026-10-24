@@ -1,123 +1,101 @@
-# Diseño de la pestaña Jugar
+# Diseño de la web: Grand Line
 
-Esta página explica **por qué** la pestaña Jugar es como es. Cada decisión tiene una razón, y
-casi todas se pueden cambiar tocando un número o un archivo.
+Esta página explica **por qué** la web es como es. Cada decisión tiene una razón, y casi todas se
+pueden cambiar tocando un número o un archivo. La web sigue la ruta de la
+[guía de la asignatura](https://nim-arena.readthedocs.io/en/latest/guide/web-app/static-web/): una
+página estática (HTML, CSS y JavaScript, sin servidor ni *build*) que ejecuta en el navegador el mismo
+paquete de Python del proyecto con Pyodide, y se publica en GitHub Pages.
 
 ## La idea
 
-Jugar al Reversi contra un bot no tiene cara: es un tablero que responde. La pestaña recrea lo que
-pasa en una mesa de verdad. **Tú estás a un lado, el rival está al otro y entre los dos hay un
-tablero.** El rival es un personaje que reacciona a lo que haces, y el tablero es una pantalla un
-poco inclinada hacia ti.
+El Reversi ya es un juego de **dos bandos que se voltean**, y eso encaja con *One Piece*: de un lado
+los **sombreros de paja** y del otro las **calaveras**. Voltear una ficha es, literalmente, que cambie de
+bandera. Los bots son los rivales del tablón de recompensas y cada uno tiene su cartel de «Se busca».
 
 ## Qué ves
 
-| Zona | Qué es |
-| --- | --- |
-| Panel izquierdo (un tercio) | El título, el estado de la partida, el rival y el color. |
-| Escenario (dos tercios) | El rival al fondo, el tablero inclinado delante y los marcadores a los lados de su cabeza. |
+| Apartado | Ruta | Qué es |
+| --- | --- | --- |
+| Portada | `#/` | El título, una moneda que gira entre sombrero y calavera, y **tu cartel de «Se busca»**. |
+| Lucha | `#/jugar` | Un cartel a cada lado, el marcador arriba y el tablero en el centro. |
+| Rivales | `#/bots` | Un cartel por cada bot admitido en el registro. |
+| Leyes del mar | `#/reglas` | Las cuatro reglas con un ejemplo cada una, un mapa de las casillas y cinco consejos. |
+| Añade tu Bot | `#/anadir` | El código de ejemplo a la izquierda y los cuatro pasos a la derecha. |
 
 ## Las decisiones, una por una
 
-### 1. El escenario ocupa dos tercios de la pantalla
+### 1. Una web estática, y las reglas son de Python
 
-La partida es lo único importante de esta pestaña, así que se queda con casi todo el espacio. La
-columna del escenario vale `2fr` y la del panel `1fr` (mínimo 260 px). El escenario mide casi todo
-el alto de la ventana para que el tablero entero se vea sin hacer scroll.
+Ninguna regla del Reversi está en JavaScript. Las jugadas legales, los volteos, los pasos, el final y los
+bots salen del paquete `reversibounty`, que `web/py.zip` lleva al navegador. El JavaScript pregunta al
+puente (`web/webglue.py`) y dibuja. Un test comprueba que cada función que llama la web existe en el
+puente y que en el JS no hay reglas del juego.
 
-### 2. El tablero es una pantalla inclinada 18°
+### 2. Las fichas son dos caras de un disco
 
-Se inclina con `rotateX(18deg)` y una perspectiva suave. El borde de atrás se ve algo más pequeño y
-el de delante, a tamaño completo, igual que una pantalla apoyada en una mesa. **Solo 18°** porque
-más ángulo estrecha demasiado las casillas del fondo y cuesta pulsarlas. Las casillas siguen siendo
-botones normales: el navegador calcula bien dónde pinchas aunque estén inclinadas. Encima lleva un
-brillo muy tenue, como de cristal.
+Cada casilla tiene un disco con la cara del **sombrero de paja** (blancas) y la de la **calavera**
+(negras), hechas solo con CSS. Cambiar `data-color` basta para que la ficha gire con una transición:
+el JavaScript solo calcula el retardo con el que gira cada ficha según su distancia a la jugada. El
+tablero se construye una vez y no se vuelve a dibujar entero.
 
-### 3. El rival está sentado al otro lado
+### 3. Cada bando tiene su cartel
 
-El personaje está arriba, en el centro, y una **mesa** lo tapa de la cintura para abajo. Eso hace
-tres cosas a la vez: da profundidad (el tablero queda delante de él), deja a la vista justo lo que
-expresa (la cara) y evita dibujar el cuerpo entero.
+A izquierda y derecha del tablero hay un cartel de «Se busca» por bando. Un bot enseña a su personaje; una
+persona enseña a Luffy y su propio nombre y recompensa. Sobre cada cartel está el desplegable que elige
+quién juega ese bando, así se puede cambiar de jugadores **en cualquier momento** y poner **dos bots**
+a luchar entre ellos. El botón de nueva partida está junto al marcador, que va encima del tablero.
 
-### 4. El escenario es oscuro en los dos temas
+### 4. Los bots son independientes de quien los subió
 
-Es una escena con su propia luz, no un trozo de la página. Así el tablero verde y el personaje se
-ven igual de bien con el tema claro o el oscuro y solo hay que dibujar a cada personaje una vez. El
-panel de la izquierda sí sigue el tema de la web.
+Los carteles no enseñan los autores. Un bot es una clase de Python, no una persona: lo que importa es
+cómo juega. El registro sigue guardando los autores, pero la web no los muestra, y un test lo vigila.
 
-### 5. El avatar reacciona a la partida
+### 5. Los personajes son decoración, no datos
 
-Cada estado del juego tiene su gesto:
+El alias, las frases y el precio de cada rival están en `web/js/crew.js` y las imágenes en `web/img/`. El
+motor no sabe nada de ellos. Un bot nuevo sin personaje recibe un cartel genérico con su emoji y un
+precio calculado a partir de su nombre, así que **añadir un bot nunca rompe la web**.
 
-| Lo que pasa | Lo que hace el personaje |
+| Rival | Personaje | Alias |
+| --- | --- | --- |
+| Aleatorio | Mr. 2 | El Payaso Afortunado |
+| Avaricioso | Wapol | El Tragón del Botín |
+| Zeff minimax | Zeff | El Cocinero Estratega |
+
+Las imágenes de los personajes se hicieron con IA para este trabajo y están dentro de `web/img/`, con
+fondo transparente (los tests comprueban que tienen canal alfa).
+
+### 6. Tu recompensa es solo un juego
+
+Cada victoria contra un bot sube tu recompensa: más cuanto más temible es el rival. Se guarda en el
+navegador (`localStorage`) y sirve para divertirse; **no son los puntos del torneo**. Los rangos van de
+*Grumete* a *Emperador del Reversi*.
+
+### 7. Día y noche
+
+El tema claro es un día soleado en el mar y el oscuro, la misma isla de noche. Los colores son variables
+de `web/css/theme.css`, que se redefinen para el modo oscuro del sistema y para la elección a mano.
+
+### 8. Accesibilidad
+
+Hay un enlace para saltar al contenido, el foco se ve, cada casilla tiene un nombre («d3, calavera,
+jugada posible») y el tablero se maneja con las flechas y Enter. Con `prefers-reduced-motion` se quitan
+las animaciones.
+
+## Qué archivo toca qué
+
+| Quiero cambiar… | Archivo |
 | --- | --- |
-| Empieza la partida | Saluda con un saltito y una frase. |
-| Piensa el bot | Ladea la cabeza, levanta una ceja y aparecen tres puntos. |
-| Mueve el bot | **Estira un brazo hasta la casilla** y suelta la ficha. Después hace un saltito. |
-| Haces una jugada grande (4 fichas o más) | Se sorprende y dice una frase. |
-| El bot hace una jugada grande | Sonríe con destellos. |
-| Alguien pasa | Lo comenta. |
-| Gana el bot | Salta de alegría. |
-| Gana la persona | Se pone triste, con lágrimas. |
+| Colores, botones, barra superior | `web/css/theme.css` |
+| Portada, carteles, reglas, rivales, «Añade tu Bot» | `web/css/pages.css` |
+| Tablero, fichas, cartel del rival, marcador | `web/css/play.css` |
+| Frases, alias, precios y rangos | `web/js/crew.js` |
+| Rutas, tema, sonido, cartel personal | `web/js/app.js` |
+| La partida | `web/js/play.js` |
+| Un personaje | `web/img/` y su entrada en `web/js/crew.js` |
 
-También **sigue el puntero con los ojos** mientras lo mueves por el escenario (solo con ratón).
+## Limitaciones
 
-### 6. El brazo estirado
-
-Es lo que hace que parezca que el bot juega de verdad: la ficha sale de su hombro y viaja hasta la
-casilla elegida. Se dibuja como una barra girada hacia el destino y estirada con `scaleX`; la mano
-viaja por el mismo camino y a la misma vez. Dura **300 ms** al salir y **240 ms** al volver, porque
-ocurre decenas de veces por partida y no puede hacer esperar. Solo anima `transform`.
-
-### 7. Los movimientos tranquilos y los vistosos
-
-- **Siempre en marcha, muy suave:** respirar, mecerse, parpadear. Son CSS puro, así que no se
-  entrecortan mientras Python arranca.
-- **Solo en momentos puntuales:** el saltito, los destellos y las lágrimas. Un personaje que se
-  menea todo el rato distrae a quien juega.
-- **Con «reducir movimiento» activado** el brazo no se estira y el personaje solo cambia de cara.
-
-### 8. Los marcadores van a los lados de la cabeza
-
-Negras a la izquierda y blancas a la derecha, con el emoji del jugador en grande y una ficha del
-color que lleva. El turno se marca con un aro. Los puntitos de «pensando» ya no están en el
-marcador: los muestra el bocadillo.
-
-### 9. El bocadillo y el estado dicen lo mismo, cada uno a su manera
-
-El **estado** (en el panel) es claro y sirve a lectores de pantalla: «Te toca». El **bocadillo** lo
-dice con gracia: «Elige bien, que yo no me dejo». El bocadillo es decorativo y no se lee en voz
-alta, para no repetirlo.
-
-### 10. En el móvil todo se apila
-
-El escenario sube arriba (el tablero es lo primero) y el panel queda debajo; antes de empezar es al
-revés, para elegir rival. Los marcadores se reducen a icono y número y el bocadillo pasa a ser una
-tira de una línea sobre las coordenadas, para no tapar ninguna casilla.
-
-### 11. Las medidas salen del escenario, no de la pantalla
-
-El tamaño del tablero y del avatar usa unidades `cqw` y `cqh` (un porcentaje del propio
-escenario). Así los dos se reparten el alto sin una media query por cada tamaño de ventana.
-
-## Cómo añadir otro personaje
-
-1. Dibuja el personaje en un SVG de `viewBox="0 0 400 480"` con las mismas clases que Mr. 2
-   (`av__body`, `av__head`, las bocas `m-closed`, `m-grin`, `m-o` y `m-sad`, etc.). La lista completa
-   está en `web/js/avatars.js`.
-2. Regístralo con `RB.avatars.register({ id, name, spot, shoulder, head, svg, lines })`.
-3. Cambia `forBot()` para que cada bot use el suyo.
-
-Los estados de ánimo y las animaciones son comunes (`web/css/avatar.css`), así que un personaje
-nuevo reacciona al juego sin escribir nada más.
-
-## Dónde está cada cosa
-
-| Archivo | Qué contiene |
-| --- | --- |
-| `web/css/jugar.css` | La disposición, el escenario, el tablero inclinado y los marcadores. |
-| `web/css/avatar.css` | Los bucles, las caras y el brazo estirado. |
-| `web/js/avatars.js` | El dibujo de Mr. 2 y sus frases. |
-| `web/js/stage.js` | Lo que hace el personaje: ánimo, bocadillo, ojos y brazo. |
-| `web/js/play.js` | La partida; avisa al escenario de lo que pasa. |
-| `tests/test_web_jugar.py` | Comprueba que HTML, CSS y JS cuadran entre sí. |
+- La web necesita conexión la primera vez: Pyodide se descarga de un CDN.
+- No se ha probado con lector de pantalla ni en Safari.
+- Un bot que tarde más de 20 s pierde la partida y se reinicia el motor.

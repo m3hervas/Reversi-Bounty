@@ -1,155 +1,291 @@
-/* La partida: una persona contra un bot del registro.
+/* La lucha. Este archivo solo orquesta: cada pregunta sobre el juego (jugadas legales,
+ * volteos, pasos, final, qué juega el bot) se la hace al motor de Python por RB.engine.
  *
- * Este archivo solo orquesta. Cada pregunta sobre el juego (qué jugadas hay, qué pasa al
- * jugar, quién gana, qué juega el bot) se la hace al motor de Python a través de
- * RB.engine, y cada respuesta se dibuja entera con RB.paintBoard.
+ * El tablero se construye UNA vez (64 botones) y cada ficha es un disco de dos caras: cambiar
+ * data-color basta para que gire con una transición CSS. Aquí solo se calcula el retardo
+ * (--delay) con el que gira cada ficha según su distancia a la jugada.
  *
- * Cómo sobrevive a quien la usa:
- *   - `busy`: mientras se espera a Python no se acepta ningún clic (doble clic, clics
- *     durante el turno del bot o después del final no hacen nada).
- *   - `token`: cada partida nueva lo sube. Una respuesta que llega de una partida ya
- *     abandonada se descarta en lugar de pintarse encima de la nueva.
- *   - La partida se guarda en localStorage tras cada jugada: si se recarga la página, se
- *     vuelve a crear el bot con la misma semilla y se sigue desde la posición guardada.
- *   - Si el bot falla, pierde y se cuenta por qué; si no contesta a tiempo, se reinicia el
- *     motor y también pierde. Ningún fallo deja la página en blanco o un botón muerto.
+ * Cada bando tiene su cartel de «Se busca»: un bot enseña a su personaje y una persona enseña
+ * al pirata de pixel art con su nombre y su recompensa. Los selectores de arriba siempre están
+ * activos: se puede cambiar de jugadores y empezar otra partida en cualquier momento, y también
+ * poner dos bots a pelear entre ellos.
+ *
+ * Calaveras = negras = color 1 (mueven primero). Sombreros de paja = blancas = color -1.
  */
 (function () {
   "use strict";
 
   const RB = window.RB;
   const h = RB.h;
-  const STORE_GAME = "rb-partida";
-  const STORE_PREFS = "rb-ajustes";
-  const BOT_DELAY_MS = 600;     // pausa antes de que mueva el bot: así se ve la jugada
-  const PASS_DELAY_MS = 1300;   // tiempo para leer el aviso de paso
-  const BOT_TIMEOUT_MS = 20000; // un bot que tarda más se da por colgado
-  const COLOR = { 1: "negras", "-1": "blancas" };
+  const crew = RB.crew;
+  const $ = (id) => document.getElementById(id);
+  const STORE_GAME = "bb-partida";
+  const STORE_PREFS = "bb-ajustes";
+  const BOT_DELAY_MS = 650;
+  const PASS_DELAY_MS = 1400;
+  const BOT_TIMEOUT_MS = 20000;
+  const COLORS = [1, -1];
+  const SIDE = { 1: "calaveras", "-1": "sombreros" };
+  const COLS = "abcdefgh";
+  const WORD = { 1: "calavera", "-1": "sombrero", 0: "vacía" };
+  const INITIAL = Array.from({ length: 8 }, (_, r) => Array.from({ length: 8 }, (_, c) => (r === 3 && c === 3) || (r === 4 && c === 4) ? -1 : (r === 3 && c === 4) || (r === 4 && c === 3) ? 1 : 0));
+  const CORNERS = ["0,0", "0,7", "7,0", "7,7"];
 
-  const game = {
-    token: 0,
-    phase: "setup",  // setup | playing | over
-    players: [],
-    bot: null,       // identidad del rival: { name, icon, authors, description }
-    human: 1,        // color de la persona
-    seed: 0,
-    view: null,      // la última respuesta del motor
-    busy: false,
-  };
+  const game = { token: 0, phase: "setup", players: [], seats: { 1: { kind: "human" }, "-1": { kind: "human" } }, seed: 0, view: null, busy: false, lastBot: null, focus: "3,3" };
   const ui = {};
+  const cells = [];
 
-  // ------------------------------------------------------------- utilidades --- //
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const message = (e) => (e && e.message ? e.message : String(e));
+  const key = (m) => m[0] + "," + m[1];
+  function store(k, v) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* ok */ } }
+  function load(k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } }
 
-  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-  const message = (err) => (err && err.message ? err.message : String(err));
+  // ----------------------------------------------------------- asientos --- //
 
-  function store(key, value) {
-    try {
-      if (value === null) localStorage.removeItem(key);
-      else localStorage.setItem(key, JSON.stringify(value));
-    } catch (e) { /* sin almacenamiento (modo privado): la web funciona igual */ }
+  const isHuman = (c) => game.seats[c].kind === "human";
+  const botOf = (c) => (isHuman(c) ? null : game.seats[c].bot);
+  const humanCount = () => COLORS.filter(isHuman).length;
+  const botCount = () => 2 - humanCount();
+
+  function label(c) {
+    if (!isHuman(c)) return botOf(c).name;
+    return humanCount() === 1 ? "Tú" : "Los " + SIDE[c];
   }
 
-  function load(key) {
-    try { return JSON.parse(localStorage.getItem(key) || "null"); } catch (e) { return null; }
+  function seatOf(value) {
+    if (value === "human") return { kind: "human" };
+    const bot = game.players.find((p) => p.name === value);
+    return bot ? { kind: "bot", bot: bot } : { kind: "human" };
+  }
+  function selection() { const s = {}; COLORS.forEach((c) => { s[c] = seatOf(ui.seat[c].value); }); return s; }
+  function savedSeats() { return { "1": isHuman(1) ? null : botOf(1).name, "-1": isHuman(-1) ? null : botOf(-1).name }; }
+  const sameSeat = (a, b) => a.kind === b.kind && (a.kind === "human" || a.bot === b.bot);
+
+  // ------------------------------------------------------------ el tablero --- //
+
+  function buildBoard() {
+    const grid = ui.board;
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const disc = h("span", { class: "disc", dataset: { color: "0" } }, h("span", { class: "face face--hat" }), h("span", { class: "face face--skull" }));
+        const cell = h("button", { class: "cell", type: "button", tabindex: "-1", dataset: { r: String(r), c: String(c) }, "aria-disabled": "true" }, disc);
+        cells.push({ cell: cell, disc: disc });
+        grid.append(cell);
+      }
+    }
+    grid.addEventListener("click", (e) => {
+      const cell = e.target.closest(".cell");
+      if (cell && cell.dataset.playable !== undefined) onPick([Number(cell.dataset.r), Number(cell.dataset.c)]);
+    });
+    grid.addEventListener("focusin", (e) => { const cell = e.target.closest(".cell"); if (cell) game.focus = cell.dataset.r + "," + cell.dataset.c; });
+    grid.addEventListener("keydown", (e) => {
+      const steps = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
+      const step = steps[e.key]; const cell = e.target.closest(".cell");
+      if (!step || !cell) return;
+      e.preventDefault();
+      const r = Math.min(7, Math.max(0, Number(cell.dataset.r) + step[0]));
+      const c = Math.min(7, Math.max(0, Number(cell.dataset.c) + step[1]));
+      cells.forEach((x) => { x.cell.tabIndex = -1; });
+      const next = cells[r * 8 + c].cell; next.tabIndex = 0; next.focus();
+    });
   }
 
-  /* El escenario (el avatar del rival) es teatro: si falta o falla, la partida sigue igual. */
-  function act(name, ...args) {
-    try { return RB.stage && RB.stage[name] ? RB.stage[name](...args) : undefined; } catch (err) { return undefined; }
+  const gridHasFocus = () => ui.board.contains(document.activeElement);
+
+  function paintBoard(view, animate) {
+    const board = view ? view.state.board : INITIAL;
+    const humanTurn = game.phase === "playing" && !!view && !view.over && isHuman(view.turn) && !game.busy;
+    const legal = new Set(humanTurn ? view.legal.map(key) : []);
+    const last = view && view.move ? key(view.move) : null;
+    const flipped = new Set(animate && view ? (view.flipped || []).map(key) : []);
+    if (!legal.has(game.focus) && legal.size && !gridHasFocus()) game.focus = legal.values().next().value;
+    ui.chart.dataset.human = humanTurn ? String(view.turn) : "";
+    ui.chart.dataset.wait = String(!humanTurn && game.phase === "playing");
+
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const k = r + "," + c;
+        const { cell, disc } = cells[r * 8 + c];
+        const color = board[r][c];
+        const dist = last ? Math.max(Math.abs(view.move[0] - r), Math.abs(view.move[1] - c)) : 1;
+        disc.style.setProperty("--delay", flipped.has(k) ? 90 + (dist - 1) * 60 + "ms" : "0ms");
+        if (animate && k === last) disc.dataset.pop = ""; else delete disc.dataset.pop;
+        if (flipped.has(k)) disc.dataset.flip = ""; else delete disc.dataset.flip;
+        disc.dataset.color = String(color);
+        const playable = legal.has(k);
+        if (playable) cell.dataset.playable = ""; else delete cell.dataset.playable;
+        if (k === last) cell.dataset.last = ""; else delete cell.dataset.last;
+        cell.tabIndex = k === game.focus ? 0 : -1;
+        cell.setAttribute("aria-disabled", playable ? "false" : "true");
+        cell.setAttribute("aria-label", COLS[c] + (r + 1) + ", " + WORD[color] + (playable ? ", jugada posible" : "") + (k === last ? ", última jugada" : ""));
+      }
+    }
   }
 
-  /* Un efecto de sonido. Si el sonido no está o está apagado, no hace nada. */
-  function cue(kind, extra) {
-    if (RB.sound) RB.sound.play(kind, extra);
-  }
+  // --------------------------------------------------------------- textos --- //
 
-  function setStatus(state, text) {
-    ui.status.dataset.state = state;
-    ui.statusText.textContent = text;
-  }
+  function setStatus(state, text) { ui.status.dataset.state = state; ui.statusText.textContent = text; }
 
   let toastTimer = null;
   function toast(text) {
     clearTimeout(toastTimer);
-    ui.toast.textContent = text;
-    ui.toast.hidden = false;
+    ui.toast.textContent = text; ui.toast.hidden = false;
     toastTimer = setTimeout(() => { ui.toast.hidden = true; }, PASS_DELAY_MS + 900);
   }
 
-  // ------------------------------------------------------------------ pintar --- //
+  function shout(text) {
+    ui.sfx.textContent = text;
+    ui.sfx.classList.remove("go"); void ui.sfx.offsetWidth; ui.sfx.classList.add("go");
+  }
 
-  /* Dibuja todo lo que depende de la partida a partir de game.view. */
+  /* Un bot habla desde el cartel de su bando; una persona no habla. */
+  const sayTimers = {}, moodTimers = {};
+  function say(kind, color) {
+    const bot = botOf(color);
+    if (!bot || game.phase === "setup") return;
+    const box = $("say-" + color);
+    box.hidden = false;
+    box.textContent = crew.line(bot, kind);
+    box.classList.remove("pop"); void box.offsetWidth; box.classList.add("pop");
+    clearTimeout(sayTimers[color]);
+    sayTimers[color] = setTimeout(() => { box.hidden = true; }, kind === "think" ? 2600 : 4200);
+  }
+  function mood(color, m, ms) {
+    const card = $("rcard-" + color);
+    card.dataset.mood = m;
+    clearTimeout(moodTimers[color]);
+    if (ms) moodTimers[color] = setTimeout(() => { card.dataset.mood = "neutral"; }, ms);
+  }
+  function quiet() {
+    COLORS.forEach((c) => { clearTimeout(sayTimers[c]); $("say-" + c).hidden = true; mood(c, "neutral", 0); });
+  }
+
+  function turnText(c) {
+    if (!isHuman(c)) return botOf(c).name + " está pensando…";
+    return humanCount() === 1 ? "Te toca. Elige una casilla marcada con la brújula." : "Turno de los " + SIDE[c] + ".";
+  }
+
+  // ------------------------------------------------------------- carteles --- //
+
+  /* Lo que enseña el cartel de un bando: un bot con su personaje, o una persona con el pirata de pixel art. */
+  function posterData(color, seat, people) {
+    if (seat.kind === "bot") {
+      const p = crew.persona(seat.bot);
+      return { key: "b:" + seat.bot.name, bot: seat.bot, persona: null, aka: p.aka, name: seat.bot.name, bounty: crew.fmt(p.bounty), foot: "" };
+    }
+    const prof = crew.profile;
+    if (people === 1) {
+      const r = crew.rank(prof.berries);
+      return { key: "h:" + prof.name + ":" + prof.berries, bot: { icon: "👤", name: "Tú" }, persona: crew.LUFFY, aka: r.title, name: prof.name || "Capitán Anónimo", bounty: crew.fmt(prof.berries), foot: "" };
+    }
+    return { key: "h2:" + color, bot: { icon: "👤", name: "Persona" }, persona: crew.LUFFY, aka: "CAPITÁN " + (color === 1 ? "CALAVERA" : "SOMBRERO"), name: color === 1 ? "Jugador 1" : "Jugador 2", bounty: "—", foot: "" };
+  }
+
+  const shownPoster = {};
+  function renderPosters(seats) {
+    const people = COLORS.filter((c) => seats[c].kind === "human").length;
+    COLORS.forEach((c) => {
+      const d = posterData(c, seats[c], people);
+      if (shownPoster[c] === d.key) return;
+      shownPoster[c] = d.key;
+      RB.fillPic($("pp-" + c + "-pic"), d.bot, "🏴‍☠️", d.persona);
+      $("pp-" + c + "-aka").textContent = d.aka.toUpperCase();
+      $("pp-" + c + "-name").textContent = d.name;
+      $("pp-" + c + "-bounty").textContent = d.bounty;
+      $("pp-" + c + "-foot").textContent = c === 1 ? "Bando de las calaveras" : "Bando de los sombreros";
+    });
+  }
+  RB.refreshPosters = function () { shownPoster[1] = shownPoster[-1] = null; if (ui.board) renderPosters(game.phase === "setup" ? selection() : game.seats); };
+
+  // --------------------------------------------------------------- render --- //
+
+  const lastScore = [2, 2];
   function render(animate) {
     const view = game.view;
-    const humanTurn = game.phase === "playing" && !!view && view.turn === game.human;
-    RB.paintBoard(ui.board, view, {
-      onPick: onPick,
-      locked: !humanTurn,
-      human: game.human,
-      last: view && view.move,
-      flipped: view && view.flipped,
-      animate: animate,
-      label: "Tablero de la partida",
-    });
-
-    // Antes de empezar, los marcadores enseñan lo que está elegido en el formulario.
-    const seat = game.phase === "setup" ? selection() : game;
+    paintBoard(view, animate);
+    const playing = game.phase === "playing";
+    const seats = game.phase === "setup" ? selection() : game.seats;
+    const people = COLORS.filter((c) => seats[c].kind === "human").length;
     const score = view ? view.score : [2, 2];
-    [1, -1].forEach((color, i) => {
-      const plate = document.getElementById("plate-" + color);
-      const isHuman = color === seat.human;
-      const who = document.getElementById("who-" + color);
-      who.textContent = isHuman ? "Tú" : (seat.bot ? seat.bot.name : "Bot");
-      who.title = who.textContent; // la placa recorta con «…»: el nombre completo está aquí
-      document.getElementById("avatar-" + color).textContent = isHuman ? "🙂" : (seat.bot ? seat.bot.icon : "🤖");
-      document.getElementById("count-" + color).textContent = String(score[i]);
-      plate.dataset.role = isHuman ? "you" : "rival";
-      plate.dataset.turn = String(!!view && game.phase === "playing" && view.turn === color);
-      plate.toggleAttribute("data-thinking", game.phase === "playing" && game.busy && !isHuman && !!view && view.turn === color);
+    COLORS.forEach((c, i) => {
+      const s = seats[c];
+      $("cn-" + c).textContent = s.kind === "bot" ? s.bot.icon + " " + s.bot.name : people === 1 ? "👤 Tú" : "👤 Jugador " + (c === 1 ? 1 : 2);
+      const n = $("cs-" + c);
+      n.textContent = String(score[i]);
+      if (score[i] !== lastScore[i]) { n.classList.remove("bump"); void n.offsetWidth; n.classList.add("bump"); lastScore[i] = score[i]; }
+      $("cc-" + c).dataset.turn = String(playing && !!view && !view.over && view.turn === c);
     });
-    ui.play.dataset.phase = game.phase;
-    if (!ui.start.disabled) ui.start.textContent = game.phase === "playing" ? "Nueva partida" : "Empezar partida";
+    const total = score[0] + score[1] || 1;
+    $("m-sk").style.flexBasis = (score[0] / total) * 100 + "%";
+    $("m-ht").style.flexBasis = (score[1] / total) * 100 + "%";
+    ui.intro.hidden = game.phase !== "setup";
+    renderPosters(seats);
+    syncAgain();
+  }
+
+  /* El botón de siempre: dice «con los cambios» si lo elegido arriba ya no es lo que se está jugando. */
+  function syncAgain() {
+    const sel = game.players.length ? selection() : null;
+    const changed = !!sel && game.phase !== "setup" && !COLORS.every((c) => sameSeat(sel[c], game.seats[c]));
+    ui.again.textContent = changed ? "Nueva partida con los cambios" : "Nueva partida";
+    ui.again.dataset.changed = String(changed);
+  }
+
+  function addLog(text, extra) {
+    const li = h("li", {}, h("span", { text: text }), extra ? h("em", { text: extra }) : null);
+    if (ui.log.firstElementChild && ui.log.firstElementChild.classList.contains("empty")) ui.log.replaceChildren();
+    ui.log.prepend(li);
+  }
+
+  // ------------------------------------------------------------- resultado --- //
+
+  function outcomeForHuman(view) {
+    if (view.winner === 0) return "draw";
+    return isHuman(view.winner) ? "win" : "lose";
   }
 
   function showResult() {
     const view = game.view;
-    const [black, white] = view.score;
-    const mine = game.human === 1 ? black : white;
-    const theirs = game.human === 1 ? white : black;
-    ui.resultTitle.textContent = view.winner === 0 ? "Empate" : view.winner === game.human ? "Has ganado" : "Gana " + game.bot.name;
-    ui.resultScore.textContent = "Tú " + mine + " – " + theirs + " " + game.bot.name;
-    ui.resultReason.hidden = !view.forfeit;
-    ui.resultReason.textContent = view.forfeit ? "El bot ha perdido por incumplir las reglas: " + view.forfeit + "." : "";
+    const solo = humanCount() === 1;
+    let title;
+    if (view.winner === 0) title = "¡Empate!";
+    else if (solo) title = outcomeForHuman(view) === "win" ? "¡Victoria!" : "Derrota";
+    else if (humanCount() === 2) title = "Ganan los " + SIDE[view.winner];
+    else title = "Gana " + label(view.winner);
+    $("res-title").textContent = title;
+    $("res-score").textContent = "Calaveras " + view.score[0] + " – " + view.score[1] + " Sombreros";
+    $("res-reason").hidden = !view.forfeit;
+    $("res-reason").textContent = view.forfeit ? "Ha perdido por incumplir las reglas: " + view.forfeit + "." : "";
+    const earn = $("res-earn");
+    earn.hidden = true;
+    if (solo && botCount() === 1) {
+      const out = outcomeForHuman(view);
+      const bot = COLORS.map(botOf).find(Boolean);
+      const gained = RB.recordResult(bot, out, view.score[0] - view.score[1]);
+      earn.hidden = false;
+      $("res-earn-txt").textContent = out === "win" ? "Tu recompensa sube" : out === "draw" ? "Reparto del botín" : "Esta vez no hay botín";
+      $("res-earn-n").textContent = (gained ? "+" : "") + crew.fmt(gained) + " berries";
+      if (out === "win") RB.renderProfile(true);
+      RB.refreshPosters();
+    }
     ui.result.hidden = false;
-    ui.rematch.focus({ preventScroll: true });
+    $("rematch").focus({ preventScroll: true });
   }
 
   // ---------------------------------------------------------------- partida --- //
 
-  function selection() {
-    const data = new FormData(ui.form);
-    const bot = game.players.find((p) => p.name === data.get("rival")) || game.players[0];
-    return { bot: bot, human: Number(data.get("color")) === -1 ? -1 : 1 };
-  }
-
   async function newGame() {
     if (!game.players.length) return;
     const token = ++game.token;
-    const choice = selection();
-    Object.assign(game, {
-      phase: "playing", bot: choice.bot, human: choice.human, busy: true,
-      seed: Math.floor(Math.random() * 2 ** 31),
-    });
-    ui.result.hidden = true;
-    ui.toast.hidden = true;
-    ui.note.hidden = true;
-    ui.rival.textContent = game.bot.name;
-    act("reset");
-    act("hello");
+    Object.assign(game, { phase: "playing", seats: selection(), busy: true, seed: Math.floor(Math.random() * 2 ** 31), lastBot: null });
+    ui.result.hidden = true; ui.toast.hidden = true;
+    ui.log.replaceChildren(h("li", { class: "empty", text: "Aún no se ha movido ninguna ficha." }));
+    quiet();
     setStatus("loading", "Preparando la partida…");
     try {
-      await RB.engine.call("start_game", [game.bot.name, -game.human, game.seed]);
+      const names = savedSeats();
+      await RB.engine.call("start_match", [names["1"], names["-1"], game.seed]);
       const view = await RB.engine.call("new_game");
       if (token !== game.token) return;
       game.view = view;
@@ -157,54 +293,70 @@
       if (token === game.token) failed("No se pudo empezar la partida: " + message(err));
       return;
     }
-    save();
-    render(false);
+    save(); render(false);
+    COLORS.forEach((c, i) => setTimeout(() => { if (token === game.token) say("hello", c); }, i * 500));
     continueGame(token);
   }
 
-  /* Decide qué pasa después de pintar una posición: el final, tu turno o el del bot. */
-  function continueGame(token) {
+  function announcePass(view) {
+    const passer = -view.mover;
+    RB.sound.play("pass");
+    toast(label(passer) + (isHuman(passer) && humanCount() === 1 ? ": no tienes jugadas posibles, pasas." : " no tiene jugada y pasa."));
+    addLog(label(passer) + " pasa");
+  }
+
+  async function continueGame(token) {
     const view = game.view;
     if (view.over) return finish();
-    if (view.turn === game.human) {
-      if (view.passed && view.mover === game.human) {
-        cue("pass");
-        act("passed", "bot");
-        toast(game.bot.name + " no tiene jugada y pasa. Te vuelve a tocar.");
-      }
-      game.busy = false;
-      render(false);
-      setStatus("you", "Te toca. Elige una de las casillas marcadas.");
+    if (view.passed) {
+      announcePass(view);
+      if (!isHuman(view.turn)) await wait(PASS_DELAY_MS);
+      if (token !== game.token) return;
+    }
+    if (isHuman(view.turn)) {
+      game.busy = false; render(false);
+      setStatus("you", turnText(view.turn));
     } else {
-      botTurn(token);
+      botTurn(token, view.turn);
     }
   }
 
+  /* Efectos de una jugada ya pintada: sonido, diario, gritos y la reacción del rival. */
+  function afterMove(view, color) {
+    const n = view.flipped.length;
+    addLog(label(color) + ": " + view.notation, "+" + n);
+    RB.sound.play("move", { flips: n });
+    if (CORNERS.includes(key(view.move))) shout("¡TESORO!");
+    else if (n >= 5) shout(["¡GOMU GOMU!", "¡BOOM!", "¡ZAS!"][view.move[0] % 3]);
+    else if (n >= 3) shout("¡ZAS!");
+    if (n >= 4 && !isHuman(-color)) { say("big", -color); mood(-color, "surprised", 1200); }
+    else if (!isHuman(color) && Math.random() < 0.4) say("move", color);
+  }
+
   function onPick(move) {
-    if (game.busy || game.phase !== "playing" || game.view.turn !== game.human) return;
+    if (game.busy || game.phase !== "playing" || !game.view || !isHuman(game.view.turn)) return;
     const token = game.token;
+    const color = game.view.turn;
     game.busy = true;
     RB.engine.call("play_move", [game.view.state, move]).then((view) => {
       if (token !== game.token) return;
-      game.view = view;
-      save();
-      render(true);
-      cue("move", { flips: view.flipped.length });
-      act("humanMoved", view.flipped.length, view.move);
+      game.view = view; save(); render(true);
+      afterMove(view, color);
       continueGame(token);
     }, (err) => {
       if (token !== game.token) return;
-      game.busy = false;
-      render(false);
+      game.busy = false; render(false);
       setStatus("error", "No se pudo hacer la jugada: " + message(err));
     });
   }
 
-  async function botTurn(token) {
-    game.busy = true;
+  async function botTurn(token, color) {
+    const bot = botOf(color);
+    game.busy = true; game.lastBot = color;
     render(false);
-    setStatus("thinking", game.bot.name + " está pensando…");
-    act("think", true);
+    setStatus("thinking", turnText(color));
+    mood(color, "think", 0);
+    if (Math.random() < 0.5) say("think", color);
     await wait(BOT_DELAY_MS);
     if (token !== game.token) return;
     let view;
@@ -212,91 +364,82 @@
       view = await RB.engine.call("bot_move", [game.view.state], { timeout: BOT_TIMEOUT_MS });
     } catch (err) {
       if (token !== game.token) return;
-      act("think", false);
+      mood(color, "neutral", 0);
       if (err.code === "timeout") {
-        // El worker se ha reiniciado: el bot pierde, como si hubiera fallado.
-        game.view = Object.assign({}, game.view, {
-          over: true, turn: null, legal: [], winner: game.human, move: null, flipped: [],
-          forfeit: game.bot.name + " no respondió en " + BOT_TIMEOUT_MS / 1000 + " s",
-        });
+        game.view = Object.assign({}, game.view, { over: true, turn: null, legal: [], winner: -color, move: null, flipped: [], forfeit: bot.name + " no respondió en " + BOT_TIMEOUT_MS / 1000 + " s" });
         return finish();
       }
-      return failed("El motor no pudo mover al bot: " + message(err));
+      return failed("El motor no pudo mover a " + bot.name + ": " + message(err));
     }
     if (token !== game.token) return;
-    act("think", false);
-    if (!view.forfeit) await act("reach", view.move, -game.human); // el brazo lleva la ficha y, al llegar, se pinta
-    if (token !== game.token) return;
-    game.view = view;
-    save();
-    render(!view.forfeit);
-    if (!view.forfeit) {
-      cue("move", { flips: view.flipped.length });
-      act("botMoved", view.flipped.length);
-    }
-    if (!view.over && view.turn !== game.human) {
-      // La persona no tiene jugada: pasa y el bot vuelve a mover.
-      cue("pass");
-      act("passed", "human");
-      toast("No tienes jugadas posibles: pasas.");
-      setStatus("thinking", "Pasas. " + game.bot.name + " vuelve a mover…");
-      await wait(PASS_DELAY_MS);
-      if (token !== game.token) return;
-    }
+    mood(color, "neutral", 0);
+    game.view = view; save(); render(!view.forfeit);
+    if (!view.forfeit) afterMove(view, color);
     continueGame(token);
   }
 
   function finish() {
-    game.phase = "over";
-    game.busy = false;
+    game.phase = "over"; game.busy = false;
     store(STORE_GAME, null);
     render(false);
     const view = game.view;
-    setStatus("over", view.forfeit
-      ? game.bot.name + " ha perdido por incumplir las reglas."
-      : "Fin de la partida. " + (view.winner === 0 ? "Empate." : view.winner === game.human ? "Has ganado." : "Gana " + game.bot.name + "."));
+    setStatus("over", view.forfeit ? "Un bot ha perdido por incumplir las reglas." : "Fin de la partida. Puedes cambiar de jugadores o empezar otra.");
     showResult();
-    cue(view.forfeit || view.winner === game.human ? "win" : view.winner === 0 ? "draw" : "lose");
-    if (view.forfeit) act("forfeit");
-    else act("finish", view.winner === 0 ? "draw" : view.winner === game.human ? "human" : "bot");
+    const solo = humanCount() === 1;
+    let snd = "draw";
+    if (view.winner !== 0) snd = solo && !isHuman(view.winner) ? "lose" : "win";
+    RB.sound.play(snd);
+    // Cada bot celebra o se lamenta según haya ganado su bando.
+    COLORS.forEach((c) => {
+      if (isHuman(c)) return;
+      if (view.forfeit && view.winner === -c) { say("forfeit", c); mood(c, "sad", 1800); }
+      else if (view.winner === 0) { say("draw", c); mood(c, "surprised", 1500); }
+      else if (view.winner === c) { say("win", c); mood(c, "happy", 1800); }
+      else { say("lose", c); mood(c, "sad", 1800); }
+    });
+    if (view.winner !== 0 && !view.forfeit) shout(solo ? (isHuman(view.winner) ? "¡VICTORIA!" : "¡DERROTA!") : "¡FIN!");
   }
 
-  /* Un error que no es culpa del bot (el motor, la red…): se cuenta y se puede seguir. */
   function failed(text) {
-    game.phase = "over";
-    game.busy = false;
-    store(STORE_GAME, null);
-    render(false);
-    setStatus("error", text + " Pulsa «Empezar partida» para intentarlo de nuevo.");
+    game.phase = "over"; game.busy = false;
+    store(STORE_GAME, null); render(false);
+    setStatus("error", text + " Pulsa «Nueva partida» para intentarlo de nuevo.");
   }
 
-  // ----------------------------------------------------- guardar y recuperar --- //
+  // ------------------------------------------------- guardar y recuperar --- //
 
   function save() {
     if (game.phase !== "playing" || !game.view || game.view.over) return store(STORE_GAME, null);
-    store(STORE_GAME, { v: 1, bot: game.bot.name, human: game.human, seed: game.seed, state: game.view.state, last: game.view.move || null });
+    store(STORE_GAME, { v: 1, seats: savedSeats(), seed: game.seed, state: game.view.state, last: game.view.move || null });
   }
 
-  /* Sigue la partida guardada antes de recargar. Si algo no cuadra, se olvida sin más. */
   async function resume() {
     const saved = load(STORE_GAME);
-    const bot = saved && saved.v === 1 && game.players.find((p) => p.name === saved.bot);
-    if (!bot) { store(STORE_GAME, null); return false; }
+    if (!saved || saved.v !== 1 || !saved.seats) { store(STORE_GAME, null); return false; }
+    const seats = {};
+    for (const c of COLORS) {
+      const name = saved.seats[String(c)];
+      if (name === null) seats[c] = { kind: "human" };
+      else {
+        const bot = game.players.find((p) => p.name === name);
+        if (!bot) { store(STORE_GAME, null); return false; }
+        seats[c] = { kind: "bot", bot: bot };
+      }
+    }
     const token = ++game.token;
-    Object.assign(game, { phase: "playing", bot: bot, human: saved.human === -1 ? -1 : 1, seed: saved.seed, busy: true });
+    Object.assign(game, { phase: "playing", seats: seats, seed: saved.seed, busy: true, lastBot: null });
     try {
-      await RB.engine.call("start_game", [bot.name, -game.human, saved.seed]);
+      await RB.engine.call("start_match", [saved.seats["1"], saved.seats["-1"], saved.seed]);
       const view = await RB.engine.call("view", [saved.state]);
       if (token !== game.token) return true;
       if (view.over) throw new Error("la partida guardada ya había terminado");
       game.view = Object.assign(view, { move: saved.last });
     } catch (err) {
       store(STORE_GAME, null);
-      Object.assign(game, { phase: "setup", bot: null, busy: false, view: null });
+      Object.assign(game, { phase: "setup", busy: false, view: null });
       return false;
     }
-    syncForm();
-    ui.rival.textContent = bot.name;
+    COLORS.forEach((c) => { ui.seat[c].value = isHuman(c) ? "human" : botOf(c).name; });
     render(false);
     toast("Hemos recuperado tu partida.");
     continueGame(token);
@@ -305,139 +448,79 @@
 
   // ------------------------------------------------------------ preparación --- //
 
-  function renderRivals(players, selected) {
-    ui.rivals.replaceChildren(...players.map((p) => h("label", { class: "rival", title: p.name + " · " + p.authors.join(", ") },
-      h("input", { type: "radio", name: "rival", value: p.name, checked: p.name === selected }),
-      h("span", { class: "rival__icon", "aria-hidden": "true", text: p.icon }),
-      h("span", { class: "rival__name" }, h("b", { text: p.name }), h("small", { text: p.authors.join(", ") })),
-    )));
-    describeRival();
+  function fillSeats(players, choice) {
+    COLORS.forEach((c) => {
+      const select = ui.seat[c];
+      select.replaceChildren(h("option", { value: "human", text: "👤  Tú" }), ...players.map((p) => h("option", { value: p.name, text: p.icon + "  " + p.name })));
+      select.value = choice[c];
+      select.disabled = false;
+    });
   }
 
-  function describeRival() {
-    const choice = selection();
-    ui.desc.textContent = choice.bot ? choice.bot.description : "";
-    if (game.phase !== "playing") ui.rival.textContent = choice.bot ? choice.bot.name : "un bot";
+  function onSeatChange() {
+    const s = selection();
+    store(STORE_PREFS, { "1": s[1].kind === "human" ? "human" : s[1].bot.name, "-1": s[-1].kind === "human" ? "human" : s[-1].bot.name });
+    if (game.phase === "setup") render(false); else syncAgain();
   }
 
-  function syncForm() {
-    const rival = ui.form.querySelector('input[name="rival"][value="' + CSS.escape(game.bot.name) + '"]');
-    if (rival) rival.checked = true;
-    ui.form.querySelector('input[name="color"][value="' + game.human + '"]').checked = true;
-    describeRival();
-  }
-
-  function onFormChange() {
-    describeRival();
-    if (game.phase === "setup") render(false);
-    const choice = selection();
-    store(STORE_PREFS, { bot: choice.bot && choice.bot.name, human: choice.human });
-    ui.note.hidden = game.phase !== "playing" || (choice.bot === game.bot && choice.human === game.human);
+  function defaultChoice(prefs) {
+    const ok = (v) => v === "human" || game.players.some((p) => p.name === v);
+    const first = game.players[0] ? game.players[0].name : "human";
+    return { 1: ok(prefs && prefs["1"]) ? prefs["1"] : first, "-1": ok(prefs && prefs["-1"]) ? prefs["-1"] : "human" };
   }
 
   async function onReady(info) {
     game.players = info.players;
     ui.retry.hidden = true;
-    if (!game.players.length) {
-      ui.rivals.replaceChildren(h("p", { class: "setup__hint", text: "El registro no tiene ningún jugador." }));
-      setStatus("error", "No hay rivales: añade un bot a players/.");
-      return;
-    }
-    const prefs = load(STORE_PREFS) || {};
-    const known = game.players.some((p) => p.name === prefs.bot);
-    renderRivals(game.players, known ? prefs.bot : game.players[0].name);
-    if (prefs.human === -1) ui.form.querySelector('input[name="color"][value="-1"]').checked = true;
-    ui.start.disabled = false;
+    if (!game.players.length) { setStatus("error", "No hay rivales: añade un bot a players/."); return; }
+    fillSeats(game.players, defaultChoice(load(STORE_PREFS)));
+    ui.start.disabled = false; ui.again.disabled = false;
+    ui.start.textContent = "¡Luchar!";
+    $("intro-hint").textContent = "Por defecto llevas los sombreros de paja y el rival, las calaveras.";
     render(false);
-    if (game.phase === "playing") return; // el motor se reinició a mitad de partida
+    if (game.phase === "playing") return;
     if (await resume()) return;
     if (game.phase !== "setup") return;
     game.view = await RB.engine.call("new_game").catch(() => null);
     render(false);
-    setStatus("idle", "Elige rival y color, y pulsa «Empezar partida».");
-    act("hello");
+    setStatus("idle", "Elige quién pelea con cada bandera y pulsa «¡Luchar!».");
   }
 
   function onFatal(error) {
-    ui.start.disabled = true;
-    ui.start.textContent = "Motor no disponible";
-    ui.rivals.replaceChildren(h("p", { class: "setup__hint", text: "No se han podido cargar los jugadores." }));
+    ui.start.disabled = true; ui.again.disabled = true; ui.start.textContent = "Motor no disponible";
+    COLORS.forEach((c) => { ui.seat[c].disabled = true; });
     setStatus("error", "No se pudo arrancar el motor de Python: " + error);
+    $("intro-hint").textContent = "Sin el motor no hay partida. Abre la web con un servidor local (python -m http.server) y con conexión.";
     ui.retry.hidden = false;
   }
 
   function init() {
-    ["play", "board", "toast", "status", "rivals", "result", "rematch", "change", "retry", "start"].forEach((id) => {
-      ui[id] = document.getElementById(id);
-    });
     Object.assign(ui, {
-      form: document.getElementById("setup"),
-      statusText: document.getElementById("status-text"),
-      desc: document.getElementById("rival-desc"),
-      note: document.getElementById("setup-note"),
-      rival: document.getElementById("play-rival"),
-      resultTitle: document.getElementById("result-title"),
-      resultScore: document.getElementById("result-score"),
-      resultReason: document.getElementById("result-reason"),
+      chart: $("chart"), board: $("board"), toast: $("toast"), sfx: $("sfx"), status: $("status"), statusText: $("status-text"),
+      intro: $("intro"), result: $("result"), start: $("start"), again: $("again"), retry: $("retry"), log: $("logbook"),
+      seat: { 1: $("seat-1"), "-1": $("seat--1") },
     });
-
-    act("init");
+    buildBoard();
     render(false);
-    // Antes de que Python arranque, el tablero ya enseña la posición de salida (precalculada).
-    RB.portada.then((data) => {
-      if (data && !game.view && game.phase === "setup") {
-        game.view = data.inicio;
-        render(false);
-      }
-    });
-    ui.form.addEventListener("submit", (event) => { event.preventDefault(); newGame(); });
-    ui.form.addEventListener("change", onFormChange);
-    ui.rematch.addEventListener("click", newGame);
-    ui.change.addEventListener("click", () => {
-      ui.result.hidden = true;
-      game.phase = "setup";
-      render(false);
-      setStatus("idle", "Elige rival y color, y pulsa «Empezar partida».");
-      const checked = ui.form.querySelector('input[name="rival"]:checked');
-      if (checked) checked.focus();
-    });
-    ui.retry.addEventListener("click", () => {
-      ui.retry.hidden = true;
-      setStatus("loading", "Reintentando…");
-      RB.engine.restart();
-    });
-
-    RB.engine.on("status", (text) => { if (game.phase === "setup" && !game.players.length) setStatus("loading", text); });
+    COLORS.forEach((c) => ui.seat[c].addEventListener("change", onSeatChange));
+    ui.start.addEventListener("click", newGame);
+    ui.again.addEventListener("click", newGame);
+    $("rematch").addEventListener("click", newGame);
+    $("change").addEventListener("click", () => { ui.result.hidden = true; ui.seat[1].focus(); });
+    ui.retry.addEventListener("click", () => { ui.retry.hidden = true; setStatus("loading", "Reintentando…"); RB.engine.restart(); });
+    RB.engine.on("status", (t) => { if (game.phase === "setup" && !game.players.length) setStatus("loading", t); });
     RB.engine.on("ready", (info) => { onReady(info).catch(RB.reportError); });
     RB.engine.on("fatal", onFatal);
   }
 
-  RB.views = RB.views || {};
-  /* Deja elegido un rival en el formulario (lo usa la página de Bots). Solo cambia lo que se
-   * verá en la próxima partida: no toca una partida en curso. */
-  function selectRival(name) {
-    const radio = ui.form && ui.form.querySelector('input[name="rival"][value="' + CSS.escape(name) + '"]');
-    if (!radio) return false;
-    radio.checked = true;
-    onFormChange();
-    return true;
-  }
-
-  /* «Jugar contra X» desde la página de Bots: si no hay una partida en curso, empieza una contra
-   * ese bot; si la hay, no la pisa (solo deja el rival elegido para la próxima). */
-  function playAgainst(name) {
-    if (!selectRival(name)) return false;
-    if (game.phase !== "playing" && !ui.start.disabled) newGame();
-    return true;
-  }
-
-  RB.views.jugar = {
-    init: init,
-    selectRival: selectRival,
-    playAgainst: playAgainst,
-    enter() {
-      // Al volver a este apartado, el foco vuelve al tablero si es tu turno.
-      if (game.phase === "playing" && !game.busy) render(false);
+  /* Desde el tablón de rivales: tú con los sombreros y ese rival con las calaveras. */
+  RB.play = {
+    challenge(name) {
+      if (!game.players.some((p) => p.name === name)) return;
+      ui.seat[1].value = name; ui.seat[-1].value = "human";
+      onSeatChange();
     },
   };
+
+  init();
 })();

@@ -49,12 +49,13 @@ class Lector(HTMLParser):
 
 lector = Lector()
 lector.feed(HTML)
-RUTAS = set(re.findall(r'(?:^|\s)"?([a-z]*)"?\s*:\s*\{\s*view:\s*"([a-z]+)"', APP))
+VISTAS_DE_APP = re.search(r"const VIEWS = \[([^\]]+)\]", APP)
+assert VISTAS_DE_APP, "app.js no declara VIEWS"
+NOMBRES = set(re.findall(r'"([a-z]+)"', VISTAS_DE_APP.group(1)))
 
 
 def test_hay_un_apartado_por_cada_ruta_y_al_reves():
-    vistas_de_rutas = {vista for _, vista in RUTAS}
-    assert vistas_de_rutas == set(lector.vistas)
+    assert NOMBRES == set(lector.vistas)
 
 
 def test_cada_apartado_tiene_su_enlace_en_la_navegacion_o_es_la_portada():
@@ -62,10 +63,9 @@ def test_cada_apartado_tiene_su_enlace_en_la_navegacion_o_es_la_portada():
 
 
 def test_los_enlaces_internos_llevan_a_apartados_que_existen():
-    nombres = {nombre for nombre, _ in RUTAS}
     for enlace in lector.hashes:
         destino = enlace.removeprefix("#/")
-        assert destino in nombres, f"el enlace {enlace} no lleva a ningún apartado"
+        assert destino == "" or destino in NOMBRES, f"el enlace {enlace} no lleva a ningún apartado"
 
 
 def test_el_script_de_la_cabecera_conoce_todos_los_apartados():
@@ -76,7 +76,7 @@ def test_el_script_de_la_cabecera_conoce_todos_los_apartados():
 
 
 def test_las_reglas_de_css_muestran_cada_apartado():
-    base = (WEB / "css" / "base.css").read_text(encoding="utf-8")
+    base = (WEB / "css" / "theme.css").read_text(encoding="utf-8")
     for vista in lector.vistas:
         assert f'html[data-view="{vista}"] .view[data-view="{vista}"]' in base, vista
 
@@ -96,11 +96,11 @@ def test_cada_archivo_que_carga_la_pagina_existe(archivo):
     assert (WEB / archivo).is_file(), f"index.html carga {archivo}, que no existe"
 
 
-def test_cada_modulo_de_js_registra_su_vista():
-    for vista in ("jugar", "reglas", "bots"):
-        assert vista in lector.vistas
-        fuentes = "".join(p.read_text(encoding="utf-8") for p in (WEB / "js").glob("*.js"))
-        assert re.search(rf"RB\.views\.{vista}\s*=", fuentes), f"ningún .js define RB.views.{vista}"
+def test_cada_apartado_tiene_un_titulo_h1_al_que_llevar_el_foco():
+    for vista in lector.vistas:
+        seccion = re.search(rf'<section class="view" data-view="{vista}"[^>]*aria-labelledby="([^"]+)"', HTML)
+        assert seccion, f"{vista} no tiene aria-labelledby"
+        assert re.search(rf'<h1[^>]*id="{seccion.group(1)}"[^>]*tabindex="-1"', HTML), vista
 
 
 def test_ninguna_ruta_es_absoluta_para_que_funcione_en_github_pages():
@@ -109,10 +109,3 @@ def test_ninguna_ruta_es_absoluta_para_que_funcione_en_github_pages():
         texto = fichero.read_text(encoding="utf-8")
         for coincidencia in re.finditer(r"""(?:src|href|url\()\s*=?\s*["']?(/[a-zA-Z][^"')\s]*)""", texto):
             pytest.fail(f"{fichero.name} usa la ruta absoluta {coincidencia.group(1)}")
-
-
-def test_las_paginas_nuevas_no_inyectan_html_con_datos_ajenos():
-    for nombre in ("bots.js", "reglas.js"):
-        texto = (WEB / "js" / nombre).read_text(encoding="utf-8")
-        assert "innerHTML" not in texto, f"{nombre} usa innerHTML"
-        assert "insertAdjacentHTML" not in texto, f"{nombre} usa insertAdjacentHTML"

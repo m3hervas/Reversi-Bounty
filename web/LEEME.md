@@ -14,3 +14,21 @@ deja arrancar el motor. Vuelve a ejecutar `build_web.py` cada vez que cambies el
 
 No reimplementa ninguna regla: ejecuta en el navegador, con [Pyodide](https://pyodide.org), el
 mismo paquete `reversibounty` que usan los tests.
+
+## Qué hay dentro
+
+```
+index.html        las cinco vistas (portada, lucha, rivales, reglas, añade tu bot)
+css/              theme.css (base), pages.css (páginas) y play.css (la partida)
+js/engine.js      la puerta de la página hacia el motor de Python
+js/worker.js      Pyodide en un hilo aparte
+js/crew.js        alias, frases y recompensas de cada rival
+js/app.js         rutas, tema, sonido, cartel personal y tablón de rivales
+js/play.js        la partida
+img/              los retratos de los personajes (PNG con fondo transparente)
+webglue.py        el puente entre JavaScript y el motor
+```
+
+Para añadir un personaje: pon su PNG con fondo transparente en `img/` y una entrada en `js/crew.js`
+con el **nombre exacto** del bot (el que devuelve `get_name()`). Más en
+[el diseño de la web](../docs/diseno-jugar.md).
