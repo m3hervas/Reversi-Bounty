@@ -4,10 +4,17 @@ name: Pages
 # lanzar a mano desde la pestaña Actions. Requisito 1.3: la web en una URL pública, sin instalar nada.
 #
 # Una vez: en el repositorio, Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
+#
+# También se publica cuando termina el workflow "Torneo" (paso 5.4): su commit en la rama
+# marcador no genera ningún evento push, así que sin "workflow_run" la web seguiría enseñando
+# la clasificación anterior.
 on:
   push:
     branches: [main]
   workflow_dispatch:
+  workflow_run:
+    workflows: [Torneo]
+    types: [completed]
 
 permissions:
   contents: read
@@ -21,6 +28,8 @@ concurrency:
 
 jobs:
   deploy:
+    # Tras un torneo, solo si ha terminado bien: si falló, la web ya tiene la última clasificación.
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment:
@@ -34,6 +43,15 @@ jobs:
       # web/py.zip no está en el repositorio: se genera aquí con el motor, los jugadores y el puente.
       - name: Empaquetar el motor en web/py.zip
         run: python scripts/build_web.py
+      # web/leaderboard.json tampoco está en el repositorio: se copia de la rama marcador, donde lo
+      # deja el workflow del torneo. Antes del primer torneo no existe y la web lo dice (paso 5.5).
+      - name: Añadir la clasificación del torneo
+        run: |
+          if git fetch --depth=1 origin marcador; then
+            git show FETCH_HEAD:results/leaderboard.json > web/leaderboard.json
+          else
+            echo "Todavía no hay rama marcador: la web se publica sin clasificación."
+          fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
