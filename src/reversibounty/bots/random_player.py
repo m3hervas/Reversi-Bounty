@@ -24,7 +24,7 @@ class RandomPlayer(Player):
 
     @classmethod
     def get_name(cls) -> str:
-        return "Aleatorio"
+        return "Mr. 2 aleatorio"
 
     @classmethod
     def get_authors(cls) -> list[str]:

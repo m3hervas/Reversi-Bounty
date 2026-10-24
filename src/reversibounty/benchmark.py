@@ -10,7 +10,7 @@ partidas se han jugado. Se lanza con::
 
     python -m reversibounty.benchmark
     python -m reversibounty.benchmark --partidas 40 --semilla 3
-    python -m reversibounty.benchmark --jugadores Aleatorio Avaricioso
+    python -m reversibounty.benchmark --jugadores "Mr. 2 aleatorio" "Wapol voraz"
 """
 
 from __future__ import annotations

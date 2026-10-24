@@ -58,8 +58,8 @@ precio calculado a partir de su nombre, así que **añadir un bot nunca rompe la
 
 | Rival | Personaje | Alias |
 | --- | --- | --- |
-| Aleatorio | Mr. 2 | El Payaso Afortunado |
-| Avaricioso | Wapol | El Tragón del Botín |
+| Mr. 2 aleatorio | Mr. 2 | El Payaso Afortunado |
+| Wapol voraz | Wapol | El Tragón del Botín |
 | Zeff minimax | Zeff | El Cocinero Estratega |
 
 Las imágenes de los personajes se hicieron con IA para este trabajo y están dentro de `web/img/`, con

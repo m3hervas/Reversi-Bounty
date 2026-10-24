@@ -8,7 +8,7 @@ torneo (1 s por jugada) y, si le sobra tiempo, mira más lejos.
 La evaluación de una posición, desde el punto de vista del bot, suma:
 
 * **Valor de las casillas** (esquinas muy buenas, casillas pegadas a la esquina malas),
-  reutilizando la tabla ``SQUARE_WEIGHTS`` del jugador avaricioso.
+  reutilizando la tabla ``SQUARE_WEIGHTS`` del jugador Wapol voraz.
 * **Movilidad**: tener más jugadas legales que el rival es una ventaja.
 * **Final de partida**: si la posición es terminal, solo cuenta la diferencia de fichas,
   con un peso enorme para que ganar siempre pese más que cualquier otra cosa.

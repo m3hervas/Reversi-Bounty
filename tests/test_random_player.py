@@ -10,7 +10,7 @@ from reversibounty.bots import RandomPlayer
 
 def test_random_player_es_un_player_con_identidad_valida():
     assert issubclass(RandomPlayer, Player)
-    assert RandomPlayer.get_name() == "Aleatorio"
+    assert RandomPlayer.get_name() == "Mr. 2 aleatorio"
     assert RandomPlayer.get_authors()
     assert RandomPlayer.get_description()
     assert RandomPlayer.get_icon() == "🃏"

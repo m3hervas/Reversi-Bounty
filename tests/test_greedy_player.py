@@ -1,4 +1,4 @@
-"""Tests del jugador avaricioso (tarea 3.1): gana con claridad al aleatorio."""
+"""Tests del jugador Wapol voraz (tarea 3.1): gana con claridad al aleatorio."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from reversibounty.bots.greedy_player import evaluate_move
 
 def test_greedy_player_es_un_player_con_identidad_valida():
     assert issubclass(GreedyPlayer, Player)
-    assert GreedyPlayer.get_name() == "Avaricioso"
+    assert GreedyPlayer.get_name() == "Wapol voraz"
     assert GreedyPlayer.get_authors()
     assert GreedyPlayer.get_description()
     assert GreedyPlayer.get_icon() == "😈"

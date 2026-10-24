@@ -18,7 +18,7 @@
   const KEY = "bb-recompensa";
 
   const PERSONAS = {
-    "Aleatorio": {
+    "Mr. 2 aleatorio": {
       aka: "El Payaso Afortunado", bounty: 15000000, img: "img/mr2.png", accent: "#ff4fa3",
       lines: {
         hello: ["¡Soy el magnífico capitán! Jugaré… a lo que salga.", "¡Que se prepare el mar, que voy a hacer una jugada!"],
@@ -29,7 +29,7 @@
         draw: ["¡Empate! ¡Eso es que soy invencible a medias!"], forfeit: ["¡Era una jugada secreta!"],
       },
     },
-    "Avaricioso": {
+    "Wapol voraz": {
       aka: "El Tragón del Botín", bounty: 28000000, img: "img/wapol.png", accent: "#ff8a1f",
       lines: {
         hello: ["Todas las fichas serán mías. ¡Todas!", "Cada ficha que voltee es una moneda más."],
