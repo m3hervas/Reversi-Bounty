@@ -107,7 +107,7 @@ sigue con el siguiente emparejamiento.
   "standings": [
     {
       "rank": 1,
-      "name": "Avaricioso",
+      "name": "Wapol voraz",
       "icon": "💰",
       "authors": ["Reversi Bounty"],
       "description": "Captura lo máximo posible, ...",
@@ -120,10 +120,10 @@ sigue con el siguiente emparejamiento.
   "games": [
     {
       "round": 1,
-      "black": "Aleatorio",
-      "white": "Avaricioso",
+      "black": "Mr. 2 aleatorio",
+      "white": "Wapol voraz",
       "seeds": [123, 456],
-      "winner": "Avaricioso",
+      "winner": "Wapol voraz",
       "score": [20, 44],
       "moves": ["d3", "c5", "..."],
       "forfeit": null

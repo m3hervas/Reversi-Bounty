@@ -95,9 +95,9 @@ def con_bot(monkeypatch, cls: type[Player]) -> None:
 
 def test_init_devuelve_los_jugadores_del_registro():
     jugadores = ok("init", str(PLAYERS_DIR))
-    aleatorio = next(j for j in jugadores if j["name"] == "Aleatorio")
+    aleatorio = next(j for j in jugadores if j["name"] == "Mr. 2 aleatorio")
     assert aleatorio == {
-        "name": "Aleatorio",
+        "name": "Mr. 2 aleatorio",
         "icon": RandomPlayer.get_icon(),
         "authors": RandomPlayer.get_authors(),
         "description": RandomPlayer.get_description(),
@@ -115,7 +115,7 @@ def test_la_lista_de_jugadores_sale_del_registro(tmp_path):
         "players:\n  - {module: reversibounty.bots.random_player, class: RandomPlayer}\n",
         encoding="utf-8",
     )
-    assert [j["name"] for j in ok("init", str(tmp_path))] == ["Aleatorio"]
+    assert [j["name"] for j in ok("init", str(tmp_path))] == ["Mr. 2 aleatorio"]
 
 
 def test_un_registro_roto_da_un_error_claro(tmp_path):
@@ -236,12 +236,12 @@ def test_un_argumento_que_no_es_texto_da_un_error_claro():
 @pytest.mark.parametrize(
     ("args", "mensaje"),
     [
-        (("no-existe", WHITE, 1), "Aleatorio"),
+        (("no-existe", WHITE, 1), "Mr. 2 aleatorio"),
         ((3, WHITE, 1), "ningún jugador"),
-        (("Aleatorio", 0, 1), "bot_color"),
-        (("Aleatorio", True, 1), "bot_color"),
-        (("Aleatorio", WHITE, "1"), "seed"),
-        (("Aleatorio", WHITE), "espera 3 argumentos"),
+        (("Mr. 2 aleatorio", 0, 1), "bot_color"),
+        (("Mr. 2 aleatorio", True, 1), "bot_color"),
+        (("Mr. 2 aleatorio", WHITE, "1"), "seed"),
+        (("Mr. 2 aleatorio", WHITE), "espera 3 argumentos"),
     ],
 )
 def test_start_game_rechaza_entradas_malas(args, mensaje):
@@ -253,7 +253,7 @@ def test_bot_move_sin_partida_da_un_error_claro():
 
 
 def test_bot_move_fuera_de_su_turno_da_un_error_claro():
-    ok("start_game", "Aleatorio", WHITE, 1)
+    ok("start_game", "Mr. 2 aleatorio", WHITE, 1)
     assert "turno" in error("bot_move", initial_state().to_dict())  # mueven negras
 
 
@@ -269,13 +269,13 @@ def test_un_fallo_inesperado_tambien_vuelve_como_json(monkeypatch):
 
 
 def test_start_game_crea_el_bot_y_devuelve_su_identidad():
-    partida = ok("start_game", "Aleatorio", WHITE, 5)
-    assert partida["bot"]["name"] == "Aleatorio"
+    partida = ok("start_game", "Mr. 2 aleatorio", WHITE, 5)
+    assert partida["bot"]["name"] == "Mr. 2 aleatorio"
     assert partida["bot_color"] == WHITE
 
 
 def test_bot_move_juega_una_jugada_legal():
-    ok("start_game", "Aleatorio", BLACK, 5)
+    ok("start_game", "Mr. 2 aleatorio", BLACK, 5)
     vista = ok("bot_move", initial_state().to_dict())
     assert vista["move"] in [list(m) for m in legal_moves(initial_state())]
     assert vista["mover"] == BLACK and vista["turn"] == WHITE
@@ -284,9 +284,9 @@ def test_bot_move_juega_una_jugada_legal():
 
 def test_con_la_misma_semilla_el_bot_repite_sus_jugadas():
     """Lo que hace la página al recargar: misma semilla, mismas decisiones."""
-    ok("start_game", "Aleatorio", BLACK, 9)
+    ok("start_game", "Mr. 2 aleatorio", BLACK, 9)
     primera = ok("bot_move", initial_state().to_dict())["move"]
-    ok("start_game", "Aleatorio", BLACK, 9)
+    ok("start_game", "Mr. 2 aleatorio", BLACK, 9)
     assert ok("bot_move", initial_state().to_dict())["move"] == primera
 
 
@@ -327,7 +327,7 @@ def test_una_partida_completa_a_traves_del_puente_es_la_de_play_game(color_bot):
     :func:`play_game` y los mismos jugadores: el puente no añade ni cambia ninguna regla.
     """
     semilla = 2026
-    ok("start_game", "Aleatorio", color_bot, semilla)
+    ok("start_game", "Mr. 2 aleatorio", color_bot, semilla)
     vista = ok("new_game")
     jugadas = []
     while not vista["over"]:
@@ -366,8 +366,8 @@ def test_las_fichas_volteadas_son_las_que_calcula_el_motor():
 
 
 def test_start_match_crea_los_bots_de_cada_lado_y_deja_a_none_para_las_personas():
-    partida = ok("start_match", "Aleatorio", None, 3)
-    assert partida["black"]["name"] == "Aleatorio"
+    partida = ok("start_match", "Mr. 2 aleatorio", None, 3)
+    assert partida["black"]["name"] == "Mr. 2 aleatorio"
     assert partida["white"] is None
 
 
@@ -377,7 +377,7 @@ def test_start_match_con_dos_personas_no_crea_ningun_bot():
 
 
 def test_con_una_persona_el_bot_solo_mueve_en_su_turno():
-    ok("start_match", None, "Aleatorio", 1)  # las negras son una persona
+    ok("start_match", None, "Mr. 2 aleatorio", 1)  # las negras son una persona
     assert "turno" in error("bot_move", initial_state().to_dict())
     vista = ok("play_move", initial_state().to_dict(), [2, 3])
     assert ok("bot_move", vista["state"])["move"] is not None
@@ -390,7 +390,7 @@ def test_start_match_rechaza_nombres_que_no_existen():
 
 def test_dos_bots_juegan_una_partida_entera_y_se_repite_con_la_misma_semilla():
     def partida(semilla):
-        ok("start_match", "Aleatorio", "Avaricioso", semilla)
+        ok("start_match", "Mr. 2 aleatorio", "Wapol voraz", semilla)
         vista = ok("new_game")
         jugadas = []
         while not vista["over"]:
@@ -404,13 +404,13 @@ def test_dos_bots_juegan_una_partida_entera_y_se_repite_con_la_misma_semilla():
 
 
 def test_dos_bots_iguales_no_juegan_la_misma_partida_porque_cada_uno_tiene_su_semilla():
-    ok("start_match", "Aleatorio", "Aleatorio", 11)
+    ok("start_match", "Mr. 2 aleatorio", "Mr. 2 aleatorio", 11)
     vista = ok("new_game")
     jugadas = []
     while not vista["over"]:
         vista = ok("bot_move", vista["state"])
         jugadas.append(tuple(vista["move"]))
-    ok("start_match", "Aleatorio", "Aleatorio", 11)
+    ok("start_match", "Mr. 2 aleatorio", "Mr. 2 aleatorio", 11)
     # con la misma semilla en los dos lados la partida sería simétrica: aquí no lo es
     assert len(set(jugadas)) > 4
 
@@ -418,7 +418,7 @@ def test_dos_bots_iguales_no_juegan_la_misma_partida_porque_cada_uno_tiene_su_se
 def test_si_el_bot_de_las_blancas_se_rompe_ganan_las_negras(monkeypatch):
     roto = BOTS_ROTOS[0]
     con_bot(monkeypatch, roto)
-    ok("start_match", "Aleatorio", roto.get_name(), 1)
+    ok("start_match", "Mr. 2 aleatorio", roto.get_name(), 1)
     vista = ok("play_move", initial_state().to_dict(), [2, 3])
     vista = ok("bot_move", vista["state"])
     assert vista["over"] is True and vista["winner"] == BLACK

@@ -6,108 +6,44 @@
   </a>
 </p>
 
-**Juega aquí, en la web: <https://m3hervas.github.io/Reversi-Bounty/>**
-
-No hay que instalar nada: abres el enlace y juegas contra un bot.
-
+[![Web](https://github.com/m3hervas/Reversi-Bounty/actions/workflows/pages.yml/badge.svg)](https://m3hervas.github.io/Reversi-Bounty/)
 [![Docs](https://readthedocs.org/projects/reversi-bounty/badge/?version=latest)](https://reversi-bounty.readthedocs.io)
+[![Licencia MIT](https://img.shields.io/badge/licencia-MIT-green)](LICENSE)
 
-Reversi (Othello) para humanos y bots: motor en Python, web para jugar contra la IA, API para programar tu propio bot y torneo automático con clasificación de recompensas. Práctica de IA, CUNEF 2026/27.
+Reversi (Othello) para humanos y bots: motor en Python, web para jugar contra la IA, API para
+programar tu propio bot y torneo automático con clasificación de recompensas. Práctica de IA,
+CUNEF 2026/27.
 
-## Qué hay en la web
+**Juega aquí, sin instalar nada: <https://m3hervas.github.io/Reversi-Bounty/>**
 
-- **Jugar**: una partida contra el bot que elijas.
-- **Reglas**: cómo se juega, con ejemplos sobre el tablero.
-- **Bots**: los jugadores disponibles, con su autor y su descripción.
-
-## Jugar en la terminal
-
-Dos personas pueden jugar una partida completa de Reversi desde la consola, sin web.
-
-1. Instala el proyecto (solo la primera vez):
-
-   ```bash
-   git clone https://github.com/m3hervas/Reversi-Bounty.git
-   cd Reversi-Bounty
-   python -m venv .venv
-   .venv\Scripts\activate
-   pip install -e ".[dev]"
-   ```
-
-   En Linux o macOS, el entorno se activa con `source .venv/bin/activate`.
-
-2. Lanza el juego con uno de estos dos comandos:
-
-   ```bash
-   reversi-play          # solo texto, funciona en cualquier terminal
-   reversi-play-color    # tablero con colores y fichas grandes
-   ```
-
-3. Al empezar verás las instrucciones. En tu turno, escribe una casilla marcada en el tablero, por ejemplo `d3`, y pulsa Enter. Escribe `?` para ver la ayuda y `q` para salir.
-
-Los comandos se instalan con el paquete, así que también funcionan con un simple `pip install` sin clonar el repositorio.
-
-## Jugar desde Python
-
-Con el proyecto instalado, se puede jugar sin la terminal. Dos jugadores aleatorios, con
-semilla para que la partida se repita:
-
-```python
-from reversibounty import play_game
-from reversibounty.bots import RandomPlayer
-
-resultado = play_game(RandomPlayer.create(seed=1), RandomPlayer.create(seed=2))
-print(resultado.winner, resultado.score)  # -1 (29, 35): ganan las blancas
-print(resultado.moves[:4])                # las primeras jugadas, como (fila, columna)
-```
-
-`resultado.winner` vale `1` si ganan las negras, `-1` si ganan las blancas y `0` si hay empate.
-`resultado.forfeit` es `None` si la partida acabó con normalidad, o explica por qué perdió un
-jugador que hizo una jugada ilegal o lanzó una excepción.
-
-Y el mismo bucle a mano, usando solo las funciones del motor:
-
-```python
-from reversibounty import apply_move, initial_state, is_terminal, legal_moves, score, winner
-
-state = initial_state()
-while not is_terminal(state):
-    state = apply_move(state, legal_moves(state)[0])  # siempre la primera jugada legal
-
-print(state)
-print(score(state), winner(state))
-```
-
-El nombre del paquete es `reversibounty`, todo junto y sin guion bajo.
-
-## Jugar un torneo
-
-Una liguilla entre todos los bots registrados: cada uno juega contra todos los demás, con los
-dos colores y durante varias rondas.
+## Instalar y jugar en la terminal
 
 ```bash
-reversi-tournament                 # 5 rondas, semilla 0, 1 segundo por jugada
-reversi-tournament --rondas 10     # más partidas por pareja
+git clone https://github.com/m3hervas/Reversi-Bounty.git
+cd Reversi-Bounty
+python -m venv .venv && .venv\Scripts\activate    # Linux/macOS: source .venv/bin/activate
+pip install -e ".[dev]"
+
+reversi-play          # dos personas, solo texto
+reversi-play-color    # tablero con colores
 ```
 
-Imprime la clasificación en el terminal y la guarda en `results/leaderboard.json`. Con la misma
-semilla, el resultado es siempre el mismo. Un bot que falla, hace trampas o se cuelga pierde
-solo sus propias partidas, y el torneo sigue hasta el final.
+En tu turno escribe una casilla (`d3`), `?` para la ayuda y `q` para salir.
 
-Además, GitHub juega el torneo **cada noche** de forma automática y guarda la clasificación en la
-rama [`marcador`](https://github.com/m3hervas/Reversi-Bounty/tree/marcador). También se puede
-lanzar a mano desde **Actions** → **Torneo** → **Run workflow**.
+## Torneo
+
+```bash
+reversi-tournament --rondas 10    # liguilla entre todos los bots; guarda results/leaderboard.json
+```
+
+GitHub lo juega **cada noche** y publica la clasificación en la rama
+[`marcador`](https://github.com/m3hervas/Reversi-Bounty/tree/marcador).
 
 ## Escribir un bot
 
-Un bot es una subclase de `Player` que declara su nombre, autores, descripción y un emoji, e
-implementa un único método, `choose_move`. Se añade como un archivo en `players/custom/` y una
-línea en `players/custom/players.yaml`, y se envía por pull request.
+Un bot es una subclase de `Player` con nombre, autores, descripción y emoji, y un método,
+`choose_move`. Se añade en `players/custom/` y se envía por pull request. Sigue el
+**[tutorial paso a paso](https://reversi-bounty.readthedocs.io/es/latest/tutorial/)**; los tests, el
+estilo y la prueba de contrato te dicen si cumple las reglas.
 
-Hay un **[tutorial paso a paso](https://reversi-bounty.readthedocs.io/es/latest/tutorial/)**, con
-un bot de ejemplo completo, que va desde clonar el proyecto hasta tener el bot fusionado. Las
-comprobaciones automáticas (tests, estilo y la prueba de contrato) dicen si tu bot cumple las
-reglas antes de que nadie lo revise.
-
-La referencia de la API (`Player`, el motor, `play_game` y el registro) está en la
-[documentación](https://reversi-bounty.readthedocs.io).
+Más en la [documentación](https://reversi-bounty.readthedocs.io): API, uso desde Python y reglas.

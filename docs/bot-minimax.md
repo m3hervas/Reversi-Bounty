@@ -42,7 +42,7 @@ vista del bot**:
 
 | Parte | Cómo se calcula |
 |---|---|
-| Casillas | Suma de la tabla de pesos (`SQUARE_WEIGHTS`, la misma que usa el bot avaricioso): esquinas +100, las casillas pegadas a una esquina negativas (-20 y -50), bordes algo positivos. Las fichas del rival restan. |
+| Casillas | Suma de la tabla de pesos (`SQUARE_WEIGHTS`, la misma que usa el bot Wapol voraz): esquinas +100, las casillas pegadas a una esquina negativas (-20 y -50), bordes algo positivos. Las fichas del rival restan. |
 | Movilidad | `5 × (mis jugadas legales − las del rival)`. Tener más opciones que el rival es una ventaja. |
 | Final de partida | Si la posición es terminal, solo cuenta la diferencia de fichas, más o menos 100 000 según gane o pierda. Ganar pesa siempre más que cualquier otra cosa. |
 
@@ -80,7 +80,7 @@ y una descripción), un `create(seed)` que guarde un `random.Random(seed)`, y un
 El script de medición compara a este bot con los demás en los dos sentidos:
 
 ```bash
-python -m reversibounty.benchmark --partidas 40 --jugadores aleatorio avaricioso "Zeff minimax"
+python -m reversibounty.benchmark --partidas 40 --jugadores "Mr. 2 aleatorio" "Wapol voraz" "Zeff minimax"
 ```
 
 ## Referencia

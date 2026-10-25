@@ -1,4 +1,4 @@
-"""El jugador avaricioso: aplica una regla práctica sin mirar hacia delante.
+"""El jugador Wapol voraz: aplica una regla práctica sin mirar hacia delante.
 
 Puntúa cada jugada legal con una regla sencilla sobre el Reversi y juega la que más puntúa;
 los empates se deshacen al azar. La regla combina cuatro cosas:
@@ -82,7 +82,7 @@ class GreedyPlayer(Player):
 
     @classmethod
     def get_name(cls) -> str:
-        return "Avaricioso"
+        return "Wapol voraz"
 
     @classmethod
     def get_authors(cls) -> list[str]:
