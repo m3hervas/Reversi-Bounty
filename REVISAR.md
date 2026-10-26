@@ -4,12 +4,12 @@ Revisión del motor, bots, registro, puente web y JS principal. Pendiente de rev
 
 ## Recortes seguros
 
-1. `players` en `web/webglue.py`: la web no lo llama (solo los tests). `legal_moves` NO quitarlo: la guía (4.2) pide poder pedir movimientos legales desde la consola del navegador y el README lo usa de ejemplo.
-2. `replace(state)` en `request_move` (`match.py`): `GameState` es inmutable, copiarlo no protege. Sustituir también el `Mover` Protocol por `Player`.
-3. `web/js/engine.js`: `engine.ready`, `freshReady`, `settle` y `statusText` no los usa nadie.
-4. `RB.views.bots.render` exportado solo «para probar casos extremos»: dejarlo privado si nada más lo usa.
-5. `_jugada` y `_entero` en el puente repiten `_as_move`/`is_legal` de `game.py`: dejar que decida el motor.
-6. `_has_moves` y `_moves_for` en `game.py` son casi la misma función; unificar. `__version__` está duplicado con `pyproject.toml`.
+1. HECHO. `players` en `web/webglue.py`: la web no lo llama (solo los tests). `legal_moves` NO quitarlo: la guía (4.2) pide poder pedir movimientos legales desde la consola del navegador y el README lo usa de ejemplo.
+2. ~~`replace(state)` en `request_move`~~ **DESCARTADO**: la guía (2.3 y 5.2) exige entregar a cada jugador una copia del estado y que el ejecutor solo conozca un objeto con `choose_move` (el `Mover` Protocol). No tocar.
+3. HECHO. `web/js/engine.js`: `engine.ready`, `freshReady`, `settle` y `statusText` no los usa nadie.
+4. NO APLICA (`bots.js` ya no existe). `RB.views.bots.render` exportado solo «para probar casos extremos»: dejarlo privado si nada más lo usa.
+5. HECHO a medias: `_jugada` eliminada (la resuelve `_jugar` con el motor); `_entero` se mantiene porque los tests exigen rechazar booleanos y textos. `_jugada` y `_entero` en el puente repiten `_as_move`/`is_legal` de `game.py`: dejar que decida el motor.
+6. HECHO `_has_moves`/`_moves_for` (ahora `_iter_moves`); `__version__` se deja tal cual (lo pide la API pública). `_has_moves` y `_moves_for` en `game.py` son casi la misma función; unificar. `__version__` está duplicado con `pyproject.toml`.
 
 ## Exceso de texto
 

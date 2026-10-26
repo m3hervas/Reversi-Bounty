@@ -104,10 +104,6 @@ def test_init_devuelve_los_jugadores_del_registro():
     }
 
 
-def test_players_devuelve_lo_mismo_que_init():
-    assert ok("players") == ok("init", str(PLAYERS_DIR))
-
-
 def test_la_lista_de_jugadores_sale_del_registro(tmp_path):
     """Un bot nuevo en players/ aparece en la web sin tocar el puente."""
     (tmp_path / "custom").mkdir()
@@ -120,11 +116,6 @@ def test_la_lista_de_jugadores_sale_del_registro(tmp_path):
 
 def test_un_registro_roto_da_un_error_claro(tmp_path):
     assert "registro de jugadores" in error("init", str(tmp_path))
-
-
-def test_players_sin_init_da_un_error_claro(monkeypatch):
-    monkeypatch.setattr(webglue, "_JUGADORES", {})
-    assert "init" in error("players")
 
 
 # -- Posiciones: el puente repite lo que dice el motor ---------------------- #
@@ -209,9 +200,9 @@ def test_la_partida_terminada_no_tiene_turno():
         ((initial_state().to_dict(), [0, 0]), "ilegal"),
         ((initial_state().to_dict(), "d4"), "ilegal"),
         ((initial_state().to_dict(), "z9"), "no válida"),
-        ((initial_state().to_dict(), [2]), "fila, columna"),
-        ((initial_state().to_dict(), [2, True]), "fila, columna"),
-        ((initial_state().to_dict(), None), "fila, columna"),
+        ((initial_state().to_dict(), [2]), "ilegal"),
+        ((initial_state().to_dict(), [2, True]), "ilegal"),
+        ((initial_state().to_dict(), None), "ilegal"),
         (({"board": [[0] * 8] * 7, "player": 1}, "d3"), "8 filas"),
         (({"board": [[0] * 8] * 8, "player": 2}, "d3"), "player"),
         (([1, 2], "d3"), "objeto"),

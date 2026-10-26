@@ -40,7 +40,6 @@ __all__ = [
     "legal_moves",
     "new_game",
     "play_move",
-    "players",
     "start_game",
     "start_match",
     "view",
@@ -125,25 +124,6 @@ def _estado(valor: object) -> game.GameState:
         raise BridgeError(f"estado no válido: {error}") from None
 
 
-def _jugada(valor: object) -> game.Move:
-    """Una jugada como ``[fila, columna]`` o en notación, como ``"d3"``.
-
-    Aquí solo se comprueba la forma; si la jugada es legal lo decide el motor.
-    """
-    if isinstance(valor, str):
-        try:
-            return game.str_to_move(valor)
-        except ValueError as error:
-            raise BridgeError(str(error)) from None
-    if (
-        isinstance(valor, list)
-        and len(valor) == 2
-        and all(isinstance(x, int) and not isinstance(x, bool) for x in valor)
-    ):
-        return valor[0], valor[1]
-    raise BridgeError(f"una jugada debe ser [fila, columna] o un texto como 'd3', no {valor!r}")
-
-
 def _entero(valor: object, nombre: str) -> int:
     if not isinstance(valor, int) or isinstance(valor, bool):
         raise BridgeError(f"{nombre} debe ser un número entero, no {valor!r}")
@@ -174,17 +154,20 @@ def _vista(state: game.GameState) -> dict[str, Any]:
     }
 
 
-def _jugar(antes: game.GameState, jugada: game.Move) -> dict[str, Any]:
+def _jugar(antes: game.GameState, jugada: Any) -> dict[str, Any]:
     """Aplica una jugada con el motor y describe lo que ha pasado.
 
     Las fichas volteadas son las casillas que cambian de color entre el tablero de antes y el
     de después (la casilla donde se juega estaba vacía, así que no cuenta): la página puede
     animarlas sin que el puente calcule nada por su cuenta. ``passed`` vale ``True`` si el
-    rival no tenía jugadas y el motor ha devuelto el turno a quien acaba de mover.
+    rival no tenía jugadas y el motor ha devuelto el turno a quien acaba de mover. La jugada es
+    ``[fila, columna]`` o notación como ``"d3"``; si es legal lo decide el motor.
     """
     try:
+        if isinstance(jugada, str):
+            jugada = game.str_to_move(jugada)
         despues = game.apply_move(antes, jugada)
-    except ValueError as error:  # el motor es quien decide si una jugada es legal
+    except ValueError as error:
         raise BridgeError(str(error)) from None
     volteadas = [
         [fila, columna]
@@ -234,14 +217,6 @@ def init(players_dir: object) -> list[dict[str, Any]]:
     return [_ficha(cls) for cls in _JUGADORES.values()]
 
 
-@_puente
-def players() -> list[dict[str, Any]]:
-    """Las identidades de los jugadores cargados por :func:`init`, en orden de admisión."""
-    if not _JUGADORES:
-        raise BridgeError("no hay jugadores cargados: llama antes a init")
-    return [_ficha(cls) for cls in _JUGADORES.values()]
-
-
 # --------------------------------------------------------------------- partidas --- #
 
 
@@ -273,7 +248,7 @@ def play_move(state: object, move: object) -> dict[str, Any]:
     antes = _estado(state)
     if game.is_terminal(antes):
         raise BridgeError("la partida ya ha terminado")
-    return _jugar(antes, _jugada(move))
+    return _jugar(antes, move)
 
 
 # ------------------------------------------------------------------------- bots --- #
