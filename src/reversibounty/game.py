@@ -26,6 +26,7 @@ Decisiones de diseño:
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass
 from typing import Any
 
@@ -175,23 +176,19 @@ def flips(board: Board, color: int, move: Move) -> list[Move]:
     return flipped
 
 
-def _moves_for(board: Board, color: int) -> list[Move]:
-    """Jugadas legales de ``color`` en ``board``, ordenadas por fila y columna (interno)."""
-    return [
+def _iter_moves(board: Board, color: int) -> Iterator[Move]:
+    """Jugadas legales de ``color`` en ``board``, por fila y columna (interno, perezoso)."""
+    return (
         (r, c)
         for r in range(SIZE)
         for c in range(SIZE)
         if board[r][c] == EMPTY and flips(board, color, (r, c))
-    ]
+    )
 
 
 def _has_moves(board: Board, color: int) -> bool:
     """Indica si ``color`` tiene alguna jugada legal. Se detiene en cuanto encuentra una."""
-    return any(
-        board[r][c] == EMPTY and flips(board, color, (r, c))
-        for r in range(SIZE)
-        for c in range(SIZE)
-    )
+    return next(_iter_moves(board, color), None) is not None
 
 
 def legal_moves(state: GameState) -> list[Move]:
@@ -204,7 +201,7 @@ def legal_moves(state: GameState) -> list[Move]:
         Las jugadas ``(fila, columna)`` ordenadas por fila y columna. Vacía si el jugador
         no puede mover (porque pasa o porque la partida ha terminado).
     """
-    return _moves_for(state.board, state.player)
+    return list(_iter_moves(state.board, state.player))
 
 
 def _as_move(move: object) -> Move | None:

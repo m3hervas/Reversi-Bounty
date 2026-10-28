@@ -1,7 +1,6 @@
 /* El motor: la única puerta de la página hacia Python (fachada del Web Worker).
  *
  *   RB.engine.start()                         arranca el worker (solo la primera vez)
- *   RB.engine.ready                           promesa: { players, python, pyodide, ms }
  *   RB.engine.call(fn, args, { timeout })     promesa con el resultado de webglue.fn
  *   RB.engine.restart()                       tira el worker y arranca otro
  *   RB.engine.on(evento, fn)                  "status" | "ready" | "fatal" | "restart"
@@ -18,21 +17,12 @@
   const pending = new Map();
   let worker = null;
   let nextId = 1;
-  let settle = null;
 
   const engine = {
     state: "idle", // idle | loading | ready | error
-    statusText: "",
     info: null,
     error: null,
-    ready: null,
   };
-
-  function freshReady() {
-    engine.ready = new Promise((resolve, reject) => { settle = { resolve, reject }; });
-    engine.ready.catch(() => {}); // quien no espere al motor no debe ver un error sin capturar
-  }
-  freshReady();
 
   function emit(type, payload) {
     listeners[type].forEach((fn) => {
@@ -44,7 +34,6 @@
     if (engine.state === "error") return;
     engine.state = "error";
     engine.error = message;
-    settle.reject(new Error(message));
     pending.forEach((entry) => entry.reject(new Error(message)));
     pending.clear();
     emit("fatal", message);
@@ -66,7 +55,6 @@
     worker.onmessage = (event) => {
       const msg = event.data;
       if (msg.type === "status") {
-        engine.statusText = msg.text;
         emit("status", msg.text);
       } else if (msg.type === "ready") {
         engine.state = "ready";
@@ -76,7 +64,6 @@
           pyodide: msg.pyodide,
           ms: Math.round(performance.now() - started),
         };
-        settle.resolve(engine.info);
         emit("ready", engine.info);
       } else if (msg.type === "fatal") {
         fail(msg.error);
@@ -129,10 +116,8 @@
     engine.state = "idle";
     engine.info = null;
     engine.error = null;
-    freshReady();
     emit("restart");
     start();
-    return engine.ready;
   }
 
   engine.start = start;
