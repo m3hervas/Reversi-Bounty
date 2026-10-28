@@ -18,14 +18,14 @@
   const KEY = "bb-recompensa";
 
   const PERSONAS = {
-    "Mr. 2 aleatorio": {
-      aka: "El Payaso Afortunado", bounty: 15000000, img: "img/mr2.png", accent: "#ff4fa3",
+    "Buggy aleatorio": {
+      aka: "El Payaso Afortunado", bounty: 15000000, img: "img/buggy.png", accent: "#9b5de5",
       lines: {
-        hello: ["¡Soy el magnífico capitán! Jugaré… a lo que salga.", "¡Que se prepare el mar, que voy a hacer una jugada!"],
-        think: ["Mmm… ¡esta! ¡O esta! ¡Da igual!", "Cierro los ojos y… ¡ahí va!"],
-        big: ["¡¿Quién te ha enseñado eso?!", "¡Eso no estaba en mi plan! (no tengo plan)"],
+        hello: ["¡Soy el magnífico capitán Buggy! Jugaré… a lo que salga.", "¡Y no me llames payaso! ¡Que empiece el espectáculo!"],
+        think: ["Mmm… ¡esta! ¡O esta! ¡Da igual!", "Tiro los cuchillos y… ¡ahí va!"],
+        big: ["¡¿Quién te ha enseñado eso?! ¡Ni un payaso lo vería venir!", "¡Eso no estaba en mi plan! (no tengo plan)"],
         move: ["¡Pura suerte genial!", "¡Lo hice a propósito, lo juro!", "¡Bum! ¡Casualidad con estilo!"],
-        win: ["¡Gané! ¡Era mi plan desde el principio!"], lose: ["¡Esto no cuenta, me han empujado!"],
+        win: ["¡Gané! ¡Siempre fue mi plan! ¡Gyahahaha!"], lose: ["¡Esto no cuenta, me han empujado!"],
         draw: ["¡Empate! ¡Eso es que soy invencible a medias!"], forfeit: ["¡Era una jugada secreta!"],
       },
     },

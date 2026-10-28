@@ -35,21 +35,21 @@ def test_un_numero_de_partidas_invalido_da_error(partidas):
 
 def test_la_tabla_dice_cuantas_partidas_se_jugaron():
     texto = format_table(
-        measure_all({"Mr. 2 aleatorio": RandomPlayer, "Wapol voraz": GreedyPlayer}, games=4, seed=2),
+        measure_all({"Buggy aleatorio": RandomPlayer, "Wapol voraz": GreedyPlayer}, games=4, seed=2),
         seed=2,
     )
-    assert "Mr. 2 aleatorio" in texto and "Wapol voraz" in texto
+    assert "Buggy aleatorio" in texto and "Wapol voraz" in texto
     assert "de 4 partidas" in texto and "semilla 2" in texto
 
 
 def test_el_comando_imprime_la_tabla(capsys):
-    codigo = main(["--partidas", "2", "--jugadores", "Mr. 2 aleatorio", "Wapol voraz"])
+    codigo = main(["--partidas", "2", "--jugadores", "Buggy aleatorio", "Wapol voraz"])
     assert codigo == 0
     assert "Tasas de victoria" in capsys.readouterr().out
 
 
 def test_los_nombres_de_la_terminal_no_distinguen_mayusculas(capsys):
-    codigo = main(["--partidas", "2", "--jugadores", "mr. 2 aleatorio", "WAPOL VORAZ"])
+    codigo = main(["--partidas", "2", "--jugadores", "buggy aleatorio", "WAPOL VORAZ"])
     assert codigo == 0
     salida = capsys.readouterr().out
-    assert "Mr. 2 aleatorio" in salida and "Wapol voraz" in salida
+    assert "Buggy aleatorio" in salida and "Wapol voraz" in salida

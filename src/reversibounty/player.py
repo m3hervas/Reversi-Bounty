@@ -56,7 +56,7 @@ class Player(ABC):
     def get_name(cls) -> str:
         """Nombre único y legible del jugador. Se mostrará en la clasificación.
 
-        Es un nombre propio, así que **siempre empieza por mayúscula**: ``"Mr. 2 aleatorio"``,
+        Es un nombre propio, así que **siempre empieza por mayúscula**: ``"Buggy aleatorio"``,
         ``"Esquinero"``, ``"Mi bot"``.
         """
 

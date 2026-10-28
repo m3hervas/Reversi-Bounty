@@ -95,6 +95,21 @@ sigue con el siguiente emparejamiento.
     infinito, consume CPU y hace más lentas las partidas siguientes, aunque no las detiene.
     Aislarlo del todo exigiría ejecutar cada bot en su propio proceso.
 
+## Dónde se publica la clasificación
+
+El torneo se juega **cada noche** en GitHub Actions (`torneo.yml`) y el resultado llega a la web sin
+que nadie intervenga:
+
+1. El workflow juega el torneo y guarda `leaderboard.json` en la rama **`marcador`**, no en `main`.
+   `main` está protegida (exige un pull request aprobado para cualquier cambio), así que un workflow
+   no puede escribir en ella; una rama aparte que solo contiene ese archivo evita saltarse la protección.
+2. Un commit hecho por un workflow no genera un evento `push`, así que `pages.yml` escucha además el
+   final del workflow «Torneo» (`workflow_run`). Entonces copia el archivo de `marcador` a
+   `web/leaderboard.json` y vuelve a publicar la web.
+3. La pestaña **Marcador** (`web/js/marcador.js`) descarga el archivo con `{ cache: "no-cache" }`, para
+   que el navegador no enseñe la copia del día anterior, y dibuja la tabla. No juega ninguna partida.
+   Antes del primer torneo el archivo no existe: la página lo dice en lugar de fallar.
+
 ## El archivo `leaderboard.json`
 
 ```json
@@ -120,7 +135,7 @@ sigue con el siguiente emparejamiento.
   "games": [
     {
       "round": 1,
-      "black": "Mr. 2 aleatorio",
+      "black": "Buggy aleatorio",
       "white": "Wapol voraz",
       "seeds": [123, 456],
       "winner": "Wapol voraz",

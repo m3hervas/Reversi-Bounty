@@ -55,15 +55,6 @@
 
 /* ============================ CARTELES ============================ */
 .section { padding: 70px 0 30px; }
-.adventures { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 26px; }
-.adv { position: relative; display: grid; gap: 8px; padding: 26px 22px 24px; text-decoration: none; color: #2b1a0f; transition: transform .25s cubic-bezier(.3,1.5,.5,1); }
-.adv:nth-child(1) { transform: rotate(-1.4deg); } .adv:nth-child(2) { transform: rotate(1deg); } .adv:nth-child(3) { transform: rotate(-.6deg); }
-.adv:hover { transform: rotate(0) translateY(-8px) scale(1.02); }
-.adv__ico { font-size: 2.6rem; line-height: 1; }
-.adv h3 { font: 400 1.5rem/1.1 var(--f-logo); }
-.adv p { font-weight: 600; opacity: .85; }
-.adv__go { margin-top: 6px; font: 900 .85rem/1 var(--f-body); letter-spacing: .12em; text-transform: uppercase; color: var(--red-dark); }
-.adv::before { content: ""; position: absolute; top: -9px; left: 50%; width: 22px; height: 22px; margin-left: -11px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #b0b0b0 60%, #606060); border: 2px solid var(--ink); }
 
 /* el cartel de SE BUSCA */
 .wanted { position: relative; padding: 22px 22px 20px; text-align: center; color: #2b1a0f; font-family: var(--f-poster); }
@@ -166,7 +157,6 @@
 @media (max-width: 900px) {
   .hero__grid, .mine, .duo { grid-template-columns: 1fr; }
   .coin-stage { min-height: 280px; order: -1; }
-  .adventures { grid-template-columns: 1fr; }
   .law, .law:nth-child(even) { grid-template-columns: 1fr; }
   .law:nth-child(even) .law__fig { order: 0; }
   .sun { width: 110px; right: 6%; top: 4%; }
@@ -227,3 +217,30 @@
 .law--sm .law__fig--pair .mini { max-width: 125px; }
 @media (max-width: 900px) { .laws { grid-auto-rows: auto; } .law--sm, .law--sm:nth-child(even) { grid-template-columns: 1fr; } }
 .stamp { z-index: 6; }
+
+/* ============================ MARCADOR ============================ */
+.marcador__msg { display: grid; justify-items: start; gap: 12px; padding: 22px 26px; max-width: 62ch; font-weight: 700; }
+.marcador__podio { margin-bottom: 34px; }
+.marcador__cartel .wanted { padding-top: 26px; }
+.marcador__medalla { position: absolute; z-index: 2; top: -14px; right: -10px; transform: rotate(8deg); padding: 6px 12px; font: 400 1.05rem/1 var(--f-logo); color: var(--ink); background: var(--gold); border: 3px solid var(--ink); border-radius: 999px; box-shadow: 0 3px 0 var(--ink); }
+.marcador__cartel[data-puesto="1"] .marcador__medalla { background: var(--gold); }
+.marcador__cartel[data-puesto="2"] .marcador__medalla { background: #dfe6ee; }
+.marcador__cartel[data-puesto="3"] .marcador__medalla { background: #e0a470; }
+.marcador__tabla { overflow-x: auto; padding: 8px 14px; margin-bottom: 26px; }
+.marcador__tabla table { width: 100%; min-width: 560px; border-collapse: collapse; color: #2b1a0f; font-weight: 700; }
+.marcador__tabla th, .marcador__tabla td { padding: 12px 10px; text-align: center; border-bottom: 2px dashed rgba(43, 26, 15, .28); }
+.marcador__tabla thead th { font: 900 .78rem/1 var(--f-body); letter-spacing: .12em; text-transform: uppercase; color: var(--red-dark); }
+.marcador__tabla tbody tr:last-child > * { border-bottom: 0; }
+.marcador__tabla td:nth-child(2) { text-align: left; }
+.marcador__puesto { font: 400 1.5rem/1 var(--f-logo); }
+.marcador__bot { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.marcador__bot > span:last-child { display: grid; min-width: 0; }
+.marcador__bot b { font-size: 1.1rem; overflow-wrap: anywhere; }
+.marcador__bot small { font-weight: 700; color: #5d4631; overflow-wrap: anywhere; }
+.marcador__icono { font-size: 1.8rem; line-height: 1; }
+.marcador__pts { font: 400 1.35rem/1 var(--f-logo); }
+.marcador__infr { display: grid; gap: 12px; padding: 20px 24px; margin-bottom: 26px; }
+.marcador__infr h2 { font: 400 1.4rem/1.1 var(--f-logo); }
+.marcador__motivo ul { margin: 6px 0 0; padding-left: 20px; font-weight: 600; overflow-wrap: anywhere; }
+@media (max-width: 600px) { .marcador__tabla { padding: 4px 6px; } .marcador__tabla th, .marcador__tabla td { padding: 10px 6px; } }
+.marcador__msg[hidden], .marcador__tabla[hidden], .marcador__infr[hidden] { display: none; }

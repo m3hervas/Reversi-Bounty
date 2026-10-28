@@ -250,3 +250,42 @@
 .play__grid { grid-template-columns: minmax(230px, 290px) minmax(0, 600px) minmax(230px, 290px); }
 .deck > *, .chart__in, .chart .grid { min-width: 0; max-width: 100%; }
 .poster-col .wanted__top { font-size: 2.1rem !important; white-space: nowrap; }
+
+/* ---------- pantallas estrechas ----------
+ * Las reglas de tres columnas de más arriba van después de las de «max-width: 1100px» y las anulaban:
+ * en una tablet la rejilla mezclaba 3 columnas con una plantilla de 2 y en el móvil la página se
+ * ensanchaba (scroll horizontal). Se vuelven a aplicar aquí, al final, para que manden. */
+@media (max-width: 1100px) {
+  .play__grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "deck deck" "p1 p2"; justify-content: stretch; }
+}
+@media (max-width: 640px) {
+  .play__grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "deck" "p1" "p2"; }
+  .poster-col { max-width: 340px; }
+}
+
+/* ---------- portátiles de poca altura ----------
+ * En una pantalla baja (1366x768, o 1920x1080 ampliada al 125 %) el tablero y los carteles no cabían:
+ * había que bajar la página para ver toda la partida. Aquí el tablero se dimensiona por la altura que
+ * queda libre, el marcador se compacta y los carteles laterales encogen. */
+@media (min-width: 1101px) and (max-height: 860px) {
+  .play { padding-top: 12px; }
+  .deck { gap: 10px; }
+  .scorebar { padding: 6px 12px 8px; }
+  .crewcard { padding: 4px 8px; gap: 8px; }
+  .crewcard__n { font-size: 1.6rem; }
+  .chart { width: min(100%, max(320px, calc(100vh - 235px))); margin-inline: auto; padding: 8px 8px 8px 6px; }
+  .poster-col { top: 76px; gap: 8px; }
+  .poster-col .wanted { padding: 14px 18px 12px; }
+  .poster-col .wanted__top { font-size: 1.7rem !important; margin-bottom: 4px; }
+  .poster-col .wanted__pic { aspect-ratio: 4 / 3; }
+  .poster-col .wanted__name { font-size: 1.5rem; }
+  .poster-col .wanted__sub { margin: 4px 0 0; font-size: .85rem; }
+  .poster-col .wanted__money { margin-top: 2px; }
+  .poster-col .wanted__foot { margin-top: 4px; }
+  .pick { padding: 4px 10px; }
+}
+/* aún más bajo (pantallas de 1280x720 con barras del navegador) */
+@media (min-width: 1101px) and (max-height: 680px) {
+  .poster-col .wanted__pic { aspect-ratio: 16 / 10; }
+  .poster-col .wanted__money { font-size: 1.5rem; }
+}
