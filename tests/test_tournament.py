@@ -106,7 +106,7 @@ def test_un_bot_nuevo_no_cambia_las_partidas_de_los_demas():
     despues = run_tournament(
         registro(RandomPlayer, GreedyPlayer, CambiaDeNombre), rounds=2, time_limit=LIMITE
     )
-    viejos = {"Mr. 2 aleatorio", "Wapol voraz"}
+    viejos = {"Buggy aleatorio", "Wapol voraz"}
     comunes = [g.to_dict() for g in despues.games if {g.black, g.white} <= viejos]
     assert comunes == [g.to_dict() for g in antes.games]
 
@@ -175,7 +175,7 @@ def test_un_bot_que_cambia_de_nombre_pierde(monkeypatch):
     malo = puesto(resultado, "CambiaDeNombre")
     assert malo.forfeits == 2
     assert all("cambió su nombre a 'Wapol voraz'" in m for m in malo.forfeit_reasons)
-    assert {s.name for s in resultado.standings} == {"Mr. 2 aleatorio", "CambiaDeNombre"}
+    assert {s.name for s in resultado.standings} == {"Buggy aleatorio", "CambiaDeNombre"}
 
 
 def test_un_bot_que_no_se_puede_crear_pierde_sin_jugar():
@@ -241,7 +241,7 @@ def test_el_comando_regenera_el_archivo_desde_cero(tmp_path, capsys):
     ruta = tmp_path / "nueva" / "leaderboard.json"
     assert main(["--rondas", "1", "--salida", str(ruta)]) == 0
     datos = json.loads(ruta.read_text(encoding="utf-8"))
-    assert {s["name"] for s in datos["standings"]} >= {"Mr. 2 aleatorio", "Wapol voraz"}
+    assert {s["name"] for s in datos["standings"]} >= {"Buggy aleatorio", "Wapol voraz"}
     salida = capsys.readouterr().out
     assert "Wapol voraz" in salida and "Clasificación guardada en" in salida
     assert not (tmp_path / "nueva" / "leaderboard.json.tmp").exists()

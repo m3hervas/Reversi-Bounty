@@ -88,7 +88,7 @@ def test_no_hay_atributos_id_repetidos():
 
 def test_cada_imagen_de_personaje_existe_y_tiene_fondo_transparente():
     rutas = set(re.findall(r'img:\s*"(img/[a-z0-9_]+\.png)', JS["crew.js"]))
-    assert {"img/luffy.png", "img/zeff.png", "img/mr2.png", "img/wapol.png"} <= rutas
+    assert {"img/luffy.png", "img/zeff.png", "img/buggy.png", "img/wapol.png"} <= rutas
     for ruta in rutas:
         datos = (WEB / ruta).read_bytes()
         assert datos[:8] == b"\x89PNG\r\n\x1a\n", ruta

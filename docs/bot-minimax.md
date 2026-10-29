@@ -80,7 +80,7 @@ y una descripción), un `create(seed)` que guarde un `random.Random(seed)`, y un
 El script de medición compara a este bot con los demás en los dos sentidos:
 
 ```bash
-python -m reversibounty.benchmark --partidas 40 --jugadores "Mr. 2 aleatorio" "Wapol voraz" "Zeff minimax"
+python -m reversibounty.benchmark --partidas 40 --jugadores "Buggy aleatorio" "Wapol voraz" "Zeff minimax"
 ```
 
 ## Referencia

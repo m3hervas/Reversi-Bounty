@@ -23,6 +23,7 @@ css/              theme.css (base), pages.css (páginas) y play.css (la partida)
 js/engine.js      la puerta de la página hacia el motor de Python
 js/worker.js      Pyodide en un hilo aparte
 js/crew.js        alias, frases y recompensas de cada rival
+js/marcador.js    la clasificación del torneo (descarga leaderboard.json y dibuja la tabla)
 js/app.js         rutas, tema, sonido, cartel personal y tablón de rivales
 js/play.js        la partida
 img/              los retratos de los personajes (PNG con fondo transparente)

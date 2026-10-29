@@ -82,6 +82,7 @@ html[data-view="inicio"] .view[data-view="inicio"],
 html[data-view="jugar"] .view[data-view="jugar"],
 html[data-view="reglas"] .view[data-view="reglas"],
 html[data-view="bots"] .view[data-view="bots"],
+html[data-view="marcador"] .view[data-view="marcador"],
 html[data-view="anadir"] .view[data-view="anadir"] { display: block; animation: view-in .45s cubic-bezier(.2,.8,.2,1); }
 @keyframes view-in { from { opacity: 0; transform: translateY(14px); } }
 
@@ -108,6 +109,7 @@ html[data-view="anadir"] .view[data-view="anadir"] { display: block; animation: 
 html[data-view="jugar"] .nav a[data-route="jugar"],
 html[data-view="reglas"] .nav a[data-route="reglas"],
 html[data-view="bots"] .nav a[data-route="bots"],
+html[data-view="marcador"] .nav a[data-route="marcador"],
 html[data-view="anadir"] .nav a[data-route="anadir"] { background: var(--gold); color: var(--ink); }
 .tools { display: flex; align-items: center; gap: 8px; }
 .chip {

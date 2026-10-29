@@ -16,7 +16,7 @@
       if (t !== "light" && t !== "dark") t = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
       d.dataset.theme = t;
       var m = /^#\/?([a-z-]*)/.exec(location.hash);
-      d.dataset.view = m && ["jugar", "reglas", "bots", "anadir"].indexOf(m[1]) >= 0 ? m[1] : "inicio";
+      d.dataset.view = m && ["jugar", "reglas", "bots", "marcador", "anadir"].indexOf(m[1]) >= 0 ? m[1] : "inicio";
       var RB = (window.RB = window.RB || {});
       RB.reportError = function (err) {
         var text = err && err.message ? err.message : String(err || "Error desconocido");
@@ -68,6 +68,7 @@
       <nav class="nav" aria-label="Apartados">
         <a href="#/jugar" data-route="jugar">Lucha</a>
         <a href="#/bots" data-route="bots">Rivales</a>
+        <a href="#/marcador" data-route="marcador">Marcador</a>
         <a href="#/reglas" data-route="reglas">Leyes del mar</a>
         <a href="#/anadir" data-route="anadir">Añade tu Bot</a>
       </nav>
@@ -122,16 +123,6 @@
         <div class="waves" aria-hidden="true">
           <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style="fill:var(--sea-1)"><use href="#wave"/></svg>
           <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style="fill:var(--sea-2)"><use href="#wave"/></svg>
-        </div>
-      </div>
-
-      <div class="wrap section">
-        <p class="eyebrow">Elige tu rumbo</p>
-        <h2 class="h2">Tres puertos, una sola regla: gana quien tenga más fichas</h2>
-        <div class="adventures">
-          <a class="adv paper" href="#/jugar"><span class="adv__ico" aria-hidden="true">⚓</span><h3>Lucha</h3><p>Una partida contra cualquier rival, o míralos pelear entre ellos.</p><span class="adv__go">Luchar →</span></a>
-          <a class="adv paper" href="#/bots" ><span class="adv__ico" aria-hidden="true">📜</span><h3>Carteles de rivales</h3><p>Quién es cada bot, cómo piensa y cuánto vale su cabeza.</p><span class="adv__go">Ver carteles →</span></a>
-          <a class="adv paper" href="#/reglas"><span class="adv__ico" aria-hidden="true">🧭</span><h3>Leyes del mar</h3><p>Las cuatro reglas del Reversi y cinco consejos de lobo de mar.</p><span class="adv__go">Aprender →</span></a>
         </div>
       </div>
 
@@ -395,6 +386,38 @@
       </div>
     </section>
 
+    <!-- ============================================================ MARCADOR -->
+    <section class="view" data-view="marcador" aria-labelledby="t-marcador">
+      <div class="wrap">
+        <header class="page-head">
+          <p class="eyebrow">Clasificación del torneo</p>
+          <h1 class="h1" id="t-marcador" tabindex="-1">El marcador</h1>
+          <p class="lede">Todos los bots contra todos, con los dos colores. El torneo se juega solo cada noche en GitHub: aquí solo se enseña su resultado, no se juega ninguna partida.</p>
+          <p class="eyebrow" id="marcador-info" role="status" aria-live="polite" style="color:var(--ink-soft)">Cargando la clasificación…</p>
+        </header>
+        <div id="marcador-msg" class="marcador__msg paper" role="status" hidden></div>
+        <div class="rivals marcador__podio" id="marcador-podio"></div>
+        <div class="marcador__tabla paper" id="marcador-tabla" hidden>
+          <table>
+            <caption class="sr-only">Clasificación del torneo, de mejor a peor</caption>
+            <thead><tr>
+              <th scope="col">Puesto</th><th scope="col">Bot</th>
+              <th scope="col" title="Partidas jugadas">PJ</th><th scope="col" title="Victorias">G</th>
+              <th scope="col" title="Empates">E</th><th scope="col" title="Derrotas">P</th>
+              <th scope="col" title="Puntos: 1 por victoria, 0,5 por empate">Pts</th>
+              <th scope="col" title="Fichas a favor menos fichas en contra">Dif.</th>
+            </tr></thead>
+            <tbody id="marcador-filas"></tbody>
+          </table>
+        </div>
+        <div class="marcador__infr paper" id="marcador-infr" hidden></div>
+        <div class="cta">
+          <div><h2>¿Quieres subir en la clasificación?</h2><p>Un bot admitido en el registro juega el próximo torneo y aparece aquí al día siguiente, sin que nadie tenga que hacer nada.</p></div>
+          <div class="cta__act"><a class="btn btn--gold" href="#/anadir">Añade tu Bot</a></div>
+        </div>
+      </div>
+    </section>
+
     <!-- ============================================================ ÚNETE -->
     <section class="view" data-view="anadir" aria-labelledby="t-anadir">
       <div class="wrap">
@@ -505,7 +528,7 @@ git push -u origin bot-mi-bot</code></pre>
       <p><b>Reversi Bounty</b> · Manuel, Juan Bosco y Marcos · Práctica de IA, CUNEF 2026/27</p>
       <p id="footer-engine">Las reglas y los bots son el paquete Python del proyecto, ejecutado con Pyodide.</p>
       <p><a href="https://github.com/m3hervas/Reversi-Bounty">Código</a> · <a href="https://reversi-bounty.readthedocs.io">Documentación</a></p>
-      <small>Maqueta de diseño (BETA) inspirada en <i>One Piece</i>. Proyecto universitario sin ánimo de lucro y sin relación con Eiichiro Oda, Shueisha ni Toei Animation; todos los dibujos son originales y las recompensas, de fantasía.</small>
+      <small>Maqueta de diseño inspirada en <i>One Piece</i>. Proyecto universitario sin ánimo de lucro y sin relación con Eiichiro Oda, Shueisha ni Toei Animation; todos los dibujos son originales y las recompensas, de fantasía.</small>
     </div>
   </footer>
 
@@ -513,6 +536,7 @@ git push -u origin bot-mi-bot</code></pre>
 
   <script src="js/engine.js?v=1792843182" defer></script>
   <script src="js/crew.js?v=1792843182" defer></script>
+  <script src="js/marcador.js?v=1792843182" defer></script>
   <script src="js/app.js?v=1792843182" defer></script>
   <script src="js/play.js?v=1792843182" defer></script>
 </body>

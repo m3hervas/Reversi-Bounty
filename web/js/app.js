@@ -1,6 +1,6 @@
 /* La página: rutas por hash, tema, sonido, cartel personal, tablón de rivales y utilidades.
  *
- * Rutas (igual que el proyecto): #/jugar  #/reglas  #/bots  #/anadir  y #/ para la portada.
+ * Rutas (igual que el proyecto): #/jugar  #/reglas  #/bots  #/marcador  #/anadir  y #/ para la portada.
  * El estado de la vista vive en <html data-view>; el CSS enseña la sección que toca.
  * El motor de Python se arranca en cuanto carga la página: así, cuando alguien llega a
  * «Lucha», el motor ya está listo.
@@ -10,7 +10,7 @@
 
   const RB = window.RB;
   const crew = RB.crew;
-  const VIEWS = ["inicio", "jugar", "reglas", "bots", "anadir"];
+  const VIEWS = ["inicio", "jugar", "reglas", "bots", "marcador", "anadir"];
   const $ = (id) => document.getElementById(id);
 
   /* h("div", { class: "x", text: "…" }, hijo, …) */
@@ -88,11 +88,12 @@
     const m = /^#\/?([a-z-]*)/.exec(location.hash);
     const name = m && VIEWS.includes(m[1]) && m[1] ? m[1] : "inicio";
     document.documentElement.dataset.view = name;
-    const titles = { inicio: "Reversi Bounty · Grand Line", jugar: "Lucha", reglas: "Leyes del mar", bots: "Rivales", anadir: "Añade tu Bot" };
+    const titles = { inicio: "Reversi Bounty · Grand Line", jugar: "Lucha", reglas: "Leyes del mar", bots: "Rivales", marcador: "Marcador", anadir: "Añade tu Bot" };
     document.title = name === "inicio" ? titles.inicio : titles[name] + " · Reversi Bounty";
     window.scrollTo(0, 0);
     const heading = document.querySelector('.view[data-view="' + name + '"] [tabindex="-1"]');
     if (heading) heading.focus({ preventScroll: true });
+    if (name === "marcador" && RB.marcador) RB.marcador.enter();
   }
 
   // ----------------------------------------------------------- cartel personal --- //
