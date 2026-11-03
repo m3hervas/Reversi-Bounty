@@ -6,44 +6,42 @@
   </a>
 </p>
 
-[![Web](https://github.com/m3hervas/Reversi-Bounty/actions/workflows/pages.yml/badge.svg)](https://m3hervas.github.io/Reversi-Bounty/)
+[![Tests](https://github.com/m3hervas/Reversi-Bounty/actions/workflows/tests.yml/badge.svg)](https://github.com/m3hervas/Reversi-Bounty/actions/workflows/tests.yml)
 [![Docs](https://readthedocs.org/projects/reversi-bounty/badge/?version=latest)](https://reversi-bounty.readthedocs.io)
+[![Web](https://github.com/m3hervas/Reversi-Bounty/actions/workflows/pages.yml/badge.svg)](https://m3hervas.github.io/Reversi-Bounty/)
 [![Licencia MIT](https://img.shields.io/badge/licencia-MIT-green)](LICENSE)
 
-Reversi (Othello) para humanos y bots: motor en Python, web para jugar contra la IA, API para
-programar tu propio bot y torneo automático con clasificación de recompensas. Práctica de IA,
+<a href="https://m3hervas.github.io/Reversi-Bounty/#/jugar"><img align="right" width="260" src="docs/img/partida.jpg" alt="Una partida contra Zeff minimax en la web"></a>
+
+Reversi (Othello) para personas y bots. Juegas contra bots de IA escritos en Python, cada uno
+con su cartel de recompensa, y un torneo nocturno los clasifica a todos. Práctica de IA,
 CUNEF 2026/27.
 
-**Juega aquí, sin instalar nada: <https://m3hervas.github.io/Reversi-Bounty/>**
+- **[Jugar en la web](https://m3hervas.github.io/Reversi-Bounty/)**: sin instalar nada, también en el móvil.
+- **[Marcador del torneo](https://m3hervas.github.io/Reversi-Bounty/#/marcador)**: se juega
+  cada noche entre todos los bots.
+- **[Documentación](https://reversi-bounty.readthedocs.io)**: reglas, API y tutorial.
 
 ## Instalar y jugar en la terminal
 
 ```bash
 git clone https://github.com/m3hervas/Reversi-Bounty.git
 cd Reversi-Bounty
-python -m venv .venv && .venv\Scripts\activate    # Linux/macOS: source .venv/bin/activate
+python -m venv .venv
+.venv\Scripts\activate         # Windows
+source .venv/bin/activate      # Linux/macOS
 pip install -e ".[dev]"
 
-reversi-play          # dos personas, solo texto
-reversi-play-color    # tablero con colores
+reversi-play          # dos personas (también reversi-play-color)
+reversi-tournament    # liguilla entre todos los bots
 ```
 
-En tu turno escribe una casilla (`d3`), `?` para la ayuda y `q` para salir.
+## Añadir tu bot
 
-## Torneo
+Una subclase de `Player` con nombre, autores, descripción y emoji, y un método, `choose_move`.
+Va en `players/custom/` y se envía por pull request: los tests comprueban solos que cumple las
+reglas. Sigue el **[tutorial](https://reversi-bounty.readthedocs.io/es/latest/tutorial/)**.
 
-```bash
-reversi-tournament --rondas 10    # liguilla entre todos los bots; guarda results/leaderboard.json
-```
+## Licencia
 
-GitHub lo juega **cada noche** y publica la clasificación en la rama
-[`marcador`](https://github.com/m3hervas/Reversi-Bounty/tree/marcador).
-
-## Escribir un bot
-
-Un bot es una subclase de `Player` con nombre, autores, descripción y emoji, y un método,
-`choose_move`. Se añade en `players/custom/` y se envía por pull request. Sigue el
-**[tutorial paso a paso](https://reversi-bounty.readthedocs.io/es/latest/tutorial/)**; los tests, el
-estilo y la prueba de contrato te dicen si cumple las reglas.
-
-Más en la [documentación](https://reversi-bounty.readthedocs.io): API, uso desde Python y reglas.
+[MIT](LICENSE): puedes usar, copiar y modificar el código manteniendo el aviso de copyright.
