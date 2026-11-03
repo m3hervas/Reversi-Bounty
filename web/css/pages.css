@@ -236,7 +236,6 @@
 .marcador__bot { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .marcador__bot > span:last-child { display: grid; min-width: 0; }
 .marcador__bot b { font-size: 1.1rem; overflow-wrap: anywhere; }
-.marcador__bot small { font-weight: 700; color: #5d4631; overflow-wrap: anywhere; }
 .marcador__icono { font-size: 1.8rem; line-height: 1; }
 .marcador__pts { font: 400 1.35rem/1 var(--f-logo); }
 .marcador__infr { display: grid; gap: 12px; padding: 20px 24px; margin-bottom: 26px; }

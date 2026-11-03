@@ -75,17 +75,14 @@
     );
   }
 
+  /* Sin autores, como el resto de la web: un bot es su estrategia, no quien lo subió. */
   function row(entry) {
-    const authors = Array.isArray(entry.authors) && entry.authors.length ? entry.authors.join(", ") : "";
     const diff = num(entry.disc_diff);
     return h("tr", null,
       h("th", { scope: "row", class: "marcador__puesto", text: String(entry.rank) }),
       h("td", { class: "marcador__bot" },
         h("span", { class: "marcador__icono", "aria-hidden": "true", text: entry.icon || "" }),
-        h("span", null,
-          h("b", { text: entry.name }),
-          authors ? h("small", { text: authors }) : null,
-        ),
+        h("span", null, h("b", { text: entry.name })),
       ),
       h("td", { text: fmt(entry.played, 0) }),
       h("td", { text: fmt(entry.wins, 0) }),
