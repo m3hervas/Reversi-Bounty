@@ -19,6 +19,7 @@ bandera. Los bots son los rivales del tablón de recompensas y cada uno tiene su
 | Portada | `#/` | El título, una moneda que gira entre sombrero y calavera, y **tu cartel de «Se busca»**. |
 | Lucha | `#/jugar` | Un cartel a cada lado, el marcador arriba y el tablero en el centro. |
 | Rivales | `#/bots` | Un cartel por cada bot admitido en el registro. |
+| Marcador | `#/marcador` | La clasificación del torneo nocturno: el podio con los tres primeros y la tabla completa. Ver [dónde se publica la clasificación](referencia/torneo.md#donde-se-publica-la-clasificacion). |
 | Leyes del mar | `#/reglas` | Las cuatro reglas con un ejemplo cada una, un mapa de las casillas y cinco consejos. |
 | Añade tu Bot | `#/anadir` | El código de ejemplo a la izquierda y los cuatro pasos a la derecha. |
 
@@ -92,6 +93,8 @@ las animaciones.
 | Frases, alias, precios y rangos | `web/js/crew.js` |
 | Rutas, tema, sonido, cartel personal | `web/js/app.js` |
 | La partida | `web/js/play.js` |
+| La clasificación del torneo | `web/js/marcador.js` |
+| La conexión con Python (Pyodide) | `web/js/engine.js` y `web/js/worker.js` |
 | Un personaje | `web/img/` y su entrada en `web/js/crew.js` |
 
 ## Limitaciones

@@ -167,7 +167,7 @@ pytest tests/test_contract.py -v
 
 Esta es la **prueba de contrato**: juega varias partidas con tu bot, con negras y con blancas, y
 comprueba que cada jugada es legal y que no modifica el estado. Debe aparecer una línea con el
-nombre de tu bot, por ejemplo `test_cada_jugador_registrado_cumple_el_contrato[esquinero]`, en
+nombre de tu bot, por ejemplo `test_cada_jugador_registrado_cumple_el_contrato[Esquinero]`, en
 verde. No tienes que escribir ninguna prueba: el registro hace que se ejecute sola.
 
 ```bash
