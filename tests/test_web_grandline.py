@@ -104,8 +104,11 @@ def test_cada_personalidad_pertenece_a_un_bot_del_registro():
 
 
 def test_los_carteles_no_muestran_quien_subio_cada_bot():
-    """Los bots son independientes de sus autores: la web no enseña `authors` en ningún cartel."""
-    for nombre in PROPIOS:
+    """Los bots son independientes de sus autores: la web no los enseña en ningún sitio.
+
+    También el marcador: ``leaderboard.json`` trae los autores, pero la tabla no los pinta.
+    """
+    for nombre in (*PROPIOS, "marcador.js"):
         assert "authors" not in JS[nombre], f"{nombre} usa los autores del bot"
     assert "Capitán(es)" not in HTML
 
