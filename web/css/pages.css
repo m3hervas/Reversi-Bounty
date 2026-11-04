@@ -282,6 +282,7 @@
 .tut__say::before { content: ""; position: absolute; left: -13px; top: 24px; width: 20px; height: 20px; background: var(--bubble); border-left: 3px solid var(--ink); border-bottom: 3px solid var(--ink); transform: rotate(45deg); }
 .tut__say[data-who="tu"] { --bubble: #ffe995; }
 .tut__say[data-who="rival"] { --bubble: #d6e9ff; }
+.tut__say[data-who="volver"] { --bubble: #ffd3a3; }
 .tut__say[data-who="fin"] { --bubble: #c9f2d8; }
 .tut__say[data-who="error"] { --bubble: #ffd6d2; }
 .tut__say b { display: inline-block; padding: 0 8px; border-radius: 8px; background: var(--navy); color: var(--gold); font: 400 1.05em/1.35 var(--f-logo); letter-spacing: .04em; }

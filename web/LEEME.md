@@ -35,7 +35,8 @@ webglue.py        el puente entre JavaScript y el motor
 Para cambiar una lección del tutorial, edita `data/tutorial.json`: el tablero va en ocho filas con
 `X` (calaveras, el jugador), `O` (sombreros, el rival) y `.` (vacía). En una lección `guion`, cada
 paso dice quién juega (`tu` o `rival`), la casilla (`d3`) y la frase del mentor; el jugador solo
-puede pulsar esa casilla. `tests/test_web_tutorial.py` reproduce cada lección con el motor y falla
+puede pulsar esa casilla. Un paso `volver` (sin casilla) explica el error y, con el botón «Volver
+atrás», devuelve el tablero a la posición de partida para probar la jugada buena. `tests/test_web_tutorial.py` reproduce cada lección con el motor y falla
 si alguna jugada no es legal o no es su turno.
 
 Para añadir un personaje: pon su PNG con fondo transparente en `img/` y una entrada en `js/crew.js`

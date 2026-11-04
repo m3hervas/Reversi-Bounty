@@ -14,7 +14,16 @@ from pathlib import Path
 import pytest
 import webglue
 
-from reversibounty.game import BLACK, WHITE, GameState, apply_move, legal_moves, str_to_move
+from reversibounty.game import (
+    BLACK,
+    WHITE,
+    GameState,
+    apply_move,
+    flips,
+    legal_moves,
+    score,
+    str_to_move,
+)
 
 WEB = Path(__file__).resolve().parent.parent / "web"
 DATOS = json.loads((WEB / "data" / "tutorial.json").read_text(encoding="utf-8"))
@@ -51,6 +60,10 @@ def test_el_guion_se_puede_jugar_entero_con_el_motor(leccion):
     assert leccion["kind"] == "guion"
     state = posicion(leccion)
     for numero, paso in enumerate(leccion["steps"], start=1):
+        if paso["who"] == "volver":  # el tablero vuelve a la posición de partida
+            assert numero > 1, "no se puede volver atrás antes de jugar nada"
+            state = posicion(leccion)
+            continue
         donde = f"{leccion['id']}, paso {numero} ({paso['move']})"
         assert paso["who"] in ("tu", "rival"), donde
         assert state.player == (BLACK if paso["who"] == "tu" else WHITE), f"{donde}: no es su turno"
@@ -70,6 +83,28 @@ def test_la_leccion_1_es_la_apertura_del_tigre():
     primera = LECCIONES[0]
     assert posicion(primera) == webglue.game.initial_state()
     assert [p["move"] for p in primera["steps"]] == ["f5", "d6", "c3", "d3", "c4"]
+
+
+def test_la_leccion_2_es_una_trampa_de_verdad():
+    """g7 tienta (voltea más), regala la esquina h8 y hace perder; f1 no regala ninguna."""
+    trampa = next(leccion for leccion in LECCIONES if leccion["id"] == "trampa")
+    pasos = [(p["who"], p.get("move")) for p in trampa["steps"]]
+    assert pasos == [("tu", "g7"), ("rival", "h8"), ("volver", None), ("tu", "f1"), ("rival", "c2")]
+    inicio = posicion(trampa)
+    antes, _ = score(inicio)
+    mala, buena, esquina = str_to_move("g7"), str_to_move("f1"), str_to_move("h8")
+
+    assert inicio.board[esquina[0]][esquina[1]] == 0  # g7 es la casilla X de una esquina vacía
+    assert len(flips(inicio.board, BLACK, mala)) > len(flips(inicio.board, BLACK, buena))
+    tras_mala = apply_move(inicio, mala)
+    castigo = apply_move(tras_mala, esquina)
+    assert score(castigo)[0] < antes  # acabas con menos fichas que antes de mover
+
+    tras_buena = apply_move(inicio, buena)
+    esquinas = {str_to_move(e) for e in ("a1", "h1", "a8", "h8")}
+    assert not esquinas & set(legal_moves(tras_buena))  # el rival no puede coger ninguna esquina
+    peor = max(len(flips(tras_buena.board, WHITE, r)) for r in legal_moves(tras_buena))
+    assert peor <= 2 and len(flips(tras_buena.board, WHITE, str_to_move("c2"))) == peor
 
 
 def test_la_pagina_solo_pregunta_al_motor_y_no_calcula_reglas():

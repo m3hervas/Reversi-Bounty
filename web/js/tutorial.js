@@ -154,6 +154,7 @@
     const lesson = tut.lessons[tut.index];
     const step = lesson.steps[tut.step];
     if (!step) return finishLesson();
+    if (step.who === "volver") return rewind(token, lesson, step);
     const move = toMove(step.move);
     const turn = step.who === "tu" ? 1 : -1;
     if (tut.view.turn !== turn || !tut.view.legal.some((m) => key(m) === key(move))) {
@@ -172,6 +173,28 @@
     if (token !== tut.token || !(await play(token, move))) return;
     await continuePressed(token);
     if (token === tut.token) next(token);
+  }
+
+  /* «Volver atrás»: el mentor explica el error sobre el tablero que ha quedado y, cuando el jugador
+   * lo pide, la lección vuelve a su posición de partida para hacer la jugada buena. */
+  async function rewind(token, lesson, step) {
+    say(step.say, "volver");
+    tut.busy = true; tut.forced = null;
+    paint(false);
+    await continuePressed(token, "◂ Volver atrás");
+    if (token !== tut.token) return;
+    try {
+      const view = await RB.engine.call("view", [stateOf(lesson)]);
+      if (token !== tut.token) return;
+      tut.view = view;
+    } catch (err) {
+      if (token === tut.token) fail("No se pudo volver atrás: " + (err && err.message ? err.message : err));
+      return;
+    }
+    tut.step++;
+    paint(false);
+    if (RB.sound) RB.sound.play("pass");
+    next(token);
   }
 
   function onPick(move) {
@@ -198,15 +221,15 @@
     return true;
   }
 
-  /* Espera a que el jugador pulse «Continuar» o haga clic en el tablero. */
-  function continuePressed(token) {
+  /* Espera a que el jugador pulse el botón («Continuar», o el texto que se pida) o haga clic en el tablero. */
+  function continuePressed(token, label) {
     return new Promise((resolve) => {
       const done = () => {
         $("tut-chart").removeEventListener("click", done);
         if (token === tut.token) actions();
         resolve();
       };
-      const btn = button("Continuar ▸", done, "btn--gold");
+      const btn = button(label || "Continuar ▸", done, "btn--gold");
       actions(btn);
       btn.focus({ preventScroll: true });
       $("tut-chart").addEventListener("click", done);

@@ -26,6 +26,31 @@
         { "who": "tu", "move": "c4", "say": "Juega en c4. Volteas una sola ficha: en la apertura no buscas comer, buscas dejar al rival con pocas jugadas buenas." }
       ],
       "done": "Esta es la apertura del tigre, tres jugadas y el centro es tuyo."
+    },
+    {
+      "id": "trampa",
+      "title": "La paciencia dará la victoria",
+      "kind": "guion",
+      "intro": "Busca la jugada que te conviene.",
+      "board": [
+        "OX.XO...",
+        ".X.OOO..",
+        ".XOXOX..",
+        "XOXOX...",
+        "XX.XOOOO",
+        "X.XO.OO.",
+        ".X......",
+        "X......."
+      ],
+      "to_move": "X",
+      "steps": [
+        { "who": "tu", "move": "g7", "say": "Juega en g7. Volteas cuatro fichas de golpe: parece una gran jugada, ¿verdad?" },
+        { "who": "rival", "move": "h8", "say": "El rival coge la esquina h8 y voltea toda la diagonal. Esas fichas ya no las recuperarás." },
+        { "who": "volver", "say": "Volvamos atrás. g7 estaba pegada en diagonal a una esquina vacía: se la regalaste al rival." },
+        { "who": "tu", "move": "f1", "say": "Juega en f1. Volteas menos fichas, pero no le das ninguna esquina al rival." },
+        { "who": "rival", "move": "c2", "say": "Lo mejor que puede hacer el rival es c2, y solo voltea dos fichas." }
+      ],
+      "done": "Menos fichas ahora, más fichas al final. Nunca juegues junto a una esquina vacía."
     }
   ]
 }
