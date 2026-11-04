@@ -58,8 +58,21 @@ def test_hay_un_apartado_por_cada_ruta_y_al_reves():
     assert NOMBRES == set(lector.vistas)
 
 
+#: Apartados sin enlace en el menú: se entra desde un botón de la portada.
+SOLO_DESDE_LA_PORTADA = {"aprende"}  # el tutorial, con el botón «Aprende jugando»
+
+
 def test_cada_apartado_tiene_su_enlace_en_la_navegacion_o_es_la_portada():
-    assert set(lector.rutas_de_nav) == set(lector.vistas) - {"inicio"}
+    assert set(lector.rutas_de_nav) == set(lector.vistas) - {"inicio"} - SOLO_DESDE_LA_PORTADA
+
+
+def test_los_apartados_sin_menu_tienen_un_boton_en_la_portada():
+    # Un apartado fuera del menú y sin botón en la portada sería imposible de encontrar.
+    portada = re.search(r'<section class="view" data-view="inicio".*?</section>', HTML, re.S).group(0)
+    for vista in SOLO_DESDE_LA_PORTADA:
+        assert vista in lector.vistas, f"«{vista}» ya no existe: quítalo de SOLO_DESDE_LA_PORTADA"
+        assert vista not in lector.rutas_de_nav, f"«{vista}» está en el menú: quítalo de SOLO_DESDE_LA_PORTADA"
+        assert f'href="#/{vista}"' in portada, f"la portada no tiene ningún botón a «{vista}»"
 
 
 def test_los_enlaces_internos_llevan_a_apartados_que_existen():

@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "mentor": "Luffy",
+  "lessons": [
+    {
+      "id": "apertura",
+      "title": "Primeros pasos",
+      "kind": "guion",
+      "intro": "Las calaveras mueven primero. Vamos a abrir la partida como los buenos capitanes: con pocas fichas y desde el centro.",
+      "board": [
+        "........",
+        "........",
+        "........",
+        "...OX...",
+        "...XO...",
+        "........",
+        "........",
+        "........"
+      ],
+      "to_move": "X",
+      "steps": [
+        { "who": "tu", "move": "f5", "say": "Juega en f5. Las cuatro primeras jugadas son iguales por simetría: lo que importa es lo que viene después." },
+        { "who": "rival", "move": "d6", "say": "El rival responde en d6, en perpendicular. Es su respuesta más sólida." },
+        { "who": "tu", "move": "c3", "say": "Juega en c3. Atacas por la diagonal sin abrir la frontera." },
+        { "who": "rival", "move": "d3", "say": "El rival recupera el centro con d3." },
+        { "who": "tu", "move": "c4", "say": "Juega en c4. Volteas una sola ficha: en la apertura no buscas comer, buscas dejar al rival con pocas jugadas buenas." }
+      ],
+      "done": "Esta es la apertura del tigre, tres jugadas y el centro es tuyo."
+    }
+  ]
+}

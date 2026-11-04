@@ -80,6 +80,7 @@ code { font: 700 .88em ui-monospace, Consolas, monospace; background: rgba(0,0,0
 .view { display: none; }
 html[data-view="inicio"] .view[data-view="inicio"],
 html[data-view="jugar"] .view[data-view="jugar"],
+html[data-view="aprende"] .view[data-view="aprende"],
 html[data-view="reglas"] .view[data-view="reglas"],
 html[data-view="bots"] .view[data-view="bots"],
 html[data-view="marcador"] .view[data-view="marcador"],

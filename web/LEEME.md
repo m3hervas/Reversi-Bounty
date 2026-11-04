@@ -18,17 +18,25 @@ mismo paquete `reversibounty` que usan los tests.
 ## Qué hay dentro
 
 ```
-index.html        las cinco vistas (portada, lucha, rivales, reglas, añade tu bot)
+index.html        las siete vistas (portada, lucha, aprende, rivales, marcador, reglas, añade tu bot)
 css/              theme.css (base), pages.css (páginas) y play.css (la partida)
 js/engine.js      la puerta de la página hacia el motor de Python
 js/worker.js      Pyodide en un hilo aparte
 js/crew.js        alias, frases y recompensas de cada rival
 js/marcador.js    la clasificación del torneo (descarga leaderboard.json y dibuja la tabla)
+js/tutorial.js    Aprende jugando: las lecciones de data/tutorial.json sobre el tablero
+data/tutorial.json las lecciones: posición, jugadas obligadas y frases del mentor
 js/app.js         rutas, tema, sonido, cartel personal y tablón de rivales
 js/play.js        la partida
 img/              los retratos de los personajes (PNG con fondo transparente)
 webglue.py        el puente entre JavaScript y el motor
 ```
+
+Para cambiar una lección del tutorial, edita `data/tutorial.json`: el tablero va en ocho filas con
+`X` (calaveras, el jugador), `O` (sombreros, el rival) y `.` (vacía). En una lección `guion`, cada
+paso dice quién juega (`tu` o `rival`), la casilla (`d3`) y la frase del mentor; el jugador solo
+puede pulsar esa casilla. `tests/test_web_tutorial.py` reproduce cada lección con el motor y falla
+si alguna jugada no es legal o no es su turno.
 
 Para añadir un personaje: pon su PNG con fondo transparente en `img/` y una entrada en `js/crew.js`
 con el **nombre exacto** del bot (el que devuelve `get_name()`). Más en
