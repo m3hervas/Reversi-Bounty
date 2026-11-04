@@ -89,7 +89,10 @@ def test_la_leccion_2_es_una_trampa_de_verdad():
     """g7 tienta (voltea más), regala la esquina h8 y hace perder; f1 no regala ninguna."""
     trampa = next(leccion for leccion in LECCIONES if leccion["id"] == "trampa")
     pasos = [(p["who"], p.get("move")) for p in trampa["steps"]]
-    assert pasos == [("tu", "g7"), ("rival", "h8"), ("volver", None), ("tu", "f1"), ("rival", "c2")]
+    assert pasos == [
+        ("tu", "g7"), ("rival", "h8"), ("volver", None),
+        ("tu", "f1"), ("rival", "c2"), ("tu", "e6"), ("rival", "c1"), ("tu", "h6"),
+    ]
     inicio = posicion(trampa)
     antes, _ = score(inicio)
     mala, buena, esquina = str_to_move("g7"), str_to_move("f1"), str_to_move("h8")
@@ -105,6 +108,16 @@ def test_la_leccion_2_es_una_trampa_de_verdad():
     assert not esquinas & set(legal_moves(tras_buena))  # el rival no puede coger ninguna esquina
     peor = max(len(flips(tras_buena.board, WHITE, r)) for r in legal_moves(tras_buena))
     assert peor <= 2 and len(flips(tras_buena.board, WHITE, str_to_move("c2"))) == peor
+
+    # Dos jugadas más de la línea buena: el rival nunca puede coger una esquina y el marcador
+    # acaba 25 a 12, frente al 15 a 19 de la línea mala (lo que dice el mentor).
+    s = tras_buena
+    for jugada in ("c2", "e6", "c1", "h6"):
+        s = apply_move(s, str_to_move(jugada))
+        if s.player == WHITE:
+            assert not esquinas & set(legal_moves(s)), f"tras {jugada} el rival puede coger una esquina"
+    assert score(s) == (25, 12)
+    assert score(castigo) == (15, 19)
 
 
 def test_la_pagina_solo_pregunta_al_motor_y_no_calcula_reglas():

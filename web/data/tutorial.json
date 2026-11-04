@@ -48,7 +48,10 @@
         { "who": "rival", "move": "h8", "say": "El rival coge la esquina h8 y voltea toda la diagonal. Esas fichas ya no las recuperarás." },
         { "who": "volver", "say": "Volvamos atrás. g7 estaba pegada en diagonal a una esquina vacía: se la regalaste al rival." },
         { "who": "tu", "move": "f1", "say": "Juega en f1. Volteas menos fichas, pero no le das ninguna esquina al rival." },
-        { "who": "rival", "move": "c2", "say": "Lo mejor que puede hacer el rival es c2, y solo voltea dos fichas." }
+        { "who": "rival", "move": "c2", "say": "Lo mejor que puede hacer el rival es c2, y solo voltea dos fichas." },
+        { "who": "tu", "move": "e6", "say": "Juega en e6. Volteas cuatro fichas por el centro y el rival sigue sin esquinas a su alcance." },
+        { "who": "rival", "move": "c1", "say": "El rival solo puede arañar una ficha con c1." },
+        { "who": "tu", "move": "h6", "say": "Juega en h6. Mira el marcador: 25 contra 12. Con g7 ibas perdiendo 15 contra 19." }
       ],
       "done": "Menos fichas ahora, más fichas al final. Nunca juegues junto a una esquina vacía."
     }
