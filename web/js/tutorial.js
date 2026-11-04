@@ -1,16 +1,19 @@
 /* Aprende jugando: lecciones cortas con el mentor, sobre el mismo tablero que «Lucha».
  *
- * Las lecciones son datos (data/tutorial.json): la posición de partida y, en orden, las jugadas
- * del jugador y del rival con la frase del mentor. Este archivo solo las representa:
+ * Las lecciones son datos (data/tutorial.json). Hay dos tipos:
  *
- * - El jugador lleva siempre las calaveras. En una lección «guion», la ÚNICA casilla que se
- *   puede pulsar es la que toca: las demás no responden, ni con el ratón ni con el teclado.
- * - Las reglas no se calculan aquí: el motor de Python dice qué es legal (view) y aplica cada
- *   jugada (play_move), igual que en una partida. Si una lección pidiera una jugada ilegal, la
- *   página lo dice en vez de quedarse atascada (y los tests lo impiden antes de publicarla).
- * - Cada lección es una partida independiente: al terminar, «Siguiente lección» salta a la
- *   posición de la siguiente. Las lecciones ya vistas se pueden repetir desde la lista.
- * - Los textos vienen de un archivo: entran como texto (RB.h usa textContent), nunca como HTML.
+ * - «guion»: la posición de partida y, en orden, las jugadas del jugador y del rival con la frase del
+ *   mentor. La ÚNICA casilla que se puede pulsar es la que toca: las demás no responden, ni con el
+ *   ratón ni con el teclado. Un paso «volver» devuelve el tablero a la posición de partida.
+ * - «libre»: una partida de verdad contra un bot del registro desde la posición de la lección. Se
+ *   puede jugar cualquier jugada legal y, tras cada una, el mentor dice si ha sido buena o mala por
+ *   las fichas que puede quitarte el rival en su respuesta. Si ganas, superas el tutorial; si no,
+ *   puedes reintentarlo.
+ *
+ * El jugador lleva siempre las calaveras. Las reglas no se calculan aquí: el motor de Python dice qué
+ * es legal (view), aplica cada jugada (play_move), valora las jugadas (coach) y mueve al bot
+ * (bot_move), igual que en una partida. Los textos vienen de un archivo: entran como texto (RB.h usa
+ * textContent), nunca como HTML.
  *
  *   RB.tutorial.enter()   se llama al entrar en #/aprende
  */
@@ -22,6 +25,7 @@
   const VERSION = 1;
   const STORE = "bb-tutorial";
   const RIVAL_DELAY_MS = 900;
+  const BOT_TIMEOUT_MS = 20000;
   const PIECE = { X: 1, O: -1, ".": 0 };
   const COLS = "abcdefgh";
   const WORD = { 1: "calavera", "-1": "sombrero", 0: "vacía" };
@@ -31,8 +35,11 @@
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const key = (m) => m[0] + "," + m[1];
   const toMove = (text) => [Number(text[1]) - 1, COLS.indexOf(text[0])];
+  const message = (err) => (err && err.message ? err.message : String(err));
+  const fichas = (n) => n + (n === 1 ? " ficha" : " fichas");
 
-  const tut = { lessons: null, index: 0, step: 0, view: null, forced: null, busy: false, token: 0, seen: 0, started: false };
+  /* allowed: las casillas que se pueden pulsar ahora (una sola en un guion; todas las legales en libre). */
+  const tut = { lessons: null, index: 0, step: 0, view: null, allowed: new Set(), coach: null, advice: null, busy: false, token: 0, seen: 0, started: false, ready: false };
   const cells = [];
 
   function readSeen() { try { return Number(localStorage.getItem(STORE)) || 0; } catch (e) { return 0; } }
@@ -56,12 +63,13 @@
     });
   }
 
-  /* Solo la casilla obligada lleva la brújula y responde; el resto del tablero, solo se mira. */
+  /* Solo las casillas permitidas llevan la brújula y responden; el resto del tablero, solo se mira. */
   function paint(animate) {
     const view = tut.view;
-    const forced = tut.forced && !tut.busy ? key(tut.forced) : null;
+    const allowed = tut.busy ? new Set() : tut.allowed;
     const last = view && view.move ? key(view.move) : null;
     const flipped = new Set(animate && view ? (view.flipped || []).map(key) : []);
+    let first = true;
     for (let r = 0; r < 8; r++) {
       for (let c = 0; c < 8; c++) {
         const k = r + "," + c;
@@ -72,10 +80,11 @@
         if (animate && k === last) disc.dataset.pop = ""; else delete disc.dataset.pop;
         if (flipped.has(k)) disc.dataset.flip = ""; else delete disc.dataset.flip;
         disc.dataset.color = String(color);
-        const playable = k === forced;
+        const playable = allowed.has(k);
         if (playable) cell.dataset.playable = ""; else delete cell.dataset.playable;
         if (k === last) cell.dataset.last = ""; else delete cell.dataset.last;
-        cell.tabIndex = playable ? 0 : -1;
+        cell.tabIndex = playable && first ? 0 : -1;
+        if (playable) first = false;
         cell.setAttribute("aria-disabled", playable ? "false" : "true");
         cell.setAttribute("aria-label", COLS[c] + (r + 1) + ", " + WORD[color] + (playable ? ", juega aquí" : "") + (k === last ? ", última jugada" : ""));
       }
@@ -86,8 +95,8 @@
 
   // ---------------------------------------------------------------- textos --- //
 
-  /* El bocadillo del mentor. «who» le da el color (tu | rival | fin | error) y las casillas que
-   * nombra (f5, d6…) salen resaltadas para encontrarlas en el tablero. Todo entra como texto. */
+  /* El bocadillo del mentor. «who» le da el color (tu | rival | volver | bien | mal | fin | error) y las
+   * casillas que nombra (f5, d6…) salen resaltadas para encontrarlas en el tablero. Todo entra como texto. */
   function say(text, who) {
     const box = $("tut-say");
     const parts = text ? String(text).split(/\b([a-h][1-8])\b/) : [];
@@ -116,7 +125,7 @@
   }
 
   function fail(text) {
-    tut.busy = false; tut.forced = null;
+    tut.busy = false; tut.allowed = new Set();
     say(text, "error");
     actions(button("Reintentar", () => startLesson(tut.index)));
     if (tut.view) paint(false);
@@ -132,21 +141,40 @@
   async function startLesson(i) {
     const token = ++tut.token;
     const lesson = tut.lessons[i];
-    Object.assign(tut, { index: i, step: 0, forced: null, busy: true });
+    Object.assign(tut, { index: i, step: 0, allowed: new Set(), coach: null, advice: null, busy: true });
     renderLessons();
     $("tut-intro").textContent = lesson.intro;
     say("");
     actions();
+    if (i === 0 && !(await welcome(token))) return;
     try {
       const view = await RB.engine.call("view", [stateOf(lesson)]);
       if (token !== tut.token) return;
       tut.view = view;
     } catch (err) {
-      if (token === tut.token) fail("No se pudo preparar la lección: " + (err && err.message ? err.message : err));
+      if (token === tut.token) fail("No se pudo preparar la lección: " + message(err));
       return;
     }
     paint(false);
-    next(token);
+    if (lesson.kind === "libre") startFree(token, lesson); else next(token);
+  }
+
+  /* La pantalla de bienvenida, antes de la lección 1: las lecciones aparecen una a una y el botón
+   * «¡Zarpamos!» la cierra. Devuelve false si mientras tanto se ha empezado otra lección. */
+  function welcome(token) {
+    const box = $("tut-welcome");
+    $("tut-welcome-list").replaceChildren(...tut.lessons.map((lesson, i) => h("li", { style: "--i:" + i },
+      h("b", { text: String(i + 1) }), h("span", { text: lesson.title }))));
+    box.hidden = false;
+    const go = $("tut-welcome-go");
+    go.focus({ preventScroll: true });
+    return new Promise((resolve) => {
+      go.onclick = () => {
+        go.onclick = null;
+        box.hidden = true;
+        resolve(token === tut.token);
+      };
+    });
   }
 
   /* El siguiente paso del guion: esperar la jugada del jugador o hacer la del rival. */
@@ -162,12 +190,12 @@
     }
     say(step.say, step.who);
     if (step.who === "tu") {
-      tut.forced = move; tut.busy = false;
+      tut.allowed = new Set([key(move)]); tut.busy = false;  // solo la casilla obligada
       paint(false);
       return;
     }
     // El rival juega y la partida se para: el jugador lee la frase y decide cuándo seguir.
-    tut.busy = true; tut.forced = null;
+    tut.busy = true; tut.allowed = new Set();
     paint(false);
     await wait(RIVAL_DELAY_MS);
     if (token !== tut.token || !(await play(token, move))) return;
@@ -179,7 +207,7 @@
    * lo pide, la lección vuelve a su posición de partida para hacer la jugada buena. */
   async function rewind(token, lesson, step) {
     say(step.say, "volver");
-    tut.busy = true; tut.forced = null;
+    tut.busy = true; tut.allowed = new Set();
     paint(false);
     await continuePressed(token, "◂ Volver atrás");
     if (token !== tut.token) return;
@@ -188,7 +216,7 @@
       if (token !== tut.token) return;
       tut.view = view;
     } catch (err) {
-      if (token === tut.token) fail("No se pudo volver atrás: " + (err && err.message ? err.message : err));
+      if (token === tut.token) fail("No se pudo volver atrás: " + message(err));
       return;
     }
     tut.step++;
@@ -198,10 +226,18 @@
   }
 
   function onPick(move) {
-    if (tut.busy || !tut.forced || key(move) !== key(tut.forced)) return;
+    if (tut.busy || !tut.allowed.has(key(move))) return;
     const token = tut.token;
-    tut.busy = true; tut.forced = null;
-    play(token, move).then((ok) => { if (ok && token === tut.token) next(token); });
+    const free = tut.lessons[tut.index].kind === "libre";
+    if (free) tut.advice = advise(move);
+    tut.busy = true; tut.allowed = new Set();
+    play(token, move).then((ok) => {
+      if (!ok || token !== tut.token) return;
+      if (!free) return next(token);
+      const pass = tut.view.passed ? " El rival no puede mover y pasa: vuelves a jugar tú." : "";
+      say(tut.advice.text + pass, tut.advice.who);
+      freeTurn(token);
+    });
   }
 
   /* Aplica una jugada con el motor y la pinta. Devuelve true si se ha podido. */
@@ -211,7 +247,7 @@
       if (token !== tut.token) return false;
       tut.view = view;
     } catch (err) {
-      if (token === tut.token) fail("No se pudo hacer la jugada: " + (err && err.message ? err.message : err));
+      if (token === tut.token) fail("No se pudo hacer la jugada: " + message(err));
       return false;
     }
     paint(true);
@@ -238,19 +274,120 @@
 
   function finishLesson() {
     const lesson = tut.lessons[tut.index];
-    const last = tut.index === tut.lessons.length - 1;
-    tut.busy = false; tut.forced = null;
-    tut.seen = Math.max(tut.seen, tut.index + 1);
-    saveSeen();
-    renderLessons();
+    tut.busy = false; tut.allowed = new Set();
+    passLesson();
     paint(false);
     say(lesson.done, "fin");
     if (RB.sound) RB.sound.play("win");
-    actions(
+    actions(...afterButtons());
+  }
+
+  /* Marca la lección como superada: la siguiente queda desbloqueada en la lista. */
+  function passLesson() {
+    tut.seen = Math.max(tut.seen, tut.index + 1);
+    saveSeen();
+    renderLessons();
+  }
+
+  function afterButtons() {
+    const last = tut.index === tut.lessons.length - 1;
+    return [
       last ? null : button("Siguiente lección", () => startLesson(tut.index + 1), "btn--gold"),
       button("Repetir la lección", () => startLesson(tut.index), "btn--paper"),
       last ? h("a", { class: "btn btn--sm btn--gold", href: "#/jugar", text: "¡A luchar!" }) : null,
-    );
+    ];
+  }
+
+  // ------------------------------------------------------------- juego libre --- //
+
+  /* Prepara la partida contra el bot de la lección, con una semilla nueva en cada intento. */
+  async function startFree(token, lesson) {
+    try {
+      await RB.engine.call("start_match", [null, lesson.rival, Math.floor(Math.random() * 2 ** 31)]);
+    } catch (err) {
+      if (token === tut.token) fail("No se pudo preparar al rival: " + message(err));
+      return;
+    }
+    if (token !== tut.token) return;
+    say("Te toca. Puedes jugar en cualquier casilla marcada con la brújula.", "tu");
+    freeTurn(token);
+  }
+
+  /* Un turno de la partida libre: si te toca, el motor valora tus jugadas y esperas; si no, mueve el bot. */
+  async function freeTurn(token) {
+    const view = tut.view;
+    if (view.over) return finishFree();
+    if (view.turn === 1) {
+      try {
+        tut.coach = await RB.engine.call("coach", [view.state]);
+      } catch (err) {
+        if (token === tut.token) fail("El mentor no pudo valorar las jugadas: " + message(err));
+        return;
+      }
+      if (token !== tut.token) return;
+      tut.allowed = new Set(view.legal.map(key)); tut.busy = false;  // cualquier jugada legal
+      paint(false);
+      return;
+    }
+    tut.busy = true; tut.allowed = new Set();
+    paint(false);
+    await wait(RIVAL_DELAY_MS);
+    if (token !== tut.token) return;
+    let after;
+    try {
+      after = await RB.engine.call("bot_move", [view.state], { timeout: BOT_TIMEOUT_MS });
+    } catch (err) {
+      if (token === tut.token) fail("El rival no pudo mover: " + message(err));
+      return;
+    }
+    if (token !== tut.token) return;
+    tut.view = after;
+    paint(!after.forfeit);
+    const said = tut.advice ? tut.advice.text + " " : "";
+    if (after.forfeit) {
+      say(said + "El rival ha perdido por incumplir las reglas.", "rival");
+    } else {
+      if (RB.sound) RB.sound.play("move", { flips: after.flipped.length });
+      const pass = after.passed ? " No tienes jugadas posibles: pasas, y vuelve a mover el rival." : "";
+      say(said + "El rival juega " + after.notation + " y voltea " + fichas(after.flipped.length) + "." + pass, tut.advice ? tut.advice.who : "rival");
+    }
+    freeTurn(token);
+  }
+
+  /* Buena o mala por las fichas que puede quitarte el rival en su respuesta, comparada con la jugada
+   * más segura que tenías. Los números los ha calculado el motor (coach) antes de jugar. */
+  function advise(move) {
+    const options = tut.coach || [];
+    const mine = options.find((o) => key(o.move) === key(move));
+    if (!mine) return { text: "", who: "tu" };
+    const safest = options.reduce((a, b) => (b.risk < a.risk ? b : a), mine);
+    const loses = (o) => (o.risk === 0 ? "no puede quitarte ninguna ficha" : "puede quitarte " + fichas(o.risk));
+    if (mine.risk <= safest.risk) {
+      return { text: "¡Buena jugada! Con " + mine.notation + " el rival " + loses(mine) + ".", who: "bien" };
+    }
+    return {
+      text: "Cuidado: con " + mine.notation + " el rival " + loses(mine) + (mine.reply ? " jugando en " + mine.reply : "")
+        + ". Con " + safest.notation + " " + (safest.risk === 0 ? "no habría podido quitarte ninguna." : "solo habrían sido " + safest.risk + "."),
+      who: "mal",
+    };
+  }
+
+  function finishFree() {
+    const lesson = tut.lessons[tut.index];
+    const view = tut.view;
+    tut.busy = false; tut.allowed = new Set();
+    paint(false);
+    const score = "Calaveras " + view.score[0] + " – " + view.score[1] + " Sombreros.";
+    if (view.winner === 1) {
+      passLesson();
+      say(lesson.win + " " + score, "fin");
+      if (RB.sound) RB.sound.play("win");
+      actions(...afterButtons());
+      return;
+    }
+    say((view.winner === 0 ? "¡Empate! Casi lo tienes. " : "") + lesson.lose + " " + score, "error");
+    if (RB.sound) RB.sound.play("lose");
+    actions(button("Reintentar", () => startLesson(tut.index), "btn--gold"));
   }
 
   // ------------------------------------------------------------------ inicio --- //
@@ -275,9 +412,11 @@
     });
   }
 
-  /* La primera vez que se entra, carga las lecciones y empieza por la primera sin terminar. */
+  /* Cada vez que se entra, el tutorial empieza por la lección 1 con la bienvenida. Las lecciones ya
+   * superadas siguen marcadas en la lista y desbloqueadas, por si se quiere saltar a ellas. */
   async function enter() {
-    if (tut.started) return;
+    if (tut.ready) { startLesson(0); return; }
+    if (tut.started) return;  // se están cargando las lecciones o el motor: al terminar empieza la 1
     tut.started = true;
     if (!cells.length) buildBoard();
     say("Cargando las lecciones y el motor de Python…");
@@ -286,12 +425,13 @@
       await whenEngineReady();
     } catch (err) {
       tut.started = false;
-      say("No se pudo empezar el tutorial: " + (err && err.message ? err.message : err));
+      say("No se pudo empezar el tutorial: " + message(err));
       actions(button("Reintentar", () => { if (RB.engine.state === "error") RB.engine.restart(); enter(); }));
       return;
     }
     tut.seen = Math.min(readSeen(), tut.lessons.length);
-    startLesson(Math.min(tut.seen, tut.lessons.length - 1));
+    tut.ready = true;
+    startLesson(0);
   }
 
   RB.tutorial = { enter: enter };

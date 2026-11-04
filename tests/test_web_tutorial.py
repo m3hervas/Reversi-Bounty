@@ -28,6 +28,8 @@ from reversibounty.game import (
 WEB = Path(__file__).resolve().parent.parent / "web"
 DATOS = json.loads((WEB / "data" / "tutorial.json").read_text(encoding="utf-8"))
 LECCIONES = DATOS["lessons"]
+GUIONES = [leccion for leccion in LECCIONES if leccion["kind"] == "guion"]
+LIBRES = [leccion for leccion in LECCIONES if leccion["kind"] == "libre"]
 JS = (WEB / "js" / "tutorial.js").read_text(encoding="utf-8")
 HTML = (WEB / "index.html").read_text(encoding="utf-8")
 PIEZA = {"X": BLACK, "O": WHITE, ".": 0}
@@ -44,6 +46,7 @@ def test_el_archivo_tiene_la_version_que_lee_la_pagina():
     assert LECCIONES, "no hay ninguna lección"
     ids = [leccion["id"] for leccion in LECCIONES]
     assert len(ids) == len(set(ids)), "hay dos lecciones con el mismo id"
+    assert all(leccion["kind"] in ("guion", "libre") for leccion in LECCIONES)
 
 
 @pytest.mark.parametrize("leccion", LECCIONES, ids=lambda leccion: leccion["id"])
@@ -54,10 +57,9 @@ def test_la_posicion_es_un_tablero_valido_y_empiezan_las_calaveras(leccion):
     assert legal_moves(posicion(leccion)), "en la posición inicial no hay ninguna jugada"
 
 
-@pytest.mark.parametrize("leccion", LECCIONES, ids=lambda leccion: leccion["id"])
+@pytest.mark.parametrize("leccion", GUIONES, ids=lambda leccion: leccion["id"])
 def test_el_guion_se_puede_jugar_entero_con_el_motor(leccion):
     """Cada jugada obligada es legal en su turno: tú con calaveras y el rival con sombreros."""
-    assert leccion["kind"] == "guion"
     state = posicion(leccion)
     for numero, paso in enumerate(leccion["steps"], start=1):
         if paso["who"] == "volver":  # el tablero vuelve a la posición de partida
@@ -75,8 +77,62 @@ def test_el_guion_se_puede_jugar_entero_con_el_motor(leccion):
 
 @pytest.mark.parametrize("leccion", LECCIONES, ids=lambda leccion: leccion["id"])
 def test_cada_momento_tiene_su_frase_del_mentor(leccion):
-    textos = [leccion["title"], leccion["intro"], leccion["done"], *(p["say"] for p in leccion["steps"])]
+    if leccion["kind"] == "guion":
+        momentos = [leccion["done"], *(p["say"] for p in leccion["steps"])]
+    else:
+        momentos = [leccion["win"], leccion["lose"]]
+    textos = [leccion["title"], leccion["intro"], *momentos]
     assert all(isinstance(t, str) and t.strip() for t in textos)
+
+
+# -- La lección libre: una partida de verdad contra un bot del registro ---- #
+
+
+@pytest.mark.parametrize("leccion", LIBRES, ids=lambda leccion: leccion["id"])
+def test_el_rival_de_la_leccion_libre_esta_en_el_registro(leccion):
+    from reversibounty.manifest import load_players
+
+    assert leccion["rival"] in load_players(), f"no hay ningún bot llamado {leccion['rival']!r}"
+
+
+def test_la_leccion_3_es_un_final_igualado_contra_el_bot_aleatorio():
+    from reversibounty.bots import RandomPlayer
+    from reversibounty.manifest import load_players
+
+    final = next(leccion for leccion in LECCIONES if leccion["id"] == "final")
+    assert final is LECCIONES[-1], "el final libre cierra el tutorial"
+    calaveras, sombreros = score(posicion(final))
+    assert calaveras == sombreros, "la posición empieza empatada"
+    assert 13 <= 64 - calaveras - sombreros <= 16, "unas 15 casillas libres"
+    assert issubclass(load_players()[final["rival"]], RandomPlayer)
+
+
+def test_el_mentor_valora_cada_jugada_con_las_cifras_del_motor():
+    """coach dice, para cada jugada, lo que voltea y lo peor que puede quitarte el rival después."""
+    state = posicion(next(leccion for leccion in LECCIONES if leccion["kind"] == "libre"))
+    respuesta = json.loads(webglue.coach(json.dumps(state.to_dict())))
+    assert respuesta["ok"], respuesta
+    consejos = respuesta["result"]
+    assert [tuple(c["move"]) for c in consejos] == legal_moves(state)
+    for consejo in consejos:
+        jugada = tuple(consejo["move"])
+        tras = apply_move(state, jugada)
+        assert consejo["flips"] == len(flips(state.board, BLACK, jugada))
+        respuestas = legal_moves(tras) if tras.player == WHITE else []
+        peor = max((len(flips(tras.board, WHITE, r)) for r in respuestas), default=0)
+        assert consejo["risk"] == peor, consejo
+        if consejo["reply"]:
+            assert len(flips(tras.board, WHITE, str_to_move(consejo["reply"]))) == peor
+
+
+def test_si_el_rival_no_puede_responder_el_riesgo_es_cero():
+    # Un sombrero en a1 y una calavera en b1, y mueven los sombreros: tras c1 las calaveras se quedan
+    # sin fichas, la partida termina y nadie puede quitarte nada.
+    tablero = [[0] * 8 for _ in range(8)]
+    tablero[0][0], tablero[0][1] = WHITE, BLACK
+    state = GameState(board=tuple(map(tuple, tablero)), player=WHITE)
+    consejos = json.loads(webglue.coach(json.dumps(state.to_dict())))["result"]
+    assert consejos == [{"move": [0, 2], "notation": "c1", "flips": 1, "risk": 0, "reply": None}]
 
 
 def test_la_leccion_1_es_la_apertura_del_tigre():
@@ -123,13 +179,19 @@ def test_la_leccion_2_es_una_trampa_de_verdad():
 def test_la_pagina_solo_pregunta_al_motor_y_no_calcula_reglas():
     llamadas = set(re.findall(r'RB\.engine\.call\("(\w+)"', JS))
     assert llamadas and llamadas <= set(webglue.__all__), llamadas - set(webglue.__all__)
-    assert llamadas == {"view", "play_move"}  # validar la posición y aplicar cada jugada
+    # validar la posición, aplicar jugadas y, en la lección libre, el rival y la valoración del mentor
+    assert llamadas == {"view", "play_move", "start_match", "bot_move", "coach"}
 
 
 def test_solo_se_puede_pulsar_la_casilla_obligada():
-    # La marca de jugada (data-playable) depende solo de la casilla obligada, nunca de view.legal.
-    assert "const playable = k === forced;" in JS
-    assert "key(move) !== key(tut.forced)" in JS
+    # Solo responden las casillas de tut.allowed: en un guion, una sola (la obligada); todas las
+    # legales solo en la lección libre.
+    assert "const playable = allowed.has(k);" in JS
+    assert "!tut.allowed.has(key(move))" in JS
+    guion = JS[JS.index("async function next("):JS.index("async function rewind(")]
+    assert "tut.allowed = new Set([key(move)]);" in guion and "view.legal" not in guion.split("say(step.say")[1]
+    libre = JS[JS.index("async function freeTurn("):JS.index("function advise(")]
+    assert "tut.allowed = new Set(view.legal.map(key));" in libre
 
 
 def test_tras_la_jugada_del_rival_se_espera_al_jugador_para_seguir():
@@ -151,6 +213,23 @@ def test_el_mentor_tiene_su_cartel_de_se_busca_como_los_rivales():
     assert cartel, "el mentor no tiene cartel"
     for parte in ("wanted__top", "wanted__pic", "wanted__sub", "wanted__name", "wanted__money", "luffy.png"):
         assert parte in cartel.group(0), parte
+
+
+def test_al_entrar_siempre_se_empieza_por_la_leccion_1():
+    # Aunque el navegador recuerde lecciones superadas: se ven marcadas, pero se empieza por la 1.
+    entrar = JS[JS.index("async function enter("):JS.index("RB.tutorial = {")]
+    assert entrar.count("startLesson(0)") == 2  # al volver a entrar y al terminar la primera carga
+    assert "startLesson(Math.min" not in entrar
+
+
+def test_la_bienvenida_sale_solo_antes_de_la_leccion_1():
+    empezar = JS[JS.index("async function startLesson("):JS.index("function welcome(")]
+    assert "if (i === 0 && !(await welcome(token))) return;" in empezar
+    vista = re.search(r'<section class="view" data-view="aprende".*?</section>', HTML, re.S).group(0)
+    bienvenida = re.search(r'<div class="overlay tut__welcome" id="tut-welcome" hidden>.*?¡Zarpamos!', vista, re.S)
+    assert bienvenida, "falta la pantalla de bienvenida, oculta hasta que la abre el tutorial"
+    # La lista sale de las lecciones (sus títulos), no se escribe a mano en el HTML.
+    assert 'id="tut-welcome-list"></ol>' in vista and "lesson.title" in JS[JS.index("function welcome("):]
 
 
 def test_el_texto_de_las_lecciones_entra_como_texto_y_nunca_como_html():

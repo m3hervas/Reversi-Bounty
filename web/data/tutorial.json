@@ -54,6 +54,26 @@
         { "who": "tu", "move": "h6", "say": "Juega en h6. Mira el marcador: 25 contra 12. Con g7 ibas perdiendo 15 contra 19." }
       ],
       "done": "Menos fichas ahora, más fichas al final. Nunca juegues junto a una esquina vacía."
+    },
+    {
+      "id": "final",
+      "title": "Tú al timón",
+      "kind": "libre",
+      "intro": "Ahora juegas solo contra Buggy. Después de cada jugada te diré cuántas fichas puede quitarte el rival.",
+      "board": [
+        "XXX..O..",
+        "XXXXXX..",
+        "OXXOXXX.",
+        "OOOXO...",
+        "XOXOXO.O",
+        "XOOXXOOO",
+        "XOOOOOOO",
+        ".O.OXXX."
+      ],
+      "to_move": "X",
+      "rival": "Buggy aleatorio",
+      "win": "¡Has superado el tutorial! Ya sabes abrir, esquivar trampas y cerrar una partida. ¡El Grand Line te espera!",
+      "lose": "Esta vez no ha podido ser. Mira cuántas fichas arriesgas en cada jugada y vuelve a intentarlo."
     }
   ]
 }

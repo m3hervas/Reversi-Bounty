@@ -36,7 +36,10 @@ Para cambiar una lección del tutorial, edita `data/tutorial.json`: el tablero v
 `X` (calaveras, el jugador), `O` (sombreros, el rival) y `.` (vacía). En una lección `guion`, cada
 paso dice quién juega (`tu` o `rival`), la casilla (`d3`) y la frase del mentor; el jugador solo
 puede pulsar esa casilla. Un paso `volver` (sin casilla) explica el error y, con el botón «Volver
-atrás», devuelve el tablero a la posición de partida para probar la jugada buena. `tests/test_web_tutorial.py` reproduce cada lección con el motor y falla
+atrás», devuelve el tablero a la posición de partida para probar la jugada buena. Una lección
+`libre` no tiene pasos: se juega de verdad contra el bot del registro que diga `rival`, con
+cualquier jugada legal, y tras cada una el mentor dice cuántas fichas puede quitarte el rival en su
+respuesta (lo calcula el motor con `coach`). Si ganas se ve `win`; si no, `lose` y «Reintentar». `tests/test_web_tutorial.py` reproduce cada lección con el motor y falla
 si alguna jugada no es legal o no es su turno.
 
 Para añadir un personaje: pon su PNG con fondo transparente en `img/` y una entrada en `js/crew.js`
