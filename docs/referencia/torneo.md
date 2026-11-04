@@ -123,9 +123,9 @@ que nadie intervenga:
     {
       "rank": 1,
       "name": "Wapol voraz",
-      "icon": "💰",
+      "icon": "😈",
       "authors": ["Reversi Bounty"],
-      "description": "Captura lo máximo posible, ...",
+      "description": "Captura lo máximo posible, busca esquinas y bordes, ...",
       "played": 10, "wins": 10, "draws": 0, "losses": 0, "forfeits": 0,
       "points": 10.0,
       "discs_for": 420, "discs_against": 180, "disc_diff": 240,
