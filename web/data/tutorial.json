@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "mentor": "Luffy",
+  "lessons": [
+    {
+      "id": "apertura",
+      "title": "Primeros pasos",
+      "kind": "guion",
+      "intro": "Las calaveras mueven primero. Vamos a abrir la partida como los buenos capitanes: con pocas fichas y desde el centro.",
+      "board": [
+        "........",
+        "........",
+        "........",
+        "...OX...",
+        "...XO...",
+        "........",
+        "........",
+        "........"
+      ],
+      "to_move": "X",
+      "steps": [
+        { "who": "tu", "move": "f5", "say": "Juega en f5. Las cuatro primeras jugadas son iguales por simetría: lo que importa es lo que viene después." },
+        { "who": "rival", "move": "d6", "say": "El rival responde en d6, en perpendicular. Es su respuesta más sólida." },
+        { "who": "tu", "move": "c3", "say": "Juega en c3. Atacas por la diagonal sin abrir la frontera." },
+        { "who": "rival", "move": "d3", "say": "El rival recupera el centro con d3." },
+        { "who": "tu", "move": "c4", "say": "Juega en c4. Volteas una sola ficha: en la apertura no buscas comer, buscas dejar al rival con pocas jugadas buenas." }
+      ],
+      "done": "Esta es la apertura del tigre, tres jugadas y el centro es tuyo."
+    },
+    {
+      "id": "trampa",
+      "title": "La paciencia dará la victoria",
+      "kind": "guion",
+      "intro": "Busca la jugada que te conviene.",
+      "board": [
+        "OX.XO...",
+        ".X.OOO..",
+        ".XOXOX..",
+        "XOXOX...",
+        "XX.XOOOO",
+        "X.XO.OO.",
+        ".X......",
+        "X......."
+      ],
+      "to_move": "X",
+      "steps": [
+        { "who": "tu", "move": "g7", "say": "Juega en g7. Volteas cuatro fichas de golpe: parece una gran jugada, ¿verdad?" },
+        { "who": "rival", "move": "h8", "say": "El rival coge la esquina h8 y voltea toda la diagonal. Esas fichas ya no las recuperarás." },
+        { "who": "volver", "say": "Volvamos atrás. g7 estaba pegada en diagonal a una esquina vacía: se la regalaste al rival." },
+        { "who": "tu", "move": "f1", "say": "Juega en f1. Volteas menos fichas, pero no le das ninguna esquina al rival." },
+        { "who": "rival", "move": "c2", "say": "Lo mejor que puede hacer el rival es c2, y solo voltea dos fichas." },
+        { "who": "tu", "move": "e6", "say": "Juega en e6. Volteas cuatro fichas por el centro y el rival sigue sin esquinas a su alcance." },
+        { "who": "rival", "move": "c1", "say": "El rival solo puede arañar una ficha con c1." },
+        { "who": "tu", "move": "h6", "say": "Juega en h6. Mira el marcador: 25 contra 12. Con g7 ibas perdiendo 15 contra 19." }
+      ],
+      "done": "Menos fichas ahora, más fichas al final. Nunca juegues junto a una esquina vacía."
+    },
+    {
+      "id": "final",
+      "title": "Tú al timón",
+      "kind": "libre",
+      "intro": "Ahora juegas solo contra Buggy. Después de cada jugada te diré cuántas fichas puede quitarte el rival.",
+      "board": [
+        "XXX..O..",
+        "XXXXXX..",
+        "OXXOXXX.",
+        "OOOXO...",
+        "XOXOXO.O",
+        "XOOXXOOO",
+        "XOOOOOOO",
+        ".O.OXXX."
+      ],
+      "to_move": "X",
+      "rival": "Buggy aleatorio",
+      "win": "¡Has superado el tutorial! Ya sabes abrir, esquivar trampas y cerrar una partida. ¡El Grand Line te espera!",
+      "lose": "Esta vez no ha podido ser. Mira cuántas fichas arriesgas en cada jugada y vuelve a intentarlo."
+    }
+  ]
+}

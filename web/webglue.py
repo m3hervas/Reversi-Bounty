@@ -36,6 +36,7 @@ from reversibounty.player import Player
 
 __all__ = [
     "bot_move",
+    "coach",
     "init",
     "legal_moves",
     "new_game",
@@ -236,6 +237,33 @@ def view(state: object) -> dict[str, Any]:
 def legal_moves(state: object) -> list[list[int]]:
     """Las jugadas legales de quien mueve, como ``[fila, columna]``."""
     return [list(jugada) for jugada in game.legal_moves(_estado(state))]
+
+
+@_puente
+def coach(state: object) -> list[dict[str, Any]]:
+    """Para cada jugada legal de quien mueve: cuántas fichas voltea y cuántas puede quitarle el rival.
+
+    ``risk`` es lo peor que puede pasar en la respuesta: el número de fichas que voltea la
+    respuesta del rival que más voltea (``reply``). Vale 0 si el rival no puede mover y pasa, o si
+    la partida termina. Lo usa el tutorial para decir si una jugada es buena o mala; todo lo
+    calcula el motor, la página solo lo compara.
+    """
+    antes = _estado(state)
+    consejos = []
+    for jugada in game.legal_moves(antes):
+        despues = game.apply_move(antes, jugada)
+        rival_mueve = not game.is_terminal(despues) and despues.player != antes.player
+        respuestas = game.legal_moves(despues) if rival_mueve else []
+        volteos = {r: len(game.flips(despues.board, despues.player, r)) for r in respuestas}
+        peor = max(respuestas, key=volteos.__getitem__, default=None)
+        consejos.append({
+            "move": list(jugada),
+            "notation": game.move_to_str(jugada),
+            "flips": len(game.flips(antes.board, antes.player, jugada)),
+            "risk": volteos[peor] if peor is not None else 0,
+            "reply": game.move_to_str(peor) if peor is not None else None,
+        })
+    return consejos
 
 
 @_puente

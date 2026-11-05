@@ -16,7 +16,7 @@
       if (t !== "light" && t !== "dark") t = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
       d.dataset.theme = t;
       var m = /^#\/?([a-z-]*)/.exec(location.hash);
-      d.dataset.view = m && ["jugar", "reglas", "bots", "marcador", "anadir"].indexOf(m[1]) >= 0 ? m[1] : "inicio";
+      d.dataset.view = m && ["jugar", "aprende", "reglas", "bots", "marcador", "anadir"].indexOf(m[1]) >= 0 ? m[1] : "inicio";
       var RB = (window.RB = window.RB || {});
       RB.reportError = function (err) {
         var text = err && err.message ? err.message : String(err || "Error desconocido");
@@ -113,6 +113,7 @@
             <div class="hero__cta">
               <a class="btn" href="#/jugar">¡A luchar!</a>
               <a class="btn btn--gold" href="#/bots">Ver carteles</a>
+              <a class="btn btn--paper" href="#/aprende">Aprende jugando</a>
             </div>
           </div>
           <div class="coin-stage" aria-hidden="true">
@@ -256,6 +257,65 @@
         <div class="waves" aria-hidden="true" style="margin-top:34px">
           <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style="fill:var(--sea-1)"><use href="#wave"/></svg>
           <svg viewBox="0 0 1200 120" preserveAspectRatio="none" style="fill:var(--sea-2)"><use href="#wave"/></svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ APRENDE -->
+    <!-- Sin enlace en el menú: se entra con el botón «Aprende jugando» de la portada. -->
+    <section class="view" data-view="aprende" aria-labelledby="t-aprende">
+      <div class="play tut">
+        <div class="wrap">
+          <header class="page-head tut__head">
+            <p class="eyebrow">Aprende jugando</p>
+            <h1 class="h1" id="t-aprende" tabindex="-1">Aprende jugando</h1>
+            <p class="lede">Lecciones cortas sobre el tablero, con el mentor a tu lado. Tú llevas las calaveras: pulsa la casilla que marca la brújula.</p>
+          </header>
+          <div class="tut__grid">
+            <!-- La bienvenida: antes de la lección 1 (también al repetirla). La lista la rellena tutorial.js. -->
+            <div class="overlay tut__welcome" id="tut-welcome" hidden>
+              <div class="sheet paper" role="dialog" aria-labelledby="tut-welcome-title">
+                <img class="tut__welcome-face" src="img/luffy.png?v=2" alt="" width="308" height="547" decoding="async">
+                <h2 class="sheet__title" id="tut-welcome-title">¡Bienvenido a bordo, grumete!</h2>
+                <p class="sheet__text">Tres lecciones cortas: abrir la partida, esquivar una trampa y ganar un final tú solo.</p>
+                <ol class="tut__welcome-list" id="tut-welcome-list"></ol>
+                <button class="btn" type="button" id="tut-welcome-go">¡Zarpamos!</button>
+              </div>
+            </div>
+            <div class="chart" id="tut-chart" data-human="1">
+              <div class="chart__in">
+                <div class="coords coords--top" aria-hidden="true"><span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span></div>
+                <div class="coords coords--left" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div>
+                <div class="grid" id="tut-board" role="group" aria-label="Tablero del tutorial"></div>
+              </div>
+            </div>
+            <aside class="tut__side" aria-label="El mentor">
+              <ol class="tut__lessons" id="tut-lessons" aria-label="Lecciones"></ol>
+              <!-- El mentor, con su cartel de «Se busca» como los rivales, y a su lado lo que dice. -->
+              <div class="tut__duo">
+              <div class="wanted paper tut__poster" aria-hidden="true">
+                <div class="wanted__top">SE BUSCA</div>
+                <div class="wanted__pic sel" style="--c:#e0372e">
+                  <i class="sel__floor"></i><img class="sel__char" src="img/luffy.png?v=2" alt="" width="308" height="547" decoding="async"><i class="sel__shine"></i><span class="sel__tag">🧭</span>
+                </div>
+                <div class="wanted__sub">TU MENTOR</div>
+                <div class="wanted__name">Luffy</div>
+                <div class="wanted__money"><span>3.000.000.000</span><small>BERRIES</small></div>
+                <div class="wanted__foot">Te enseña a navegar</div>
+              </div>
+              <div class="tut__talk">
+                <p class="tut__say" id="tut-say" role="status" aria-live="polite">Cargando las lecciones…</p>
+                <div class="tut__actions" id="tut-actions"></div>
+                <div class="tut__mentor paper">
+                  <p class="eyebrow" id="tut-progress">Lección 1</p>
+                  <h2 class="tut__title" id="tut-title">Cargando…</h2>
+                  <p class="tut__intro" id="tut-intro"></p>
+                  <p class="tut__score" id="tut-score"></p>
+                </div>
+              </div>
+              </div>
+            </aside>
+          </div>
         </div>
       </div>
     </section>
@@ -537,6 +597,7 @@ git push -u origin bot-mi-bot</code></pre>
   <script src="js/engine.js?v=1793718263" defer></script>
   <script src="js/crew.js?v=1793718263" defer></script>
   <script src="js/marcador.js?v=1793718263" defer></script>
+  <script src="js/tutorial.js?v=1793718263" defer></script>
   <script src="js/app.js?v=1793718263" defer></script>
   <script src="js/play.js?v=1793718263" defer></script>
 </body>

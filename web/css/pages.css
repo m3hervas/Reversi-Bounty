@@ -243,3 +243,63 @@
 .marcador__motivo ul { margin: 6px 0 0; padding-left: 20px; font-weight: 600; overflow-wrap: anywhere; }
 @media (max-width: 600px) { .marcador__tabla { padding: 4px 6px; } .marcador__tabla th, .marcador__tabla td { padding: 10px 6px; } }
 .marcador__msg[hidden], .marcador__tabla[hidden], .marcador__infr[hidden] { display: none; }
+
+/* ============================ APRENDE ============================ */
+/* El tablero es el mismo que el de «Lucha» (.chart, .grid, .cell, .disc de play.css); aquí solo
+   va la disposición: tablero a la izquierda y el mentor a la derecha, uno debajo del otro en móvil. */
+.tut { padding-top: 0; }
+.tut__head { padding-bottom: 18px; }
+.tut__grid { position: relative; display: grid; grid-template-columns: minmax(0, 540px) minmax(400px, 500px); gap: 26px; justify-content: center; align-items: start; padding-bottom: 40px; }
+/* La bienvenida, encima de todo el tutorial: Luffy se balancea y las lecciones aparecen una a una. */
+.tut__welcome { place-items: start center; padding-top: 28px; overflow-y: auto; }
+.tut__welcome .sheet { width: min(100%, 460px); }
+.tut__welcome-face { display: block; width: 96px; height: 128px; margin: -4px auto 6px; object-fit: cover; object-position: top; border-radius: 16px; border: 3px solid var(--ink); background: #e0372e; animation: tut-bob 2.6s ease-in-out infinite; }
+@keyframes tut-bob { 50% { transform: translateY(-8px) rotate(3deg); } }
+.tut__welcome-list { list-style: none; margin: 0 auto 18px; padding: 0; display: grid; gap: 8px; width: fit-content; text-align: left; }
+.tut__welcome-list li { display: flex; align-items: center; gap: 10px; font-weight: 800; opacity: 0; animation: tut-in .45s ease-out forwards; animation-delay: calc(.35s + var(--i) * .3s); }
+.tut__welcome-list b { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--navy); color: var(--gold); font: 400 1rem/1 var(--f-logo); }
+@keyframes tut-in { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .tut__welcome-list li { animation-delay: 0s; } }
+@media (max-width: 1060px) { .tut__grid { grid-template-columns: minmax(0, 620px); } }
+/* Luffy a la izquierda y lo que dice a su lado, como en un cómic. */
+.tut__duo { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 520px) { .tut__duo { grid-template-columns: 112px minmax(0, 1fr); gap: 14px; } }
+.tut__talk { display: grid; gap: 12px; align-content: start; }
+.tut__side { display: grid; gap: 16px; }
+.tut__lessons { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.tut__lesson { width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 3px solid var(--ink); border-radius: 12px; background: var(--surface); color: var(--text); font: 800 .95rem/1.2 var(--f-body); text-align: left; cursor: pointer; }
+.tut__lesson b { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--navy); color: var(--gold); font: 400 1rem/1 var(--f-logo); }
+.tut__lesson[data-state="now"] { background: var(--gold); color: var(--ink); }
+.tut__lesson[data-state="done"] b { font-size: 0; background: #2eb872; color: #fff; }
+.tut__lesson[data-state="done"] b::after { content: "✓"; font-size: 1rem; }
+.tut__lesson:disabled { opacity: .55; cursor: not-allowed; }
+.tut__mentor { display: grid; gap: 12px; padding: 20px; color: #2b1a0f; }
+.tut__poster { width: 100%; transform: rotate(-1.6deg); }
+.tut__poster .wanted__top { font-size: 1.7rem; }
+@media (max-width: 520px) { .tut__poster .wanted__top { font-size: 1.2rem; } }
+.tut__title { font: 400 1.4rem/1.1 var(--f-logo); }
+.tut__intro { font-weight: 600; color: #5d4631; }
+.tut__intro:empty { display: none; }
+/* El bocadillo del mentor: como el de los bots en «Lucha», pero más grande, y del color de quien
+   actúa (dorado: te toca; azul: el rival; verde: lección terminada). */
+.tut__say {
+  --bubble: var(--white);
+  position: relative; margin-top: 18px; padding: 16px 18px; min-height: 4.6em;
+  background: var(--bubble); color: #2b1a0f; border: 3px solid var(--ink); border-radius: 18px;
+  box-shadow: 0 5px 0 var(--ink); font: 800 1.2rem/1.45 var(--f-body);
+}
+/* El piquito, a la izquierda: apunta a la cara de Luffy. */
+.tut__say::before { content: ""; position: absolute; left: -13px; top: 24px; width: 20px; height: 20px; background: var(--bubble); border-left: 3px solid var(--ink); border-bottom: 3px solid var(--ink); transform: rotate(45deg); }
+.tut__say[data-who="tu"] { --bubble: #ffe995; }
+.tut__say[data-who="rival"] { --bubble: #d6e9ff; }
+.tut__say[data-who="volver"] { --bubble: #ffd3a3; }
+.tut__say[data-who="bien"] { --bubble: #d2f4c4; }
+.tut__say[data-who="mal"] { --bubble: #ffc6b3; }
+.tut__say[data-who="fin"] { --bubble: #c9f2d8; }
+.tut__say[data-who="error"] { --bubble: #ffd6d2; }
+.tut__say b { display: inline-block; padding: 0 8px; border-radius: 8px; background: var(--navy); color: var(--gold); font: 400 1.05em/1.35 var(--f-logo); letter-spacing: .04em; }
+.tut__say.pop { animation: rise .35s cubic-bezier(.3,1.5,.5,1); }
+.tut__say:empty { display: none; }
+.tut__score { font: 900 .8rem/1 var(--f-body); letter-spacing: .12em; text-transform: uppercase; color: #5d4631; }
+.tut__actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.tut__actions:empty { display: none; }
