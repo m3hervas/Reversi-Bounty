@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "finished_at": "2026-11-13T11:04:15+00:00",
+  "finished_at": "2026-11-14T10:31:58+00:00",
   "seed": 0,
   "rounds": 5,
   "time_limit": 1.0,
@@ -19,9 +19,9 @@
       "losses": 0,
       "forfeits": 0,
       "points": 20.0,
-      "discs_for": 1172,
-      "discs_against": 107,
-      "disc_diff": 1065,
+      "discs_for": 1174,
+      "discs_against": 105,
+      "disc_diff": 1069,
       "forfeit_reasons": []
     },
     {
@@ -57,9 +57,9 @@
       "losses": 19,
       "forfeits": 0,
       "points": 1.0,
-      "discs_for": 232,
-      "discs_against": 1047,
-      "disc_diff": -815,
+      "discs_for": 230,
+      "discs_against": 1049,
+      "disc_diff": -819,
       "forfeit_reasons": []
     }
   ],
@@ -382,8 +382,8 @@
       ],
       "winner": "Zeff minimax",
       "score": [
-        60,
-        4
+        62,
+        2
       ],
       "moves": [
         "e6",
@@ -435,17 +435,17 @@
         "f1",
         "g1",
         "h1",
-        "h2",
-        "h3",
-        "a1",
-        "b1",
         "g2",
-        "d2",
-        "e1",
+        "h3",
+        "h2",
         "c1",
+        "a1",
         "e2",
+        "e1",
         "d1",
-        "c2"
+        "c2",
+        "b1",
+        "d2"
       ],
       "forfeit": null
     },
@@ -663,19 +663,19 @@
         "b5",
         "b3",
         "a3",
-        "e2",
-        "d2",
         "b2",
-        "c1",
-        "e3",
-        "b4",
-        "d1",
-        "e1",
-        "a4",
-        "g1",
-        "a2",
-        "a1",
         "b1",
+        "d2",
+        "e3",
+        "e2",
+        "e1",
+        "a1",
+        "b4",
+        "a2",
+        "g1",
+        "a4",
+        "d1",
+        "c1",
         "c2"
       ],
       "forfeit": null
