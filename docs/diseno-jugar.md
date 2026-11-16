@@ -32,6 +32,14 @@ bots salen del paquete `reversibounty`, que `web/py.zip` lleva al navegador. El 
 puente (`web/webglue.py`) y dibuja. Un test comprueba que cada función que llama la web existe en el
 puente y que en el JS no hay reglas del juego.
 
+Por eso las jugadas legales también se pueden pedir desde la consola del navegador (F12), sin pasar
+por el tablero:
+
+```js
+const v = await RB.engine.call("new_game", []);
+await RB.engine.call("legal_moves", [v.state]);   // [[2, 3], [3, 2], [4, 5], [5, 4]]
+```
+
 ### 2. Las fichas son dos caras de un disco
 
 Cada casilla tiene un disco con la cara del **sombrero de paja** (blancas) y la de la **calavera**
