@@ -71,6 +71,8 @@ a { color: inherit; }
 code { font: 700 .88em ui-monospace, Consolas, monospace; background: rgba(0,0,0,.09); padding: .08em .35em; border-radius: 5px; }
 :root[data-theme="dark"] code { background: rgba(255,255,255,.1); }
 :focus-visible { outline: 3px solid var(--red); outline-offset: 3px; border-radius: 6px; }
+[hidden] { display: none !important; }
+[tabindex="-1"]:focus { outline: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .skip { position: absolute; left: 8px; top: -60px; z-index: 100; background: var(--gold); color: var(--ink); padding: 10px 16px; border-radius: 10px; font-weight: 800; }
 .skip:focus { top: 8px; }
