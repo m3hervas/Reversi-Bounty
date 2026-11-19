@@ -70,7 +70,7 @@
         h("div", { class: "wanted__sub", text: crew.aka.toUpperCase() }),
         h("div", { class: "wanted__name", text: entry.name }),
         h("div", { class: "wanted__money" }, h("span", { text: RB.crew.fmt(crew.bounty) }), h("small", { text: "BERRIES" })),
-        h("div", { class: "wanted__foot", text: "Puesto " + entry.rank + " · " + fmt(entry.points) + " puntos" }),
+        h("div", { class: "wanted__foot", text: "Puesto " + entry.rank + " · " + fmt(entry.points) + (entry.points === 1 ? " punto" : " puntos") }),
       ),
     );
   }

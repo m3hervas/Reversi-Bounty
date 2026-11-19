@@ -45,7 +45,7 @@
 .stars { display: none; position: absolute; inset: 0 0 40% 0; z-index: 1; background-image: radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(1.5px 1.5px at 130px 80px, #fff, transparent), radial-gradient(2px 2px at 220px 20px, #ffe9a8, transparent), radial-gradient(1.5px 1.5px at 300px 120px, #fff, transparent); background-size: 340px 160px; animation: twinkle 4s ease-in-out infinite; }
 :root[data-theme="dark"] .stars { display: block; }
 @keyframes twinkle { 50% { opacity: .45; } }
-.ship { position: absolute; z-index: 2; bottom: 33%; left: -200px; width: 150px; animation: sail 38s linear infinite, rock 3s ease-in-out infinite; }
+.ship { position: absolute; z-index: 2; bottom: 110px; left: -200px; width: 150px; animation: sail 38s linear infinite, rock 3s ease-in-out infinite; }
 @keyframes sail { to { left: calc(100% + 200px); } }
 @keyframes rock { 50% { rotate: 3deg; translate: 0 5px; } 0%, 100% { rotate: -3deg; } }
 
@@ -146,6 +146,11 @@
 .duo dl { margin: 10px 0 0; display: grid; gap: 10px; }
 .duo dt { font-weight: 900; } .duo dd { margin: 0; font-weight: 600; }
 .checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin: 14px 0 26px; }
+/* Pasos de una partida en «Leyes del mar»: tarjetas como las de .check, pero numeradas */
+.turnos { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin: 14px 0 6px; padding: 0; list-style: none; counter-reset: turno; }
+.turno { display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: start; min-width: 0; background: var(--surface); border: 3px solid var(--ink); border-radius: 14px; padding: 12px 14px; font-weight: 700; counter-increment: turno; }
+.turno::before { content: counter(turno); width: 28px; height: 28px; border-radius: 50%; background: var(--red); color: #fff; display: grid; place-items: center; font-weight: 900; }
+.turno span { min-width: 0; overflow-wrap: anywhere; }
 .check { display: flex; gap: 12px; align-items: flex-start; background: var(--surface); border: 3px solid var(--ink); border-radius: 14px; padding: 12px 14px; font-weight: 700; }
 .check::before { content: "✔"; flex: none; width: 28px; height: 28px; border-radius: 50%; background: #2eb872; color: #fff; display: grid; place-items: center; font-weight: 900; }
 
