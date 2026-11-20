@@ -16,4 +16,6 @@
 #   - file: mi_bot.py
 #     class: MiBot
 
-players: []
+players:
+  - file: nami.py
+    class: NamiNavegante
