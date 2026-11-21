@@ -19,3 +19,5 @@
 players:
   - file: nami.py
     class: NamiNavegante
+  - file: kraken_alfabeta.py
+    class: KrakenAlfaBeta
