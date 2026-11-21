@@ -5,7 +5,7 @@
  * precio por la cabeza. Un bot nuevo, sin entrada aquí, recibe un cartel genérico con un
  * precio sacado de su nombre, así que añadir un bot nunca rompe la web.
  *
- *   RB.crew.persona(bot)          { aka, bounty, lines }
+ *   RB.crew.persona(bot)          { aka, bounty, lines, ficha }  (ficha: dibujo de sus fichas, ver play.css)
  *   RB.crew.line(bot, evento)     una frase para: hello | think | big | move | win | lose | draw | forfeit
  *   RB.crew.profile               { name, berries, w, d, l }  (se guarda en localStorage)
  *   RB.crew.reward(bot, ...)      berries que da una victoria
@@ -19,7 +19,7 @@
 
   const PERSONAS = {
     "Buggy aleatorio": {
-      aka: "El Payaso Afortunado", bounty: 15000000, img: "img/buggy.png", accent: "#9b5de5",
+      aka: "El Payaso Afortunado", bounty: 15000000, img: "img/buggy.png", ficha: "buggy", accent: "#9b5de5",
       lines: {
         hello: ["¡Soy el magnífico capitán Buggy! Jugaré… a lo que salga.", "¡Y no me llames payaso! ¡Que empiece el espectáculo!"],
         think: ["Mmm… ¡esta! ¡O esta! ¡Da igual!", "Tiro los cuchillos y… ¡ahí va!"],
@@ -30,7 +30,7 @@
       },
     },
     "Wapol voraz": {
-      aka: "El Tragón del Botín", bounty: 28000000, img: "img/wapol.png", accent: "#ff8a1f",
+      aka: "El Tragón del Botín", bounty: 28000000, img: "img/wapol.png", ficha: "wapol", accent: "#ff8a1f",
       lines: {
         hello: ["Todas las fichas serán mías. ¡Todas!", "Cada ficha que voltee es una moneda más."],
         think: ["¿Cuál me da más? … ¡Esa!", "Contando botín…"],
@@ -41,14 +41,36 @@
       },
     },
     "Zeff minimax": {
-      aka: "El Cocinero Estratega", bounty: 150000000, img: "img/zeff.png", accent: "#3f86d9",
+      aka: "El Cocinero Estratega", bounty: 150000000, img: "img/zeff.png", ficha: "zeff", accent: "#3f86d9",
       lines: {
-        hello: ["Siéntate, mocoso. Veamos qué sabes.", "Aquí se cocina a fuego lento y se piensa ocho jugadas."],
-        think: ["Calculando ocho jugadas por delante…", "Todo bien sazonado, nada se improvisa."],
+        hello: ["Siéntate, mocoso. Veamos qué sabes.", "Aquí se cocina a fuego lento y se piensa varias jugadas por delante."],
+        think: ["Calculando unas cuantas jugadas por delante…", "Todo bien sazonado, nada se improvisa."],
         big: ["Hmpf. No está mal, grumete.", "Esa te la apunto."],
         move: ["Cocinado a fuego lento.", "Sin prisa y sin pausa.", "Servido."],
         win: ["Vuelve cuando sepas jugar, mocoso."], lose: ["Jeh. Has ganado. Me gusta tu estilo."],
         draw: ["Empate… respeto."], forfeit: ["Eso no debería pasar en mi cocina."],
+      },
+    },
+    "Nami navegante": {
+      aka: "La Gata Ladrona", bounty: 66000000, img: "img/nami.png", ficha: "nami", accent: "#ff8c1a",
+      lines: {
+        hello: ["Tengo el mapa de este tablero. Tú no.", "Ganarme te va a costar caro. Muy caro."],
+        think: ["Leyendo los vientos…", "Trazando la ruta hasta la esquina…"],
+        big: ["¡Eh! ¡Esas fichas valían una fortuna!", "Esto te lo cobro con intereses."],
+        move: ["Rumbo fijado.", "El mar está de mi parte.", "Una más para mi tesoro."],
+        win: ["Gracias por el botín. Lo apunto en tu cuenta."], lose: ["Hmpf… la próxima vez te robo la partida."],
+        draw: ["¿Empate? Te cobro la mitad igualmente."], forfeit: ["¡El tiempo me ha jugado una mala pasada!"],
+      },
+    },
+    "Kraken alfa-beta": {
+      aka: "El Terror de las Profundidades", bounty: 99000000, img: "img/kraken.png", ficha: "kraken", accent: "#e2725b",
+      lines: {
+        hello: ["Seis brazos y seis sables. ¿Seguro que quieres jugar?", "Del fondo del mar sube el Kraken."],
+        think: ["Enroscando la jugada…", "Un tentáculo en cada esquina…"],
+        big: ["¡Glub! Esa me ha dolido en los seis brazos.", "¡Me has cortado un tentáculo!"],
+        move: ["¡Tentáculo va!", "Te arrastro al fondo.", "Ni una ficha se me escapa."],
+        win: ["Al fondo del mar contigo. ¡Glub, glub!"], lose: ["Vuelvo a las profundidades… por ahora."],
+        draw: ["¿Empate? Te suelto… esta vez."], forfeit: ["¡Se me han enredado los tentáculos!"],
       },
     },
   };

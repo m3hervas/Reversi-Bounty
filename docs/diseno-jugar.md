@@ -70,6 +70,13 @@ precio calculado a partir de su nombre, así que **añadir un bot nunca rompe la
 | Buggy aleatorio | Buggy | El Payaso Afortunado |
 | Wapol voraz | Wapol | El Tragón del Botín |
 | Zeff minimax | Zeff | El Cocinero Estratega |
+| Nami navegante | Nami | La Gata Ladrona |
+| Kraken alfa-beta | Kraken | El Terror de las Profundidades |
+
+Cada personaje juega además con **sus propias fichas**: el fondo dice el bando (dorado para los
+sombreros, oscuro para las calaveras) y el dibujo, quién juega. Buggy lleva su nariz de payaso, Wapol
+su corona, Zeff su gorro de cocinero, Nami una mandarina y el Kraken un tentáculo sobre dos sables. Son SVG propios en `web/img/fichas/`; una
+persona o un bot sin personaje juega con las fichas de siempre.
 
 Las imágenes de los personajes se hicieron con IA para este trabajo y están dentro de `web/img/`, con
 fondo transparente (los tests comprueban que tienen canal alfa).

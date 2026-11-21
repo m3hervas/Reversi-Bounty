@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><!-- Wapol: corona real con joyas y armiño -->
+<defs>
+<linearGradient id="oro" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff1a8"/><stop offset=".45" stop-color="#f6c531"/><stop offset="1" stop-color="#b9780c"/></linearGradient>
+<linearGradient id="terciopelo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a866d4"/><stop offset="1" stop-color="#4f1f78"/></linearGradient>
+<radialGradient id="rubi" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ff9aa0"/><stop offset=".4" stop-color="#e3262b"/><stop offset="1" stop-color="#7a0a0e"/></radialGradient>
+<radialGradient id="zafiro" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#bfe6ff"/><stop offset=".4" stop-color="#2f8fe0"/><stop offset="1" stop-color="#103d7a"/></radialGradient>
+<radialGradient id="esmeralda" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#c9ffd9"/><stop offset=".4" stop-color="#27b866"/><stop offset="1" stop-color="#0d5a2c"/></radialGradient>
+<radialGradient id="perla" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#d9cfb8"/></radialGradient>
+</defs>
+<g stroke="#2b1a0f" stroke-width="2.6" stroke-linejoin="round">
+<path d="M24 60 Q28 34 50 34 Q72 34 76 60Z" fill="url(#terciopelo)"/>
+<path d="M18 68 L13 30 L32 47 L50 18 L68 47 L87 30 L82 68Z" fill="url(#oro)"/>
+<circle cx="13" cy="28" r="5" fill="url(#perla)"/><circle cx="50" cy="15" r="6" fill="url(#perla)"/><circle cx="87" cy="28" r="5" fill="url(#perla)"/>
+<path d="M50 38 l7 9 -7 9 -7 -9z" fill="url(#rubi)"/>
+<circle cx="29" cy="58" r="4.5" fill="url(#zafiro)"/><circle cx="71" cy="58" r="4.5" fill="url(#esmeralda)"/>
+<rect x="15" y="66" width="70" height="16" rx="7" fill="#fbf7ee"/></g>
+<g fill="#2b1a0f"><path d="M25 70l2 4-2 4-2-4z"/><path d="M41 70l2 4-2 4-2-4z"/><path d="M57 70l2 4-2 4-2-4z"/><path d="M73 70l2 4-2 4-2-4z"/></g>
+<path d="M21 42 L29 50 M47 27 L50 22 M79 42 L72 49" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".75"/>
+<circle cx="48" cy="43" r="1.6" fill="#fff" opacity=".8"/>
+</svg>

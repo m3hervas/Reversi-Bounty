@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><!-- Buggy: cuchillos cruzados y nariz de payaso -->
+<defs>
+<linearGradient id="hoja" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffffff"/><stop offset=".48" stop-color="#d6dee8"/><stop offset=".52" stop-color="#93a2b4"/><stop offset="1" stop-color="#e3e9f0"/></linearGradient>
+<linearGradient id="mango" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5a3415"/><stop offset=".5" stop-color="#a8703a"/><stop offset="1" stop-color="#5a3415"/></linearGradient>
+<radialGradient id="nariz" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ff8a80"/><stop offset=".35" stop-color="#ec2a2f"/><stop offset="1" stop-color="#8e0d12"/></radialGradient>
+</defs>
+<g stroke="#2b1a0f" stroke-width="2.6" stroke-linejoin="round">
+<g transform="rotate(45 50 50)">
+<path d="M50 4 Q58 12 57 58 H43 Q44 30 50 4Z" fill="url(#hoja)"/><path d="M50 10 V56" stroke="#7d8da0" stroke-width="1.2"/><rect x="37" y="57" width="26" height="7" rx="3" fill="#f2c94c"/>
+<rect x="45.5" y="64" width="9" height="24" rx="3.5" fill="url(#mango)"/><circle cx="50" cy="90" r="4" fill="#f2c94c"/></g>
+<g transform="rotate(-45 50 50)">
+<path d="M50 4 Q58 12 57 58 H43 Q44 30 50 4Z" fill="url(#hoja)"/><path d="M50 10 V56" stroke="#7d8da0" stroke-width="1.2"/><rect x="37" y="57" width="26" height="7" rx="3" fill="#f2c94c"/>
+<rect x="45.5" y="64" width="9" height="24" rx="3.5" fill="url(#mango)"/><circle cx="50" cy="90" r="4" fill="#f2c94c"/></g>
+</g>
+<ellipse cx="51" cy="56" rx="16" ry="5" fill="#000" opacity=".25"/>
+<circle cx="50" cy="48" r="17" fill="url(#nariz)" stroke="#2b1a0f" stroke-width="2.8"/>
+<ellipse cx="43.5" cy="41" rx="6" ry="4" fill="#fff" opacity=".85" transform="rotate(-35 43.5 41)"/>
+<circle cx="57" cy="56" r="2" fill="#fff" opacity=".35"/>
+</svg>
