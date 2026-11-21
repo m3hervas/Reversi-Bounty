@@ -207,6 +207,11 @@
     const playing = game.phase === "playing";
     const seats = game.phase === "setup" ? selection() : game.seats;
     const people = COLORS.filter((c) => seats[c].kind === "human").length;
+    // Cada bot juega con su propio dibujo en las fichas; una persona, con las de siempre.
+    const mesa = $("cc-1").closest(".play");
+    const ficha = (c) => (seats[c].kind === "bot" ? crew.persona(seats[c].bot).ficha || "" : "");
+    mesa.dataset.fichaCalaveras = ficha(1);
+    mesa.dataset.fichaSombreros = ficha(-1);
     const score = view ? view.score : [2, 2];
     COLORS.forEach((c, i) => {
       const s = seats[c];

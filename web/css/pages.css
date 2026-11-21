@@ -45,9 +45,10 @@
 .stars { display: none; position: absolute; inset: 0 0 40% 0; z-index: 1; background-image: radial-gradient(2px 2px at 20px 30px, #fff, transparent), radial-gradient(1.5px 1.5px at 130px 80px, #fff, transparent), radial-gradient(2px 2px at 220px 20px, #ffe9a8, transparent), radial-gradient(1.5px 1.5px at 300px 120px, #fff, transparent); background-size: 340px 160px; animation: twinkle 4s ease-in-out infinite; }
 :root[data-theme="dark"] .stars { display: block; }
 @keyframes twinkle { 50% { opacity: .45; } }
-.ship { position: absolute; z-index: 2; bottom: 110px; left: -200px; width: 150px; animation: sail 38s linear infinite, rock 3s ease-in-out infinite; }
-@keyframes sail { to { left: calc(100% + 200px); } }
+.ship { position: absolute; z-index: 2; bottom: 68px; left: -240px; width: 190px; height: auto; animation: sail 38s linear infinite, rock 3s ease-in-out infinite; }
+@keyframes sail { to { left: calc(100% + 240px); } }
 @keyframes rock { 50% { rotate: 3deg; translate: 0 5px; } 0%, 100% { rotate: -3deg; } }
+@media (max-width: 860px) { .ship { width: 120px; bottom: 40px; } } /* en móvil la portada se apila: un barco más pequeño, bajo los botones */
 
 /* mar con olas */
 .hero .waves { position: absolute; left: 0; right: 0; bottom: 0; height: 150px; z-index: 4; }
@@ -308,3 +309,55 @@
 .tut__score { font: 900 .8rem/1 var(--f-body); letter-spacing: .12em; text-transform: uppercase; color: #5d4631; }
 .tut__actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .tut__actions:empty { display: none; }
+
+/* ============================ PORTADA: profundidad del mar ============================
+ * El horizonte está al 64 % de la altura de la portada (donde el degradado pasa de cielo a mar).
+ * Tres añadidos, todo SVG y CSS propios: islas en el horizonte, dos capas de olas que se mueven más
+ * despacio cuanto más lejos están, y reflejos bajo el sol o la luna. Con «reducir movimiento» del
+ * sistema, la regla general de theme.css las deja quietas. */
+.hero { --isla-cerca: #3f8f84; --isla-lejos: #8cc6d8; --monte-1: #5fbf5a; --monte-2: #2f8f4e; --arena: #f6dc9c; --hoja-1: #7ed957; --hoja-2: #2e9a46; --hoja-atras: #237a3c; --nervio: #b9f08a; --tronco-1: #b07a45; --tronco-2: #7a4f2a; --anillo: #5a3a1e; --coco: #6b4423; --ola-lejos: #59b9e4; --ola-medio: #2c9fd8; --reflejo: rgba(255,255,255,.85); }
+:root[data-theme="dark"] .hero { --isla-cerca: #0f2448; --isla-lejos: #1d3768; --monte-1: #123058; --monte-2: #0d2447; --arena: #1d3a66; --hoja-1: #14365e; --hoja-2: #0c2546; --hoja-atras: #0a1f3d; --nervio: #24497a; --tronco-1: #1a3358; --tronco-2: #0e2244; --anillo: #0a1a35; --coco: #0a1a35; --ola-lejos: #1c4a82; --ola-medio: #16416f; --reflejo: rgba(225,235,255,.7); }
+
+.isla { position: absolute; z-index: 1; bottom: 36%; height: auto; pointer-events: none; }
+.isla path { fill: var(--isla-cerca); }
+.isla--der .isla__monte { fill: url(#isla-monte); }
+.isla--der .isla__matas { fill: var(--hoja-2); opacity: .8; }
+.isla--der .isla__arena { fill: var(--arena); }
+.isla__palmas .hoja { fill: url(#isla-hoja); }
+.isla__palmas .hoja--atras { fill: var(--hoja-atras); }
+.isla__palmas .nervio { fill: none; stroke: var(--nervio); stroke-width: .8; stroke-linecap: round; opacity: .8; }
+.isla__palmas .tronco { fill: url(#isla-tronco); }
+.isla__palmas .anillo { fill: none; stroke: var(--anillo); stroke-width: 1; opacity: .55; }
+.isla__palmas .coco { fill: var(--coco); }
+/* Las hojas se mecen un poco con la brisa, cada palmera desde su copa */
+.isla__palmas .hoja, .isla__palmas .nervio { transform-box: view-box; animation: brisa 5s ease-in-out infinite alternate; }
+.isla--der { right: 2%; width: min(500px, 27vw); }
+.isla--lejos { right: 27%; width: min(240px, 13vw); }
+.isla--lejos path { fill: var(--isla-lejos); }
+.isla--izq { left: 2%; width: min(160px, 9vw); }
+.isla--izq path { fill: var(--monte-2); }
+
+.mar-capa { position: absolute; z-index: 1; left: 0; right: 0; overflow: hidden; pointer-events: none; }
+.mar-capa svg { position: absolute; left: 0; bottom: 0; width: 200%; max-width: none; height: 100%; animation: drift 60s linear infinite; }
+.mar-capa--lejos { top: 64%; height: 16px; }
+.mar-capa--lejos svg { fill: var(--ola-lejos); opacity: .55; }
+.mar-capa--medio { top: 73%; height: 34px; }
+.mar-capa--medio svg { fill: var(--ola-medio); opacity: .6; animation-duration: 36s; animation-direction: reverse; }
+
+/* Reflejos: rayitas horizontales bajo el sol/la luna que aparecen y se apagan a destiempo */
+.reflejos { position: absolute; z-index: 1; top: 65%; right: calc(8% + 25px); width: 120px; height: 24%; pointer-events: none; }
+.reflejos i { position: absolute; height: 3px; border-radius: 3px; background: var(--reflejo); opacity: 0; animation: destello 3.2s ease-in-out infinite; }
+.reflejos i:nth-child(1) { top: 4%;  left: 38%; width: 30%; animation-delay: 0s; }
+.reflejos i:nth-child(2) { top: 14%; left: 20%; width: 46%; animation-delay: .4s; }
+.reflejos i:nth-child(3) { top: 26%; left: 44%; width: 34%; animation-delay: .9s; }
+.reflejos i:nth-child(4) { top: 38%; left: 10%; width: 52%; animation-delay: 1.3s; }
+.reflejos i:nth-child(5) { top: 50%; left: 36%; width: 40%; animation-delay: 1.8s; }
+.reflejos i:nth-child(6) { top: 62%; left: 6%;  width: 58%; animation-delay: 2.2s; }
+.reflejos i:nth-child(7) { top: 76%; left: 30%; width: 48%; animation-delay: 2.6s; }
+.reflejos i:nth-child(8) { top: 88%; left: 14%; width: 62%; animation-delay: 1.1s; }
+@keyframes brisa { to { transform: translateY(1px) skewX(-2deg); } }
+@keyframes destello { 0%, 100% { opacity: 0; transform: scaleX(.6); } 45% { opacity: 1; transform: scaleX(1); } }
+:root[data-theme="dark"] .reflejos i { animation-duration: 4.2s; }
+
+/* En el móvil la portada se apila: el texto pasa por encima del horizonte y las islas estorbarían. */
+@media (max-width: 860px) { .isla, .mar-capa, .reflejos { display: none; } }
