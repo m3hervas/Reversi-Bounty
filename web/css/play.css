@@ -362,3 +362,11 @@ html:not([data-view="inicio"]) .footer { margin-top: 0; }
 .play[data-ficha-calaveras]:not([data-ficha-calaveras=""]) .face--skull {
   background: var(--emblema-c) center / 80% no-repeat, radial-gradient(circle, transparent 0 70%, rgba(242,201,76,.35) 71% 73%, transparent 74%), radial-gradient(circle at 36% 30%, #3f3f52, #15151c 65%);
 }
+
+/* ---------- deshacer ---------- */
+.crews__mid { display: grid; gap: 8px; justify-items: stretch; }
+.btn--xs { font-size: .82rem; padding: 6px 10px; border-radius: 10px; gap: 6px; box-shadow: 0 3px 0 var(--ink), inset 0 -3px 0 var(--bd); }
+.btn--xs:hover { box-shadow: 0 4px 0 var(--ink), inset 0 -3px 0 var(--bd); }
+.btn--xs:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink), inset 0 -3px 0 var(--bd); }
+.btn--xs span { font-size: 1.1em; line-height: 1; }
+#undo:disabled { filter: grayscale(1) opacity(.45); }
