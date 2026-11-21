@@ -104,6 +104,11 @@
     const p = crew.profile;
     $("my-name").textContent = p.name || "Capitán Anónimo";
     $("my-berries").textContent = crew.fmt(p.berries);
+    const top = $("top-berries");
+    if (top.textContent !== crew.fmt(p.berries)) {
+      top.textContent = crew.fmt(p.berries);
+      if (stamp) { const c = top.parentElement; c.classList.remove("bump"); void c.offsetWidth; c.classList.add("bump"); }
+    }
     $("st-w").textContent = p.w; $("st-d").textContent = p.d; $("st-l").textContent = p.l;
     const r = crew.rank(p.berries);
     $("rank-txt").textContent = "Rango: " + r.title;
@@ -202,6 +207,12 @@
       if (sound.on) sound.play("move", { flips: 2 });
     });
     $("theme-btn").addEventListener("click", toggleTheme);
+
+    // La barra de arriba se compacta y echa sombra en cuanto bajas por la página.
+    const bar = document.querySelector(".topbar");
+    const onScroll = () => bar.toggleAttribute("data-scrolled", window.scrollY > 8);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
 
     window.addEventListener("hashchange", route);
     route();

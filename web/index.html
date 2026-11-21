@@ -33,9 +33,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Rye&family=Titan+One&display=swap">
-  <link rel="stylesheet" href="css/theme.css?v=1795275200">
-  <link rel="stylesheet" href="css/pages.css?v=1795275200">
-  <link rel="stylesheet" href="css/play.css?v=1795275200">
+  <link rel="stylesheet" href="css/theme.css?v=1795279000">
+  <link rel="stylesheet" href="css/pages.css?v=1795279000">
+  <link rel="stylesheet" href="css/play.css?v=1795279000">
 </head>
 <body>
   <a class="skip" href="#main">Saltar al contenido</a>
@@ -66,13 +66,14 @@
         <span>Reversi <b>Bounty</b></span>
       </a>
       <nav class="nav" aria-label="Apartados">
-        <a href="#/jugar" data-route="jugar">Lucha</a>
-        <a href="#/bots" data-route="bots">Rivales</a>
-        <a href="#/marcador" data-route="marcador">Marcador</a>
-        <a href="#/reglas" data-route="reglas">Leyes del mar</a>
-        <a href="#/anadir" data-route="anadir">Añade tu Bot</a>
+        <a href="#/jugar" data-route="jugar"><svg class="nav__i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9 9M4 4h4M4 4v4M20 4l-9 9M20 4h-4M20 4v4M7 15l-3 3 2 2 3-3M17 15l3 3-2 2-3-3"/></svg>Lucha</a>
+        <a href="#/bots" data-route="bots"><svg class="nav__i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4M5 4c4-2 7 2 11 0v9c-4 2-7-2-11 0"/></svg>Rivales</a>
+        <a href="#/marcador" data-route="marcador"><svg class="nav__i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8M9 17h6"/></svg>Marcador</a>
+        <a href="#/reglas" data-route="reglas"><svg class="nav__i" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h11v13a3 3 0 0 1-3 3H6a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3h1M6 4a2 2 0 0 0-2 2v1h5M11 9h4M11 13h4"/></svg>Leyes del mar</a>
+        <a href="#/anadir" data-route="anadir"><svg class="nav__i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg>Añade tu Bot</a>
       </nav>
       <div class="tools">
+        <a class="chip chip--bounty" href="#/" title="Tu recompensa (en la portada está tu cartel)"><span aria-hidden="true">฿</span><b id="top-berries">0</b><span class="sr-only"> berries de recompensa</span></a>
         <span class="chip" id="engine-chip" data-state="loading" title="El motor es el paquete Python del proyecto, ejecutándose en tu navegador"><i></i><span id="engine-text">Python…</span></span>
         <button class="icon-btn" type="button" id="sound-btn" data-on="true" aria-pressed="true" aria-label="Silenciar los sonidos">
           <svg viewBox="0 0 24 24" class="i-on" aria-hidden="true"><path d="M4 9.500v5h3.600l4.400 3.800V5.700L7.600 9.500H4z"/><path d="M15.600 9.200a4 4 0 0 1 0 5.600M18.200 6.600a7.600 7.600 0 0 1 0 10.800"/></svg>
@@ -276,7 +277,10 @@
             <div class="panel scorebar">
               <div class="crews">
                 <div class="crewcard" id="cc-1"><span class="token token--flag"><span class="face face--skull" style="transform:none"></span></span><div><span class="crewcard__side">Calaveras</span><span class="crewcard__name" id="cn-1">—</span></div><b class="crewcard__n" id="cs-1">2</b></div>
-                <button class="btn btn--gold btn--sm" type="button" id="again" disabled>Nueva partida</button>
+                <div class="crews__mid">
+                  <button class="btn btn--gold btn--sm" type="button" id="again" disabled>Nueva partida</button>
+                  <button class="btn btn--paper btn--xs" type="button" id="undo" disabled aria-keyshortcuts="Control+Z" title="Deshacer tu última jugada (Ctrl+Z)"><span aria-hidden="true">↶</span> Deshacer</button>
+                </div>
                 <div class="crewcard crewcard--r" id="cc--1"><b class="crewcard__n" id="cs--1">2</b><div><span class="crewcard__side">Sombreros</span><span class="crewcard__name" id="cn--1">—</span></div><span class="token token--flag"><span class="face face--hat"></span></span></div>
               </div>
               <div class="meter" aria-hidden="true"><i class="m-sk" id="m-sk"></i><i class="m-ht" id="m-ht"></i></div>
@@ -472,7 +476,7 @@
             </div>
             <figure class="law__fig law__fig--pair">
               <div class="mini" data-mini="ssshshhh|ssshhhhh|hshhhhhh|sssshhhh|ssshhhhh|ssshhhhh|sssshhhh|sssshhhh"></div>
-              <div class="mini" data-mini="........|........|..sss...|..ssss..|..sssss.|...s....|........|........"></div>
+              <div class="mini" data-mini="........|........|....s...|...sss..|..sssss.|...sss..|....s...|........"></div>
               <figcaption><b>Habitual:</b> lleno, 38 a 26 para los sombreros. <b>Anticipado:</b> 13 a 0 para las calaveras, con 51 casillas vacías.</figcaption>
             </figure>
           </article>
@@ -485,6 +489,7 @@
             <li class="turno"><span>En tu turno, las casillas donde puedes jugar están marcadas con la <b>brújula</b> (un círculo de puntos). Solo valen esas: en las demás no te deja jugar.</span></li>
             <li class="turno"><span>El rival <b>mueve solo</b> justo después de ti, sin que pulses nada. Su última jugada queda marcada en el tablero y todas se apuntan en el <b>diario de a bordo</b>.</span></li>
             <li class="turno"><span>Si alguien no tiene jugada, <b>pasa automáticamente</b> y te avisamos. La partida sigue hasta que ninguno de los dos puede mover.</span></li>
+            <li class="turno"><span>¿Te has equivocado? Pulsa <b>Deshacer</b> (o Ctrl+Z) y vuelves a tu turno anterior, antes de tu jugada y de la respuesta del rival. Cuando se cobra la recompensa, la partida ya no se puede deshacer.</span></li>
           </ol>
         </section>
 
@@ -691,11 +696,11 @@ git push -u origin bot-mi-bot</code></pre>
 
   <noscript><p style="padding:20px;text-align:center">Esta web necesita JavaScript para ejecutar el motor del juego.</p></noscript>
 
-  <script src="js/engine.js?v=1795275200" defer></script>
-  <script src="js/crew.js?v=1795275200" defer></script>
-  <script src="js/marcador.js?v=1795275200" defer></script>
-  <script src="js/tutorial.js?v=1795275200" defer></script>
-  <script src="js/app.js?v=1795275200" defer></script>
-  <script src="js/play.js?v=1795275200" defer></script>
+  <script src="js/engine.js?v=1795279000" defer></script>
+  <script src="js/crew.js?v=1795279000" defer></script>
+  <script src="js/marcador.js?v=1795279000" defer></script>
+  <script src="js/tutorial.js?v=1795279000" defer></script>
+  <script src="js/app.js?v=1795279000" defer></script>
+  <script src="js/play.js?v=1795279000" defer></script>
 </body>
 </html>

@@ -94,21 +94,31 @@ html[data-view="anadir"] .view[data-view="anadir"] { display: block; animation: 
   position: sticky; top: 0; z-index: 50;
   background: color-mix(in srgb, var(--navy) 94%, transparent);
   backdrop-filter: blur(8px);
-  border-bottom: 4px solid var(--gold);
-  color: #fff;
+  color: #fff; transition: box-shadow .3s;
 }
-.topbar__in { display: flex; align-items: center; gap: 18px; min-height: 64px; width: min(1120px, 100% - 32px); margin-inline: auto; }
+/* Una cuerda trenzada en vez de una raya: dorada con sus vueltas en oscuro. */
+.topbar::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 6px; pointer-events: none;
+  background: repeating-linear-gradient(-55deg, var(--gold) 0 7px, var(--gold-dark) 7px 10px);
+  box-shadow: 0 1px 0 rgba(0,0,0,.25);
+}
+.topbar[data-scrolled] { box-shadow: 0 10px 24px rgba(4, 16, 40, .28); }
+.topbar__in { display: flex; align-items: center; gap: 18px; min-height: 64px; width: min(1280px, 100% - 32px); margin-inline: auto; transition: min-height .3s; }
+.topbar[data-scrolled] .topbar__in { min-height: 54px; }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font: 400 1.35rem/1 var(--f-logo); letter-spacing: .02em; }
 .brand b { color: var(--gold); font-weight: 400; }
 .brand svg { width: 38px; height: 38px; transition: transform .5s cubic-bezier(.3,1.6,.5,1); }
 .brand:hover svg { transform: rotate(-14deg) scale(1.1); }
 .nav { display: flex; align-items: center; gap: 4px; margin-left: auto; }
 .nav a {
+  display: inline-flex; align-items: center; gap: 7px;
   white-space: nowrap;
   position: relative; text-decoration: none; padding: 9px 14px; border-radius: 999px;
   font: 800 .95rem/1 var(--f-body); color: #e7f2ff; transition: background .2s, color .2s, transform .2s;
 }
 .nav a:hover { background: rgba(255,255,255,.14); transform: translateY(-1px); }
+.nav__i { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: .85; transition: transform .3s cubic-bezier(.3,1.6,.5,1); }
+.nav a:hover .nav__i { transform: rotate(-12deg) scale(1.12); }
 html[data-view="jugar"] .nav a[data-route="jugar"],
 html[data-view="reglas"] .nav a[data-route="reglas"],
 html[data-view="bots"] .nav a[data-route="bots"],
@@ -123,6 +133,12 @@ html[data-view="anadir"] .nav a[data-route="anadir"] { background: var(--gold); 
 .chip[data-state="ready"] i { background: #3fe08a; animation: none; }
 .chip[data-state="error"] i { background: #ff5a4f; animation: none; }
 @keyframes pulse { 50% { opacity: .3; } }
+.chip--bounty { text-decoration: none; background: rgba(242,201,76,.16); color: #ffe7a0; border: 1.5px solid rgba(242,201,76,.45); transition: background .2s, transform .2s; }
+.chip--bounty:hover { background: rgba(242,201,76,.3); transform: translateY(-1px); }
+.chip--bounty span[aria-hidden] { font-size: .95rem; color: var(--gold); }
+.chip--bounty b { font-variant-numeric: tabular-nums; }
+.chip--bounty.bump { animation: bump-chip .6s cubic-bezier(.3,1.6,.5,1); }
+@keyframes bump-chip { 40% { transform: scale(1.18); } }
 .icon-btn {
   width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); background: transparent;
   color: #fff; display: grid; place-items: center; cursor: pointer; transition: background .2s, transform .2s;
@@ -191,6 +207,8 @@ html[data-view="anadir"] .nav a[data-route="anadir"] { background: var(--gold); 
   .nav { order: 3; width: 100%; margin: 0; overflow-x: auto; scrollbar-width: none; }
   .tools { margin-left: auto; }
   .chip { display: none; }
+  .chip--bounty { display: inline-flex; }
+  .nav a { padding: 8px 11px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }

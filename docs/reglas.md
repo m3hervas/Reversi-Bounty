@@ -139,7 +139,7 @@ proyecto, y coinciden con lo que hace [el motor del juego](referencia/motor.md).
 | ¿Qué pasa si la partida acaba antes de llenarse el tablero? | Las casillas vacías no cuentan para nadie: se cuentan solo las fichas que hay en el tablero y gana quien tenga más. |
 | ¿Cómo se decide un empate? | Si los dos tienen el mismo número de fichas, es empate. No hay desempate. |
 | ¿Se puede pasar voluntariamente? | No. No existe la jugada "pasar": solo se pasa cuando no hay ninguna jugada legal, y el motor lo hace solo. |
-| ¿Se pueden acabar las fichas de un jugador? | No. Hay tantas fichas como casillas (64), así que nunca faltan. El motor no lleva la cuenta de fichas en la mano de cada jugador. |
+| ¿Se pueden acabar las fichas de un jugador? | Sobre el tablero, sí: un jugador puede quedarse sin ninguna ficha de su color, y entonces pierde (mira el ejemplo de abajo). Para jugar, no: hay tantas fichas como casillas (64), así que nunca faltan, y el motor no lleva la cuenta de fichas en la mano de cada jugador. |
 | ¿Qué es una jugada ilegal? | Cualquier jugada que no cumpla las reglas: una casilla ocupada, una casilla fuera del tablero, una casilla que no encierra ninguna ficha rival o algo que ni siquiera tiene la forma de una jugada `(fila, columna)`. |
 | ¿Qué hace el motor con una jugada ilegal? | `is_legal` devuelve `False` y `apply_move` lanza un error `ValueError`. El motor nunca coloca una ficha en una casilla ilegal. |
 
