@@ -15,6 +15,9 @@
  * y la respuesta del bot. Lo que se juega es siempre lo que dice el motor: solo se vuelve a una
  * posición que el propio motor dio por buena.
  *
+ * Parar: entre dos bots, el botón «Parar» detiene la partida antes de la siguiente jugada y
+ * «Seguir» la reanuda. No toca el motor: solo deja de pedirle jugadas.
+ *
  * Calaveras = negras = color 1 (mueven primero). Sombreros de paja = blancas = color -1.
  */
 (function () {
@@ -233,6 +236,12 @@
     renderPosters(seats);
     syncAgain();
     ui.undo.disabled = !canUndo();
+    // Entre dos bots no hay nada que deshacer: en su sitio sale «Parar» / «Seguir».
+    const dosBots = botCount() === 2 && game.phase === "playing";
+    ui.undo.hidden = dosBots;
+    ui.pause.hidden = !dosBots;
+    ui.pause.textContent = game.paused ? "▶ Seguir" : "⏸ Parar";
+    ui.pause.setAttribute("aria-pressed", String(!!game.paused));
   }
 
   // ------------------------------------------------------------ deshacer --- //
@@ -317,7 +326,7 @@
   async function newGame() {
     if (!game.players.length) return;
     const token = ++game.token;
-    Object.assign(game, { phase: "playing", seats: selection(), busy: true, seed: Math.floor(Math.random() * 2 ** 31), lastBot: null, history: [], rewarded: false });
+    Object.assign(game, { phase: "playing", seats: selection(), busy: true, seed: Math.floor(Math.random() * 2 ** 31), lastBot: null, history: [], rewarded: false, paused: false, waiting: null });
     ui.result.hidden = true; ui.toast.hidden = true;
     ui.log.replaceChildren(h("li", { class: "empty", text: "Aún no se ha movido ninguna ficha." }));
     quiet();
@@ -399,6 +408,14 @@
     if (Math.random() < 0.5) say("think", color);
     await wait(BOT_DELAY_MS);
     if (token !== game.token) return;
+    // Partida parada: el bot no pide su jugada hasta que se pulse «Seguir».
+    if (game.paused) {
+      game.waiting = color; game.busy = false;
+      mood(color, "neutral", 0);
+      render(false);
+      setStatus("paused", "Partida parada. Pulsa «Seguir» para que " + bot.name + " haga su jugada.");
+      return;
+    }
     let view;
     try {
       view = await RB.engine.call("bot_move", [game.view.state], { timeout: BOT_TIMEOUT_MS });
@@ -418,7 +435,23 @@
     continueGame(token);
   }
 
+  /* Parar y seguir una partida entre dos bots. Si un bot ya está pensando, termina esa jugada y
+   * la partida se para antes de la siguiente. */
+  function togglePause() {
+    if (botCount() !== 2 || game.phase !== "playing") return;
+    game.paused = !game.paused;
+    if (!game.paused && game.waiting !== null) {
+      const color = game.waiting;
+      game.waiting = null;
+      botTurn(game.token, color);
+      return;
+    }
+    render(false);
+    if (game.paused) setStatus("paused", "Se parará después de la jugada que está pensando.");
+  }
+
   function finish() {
+    game.paused = false; game.waiting = null;
     game.phase = "over"; game.busy = false;
     store(STORE_GAME, null);
     render(false);
@@ -467,7 +500,7 @@
       }
     }
     const token = ++game.token;
-    Object.assign(game, { phase: "playing", seats: seats, seed: saved.seed, busy: true, lastBot: null, history: [], rewarded: false });
+    Object.assign(game, { phase: "playing", seats: seats, seed: saved.seed, busy: true, lastBot: null, history: [], rewarded: false, paused: false, waiting: null });
     try {
       await RB.engine.call("start_match", [saved.seats["1"], saved.seats["-1"], saved.seed]);
       const view = await RB.engine.call("view", [saved.state]);
@@ -538,7 +571,7 @@
     Object.assign(ui, {
       chart: $("chart"), board: $("board"), toast: $("toast"), sfx: $("sfx"), status: $("status"), statusText: $("status-text"),
       intro: $("intro"), result: $("result"), start: $("start"), again: $("again"), retry: $("retry"), log: $("logbook"),
-      seat: { 1: $("seat-1"), "-1": $("seat--1") }, undo: $("undo"),
+      seat: { 1: $("seat-1"), "-1": $("seat--1") }, undo: $("undo"), pause: $("pause"),
     });
     buildBoard();
     render(false);
@@ -546,6 +579,7 @@
     ui.start.addEventListener("click", newGame);
     ui.again.addEventListener("click", newGame);
     ui.undo.addEventListener("click", undo);
+    ui.pause.addEventListener("click", togglePause);
     document.addEventListener("keydown", (e) => {
       const z = (e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "z";
       if (z && document.documentElement.dataset.view === "jugar" && !e.target.closest("input, select, textarea")) { e.preventDefault(); undo(); }
