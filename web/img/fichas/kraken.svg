@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><!-- Kraken: tentáculo enroscado sobre dos sables cruzados -->
+<defs>
+<linearGradient id="sable" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#c9d3df"/><stop offset="1" stop-color="#8796a8"/></linearGradient>
+<linearGradient id="piel" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#c9563f"/><stop offset=".55" stop-color="#f08a6a"/><stop offset="1" stop-color="#ffb08f"/></linearGradient>
+<radialGradient id="ventosa" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#ffe1e1"/><stop offset="1" stop-color="#f3a3aa"/></radialGradient>
+</defs>
+<!-- los dos sables, por detrás -->
+<g stroke="#2b1a0f" stroke-width="2.4" stroke-linejoin="round">
+<path d="M14 12 Q44 34 70 76 L63 80 Q40 42 14 12Z" fill="url(#sable)"/>
+<path d="M86 12 Q56 34 30 76 L37 80 Q60 42 86 12Z" fill="url(#sable)"/>
+<path d="M60 74 Q72 70 76 82 Q70 90 64 86" fill="none" stroke="#f2c94c" stroke-width="4.5" stroke-linecap="round"/>
+<path d="M40 74 Q28 70 24 82 Q30 90 36 86" fill="none" stroke="#f2c94c" stroke-width="4.5" stroke-linecap="round"/>
+<path d="M66 80 l7 11 M34 80 l-7 11" stroke="#6b4423" stroke-width="5.5" stroke-linecap="round"/>
+</g>
+<path d="M60 74 Q72 70 76 82 Q70 90 64 86 M40 74 Q28 70 24 82 Q30 90 36 86" fill="none" stroke="#2b1a0f" stroke-width="1" opacity=".5"/>
+<!-- el tentáculo: base gruesa que sube y se enrosca -->
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M34 94 C30 70 52 66 64 56 C76 46 74 26 60 22" stroke="#2b1a0f" stroke-width="20"/>
+<path d="M60 22 C48 19 38 28 42 38 C45 46 55 45 56 38" stroke="#2b1a0f" stroke-width="13"/>
+<path d="M34 94 C30 70 52 66 64 56 C76 46 74 26 60 22" stroke="url(#piel)" stroke-width="15"/>
+<path d="M60 22 C48 19 38 28 42 38 C45 46 55 45 56 38" stroke="url(#piel)" stroke-width="8.5"/>
+<path d="M38 86 C38 72 54 66 64 58" stroke="#ffc9b0" stroke-width="3" opacity=".7"/>
+</g>
+<!-- ventosas en la cara interior -->
+<g stroke="#a8473a" stroke-width="1.4">
+<circle cx="31" cy="80" r="4.2" fill="url(#ventosa)"/><circle cx="38" cy="69" r="4" fill="url(#ventosa)"/>
+<circle cx="49" cy="62" r="3.8" fill="url(#ventosa)"/><circle cx="60" cy="54" r="3.5" fill="url(#ventosa)"/>
+<circle cx="65" cy="42" r="3.2" fill="url(#ventosa)"/><circle cx="63" cy="30" r="2.9" fill="url(#ventosa)"/>
+</g>
+<g fill="#d9707a"><circle cx="31" cy="80" r="1.6"/><circle cx="38" cy="69" r="1.5"/><circle cx="49" cy="62" r="1.4"/><circle cx="60" cy="54" r="1.3"/><circle cx="65" cy="42" r="1.2"/><circle cx="63" cy="30" r="1.1"/></g>
+</svg>

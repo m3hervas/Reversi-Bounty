@@ -26,15 +26,17 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
+# Dos trabajos, como la plantilla oficial de GitHub: «build» prepara y sube la web y «deploy» la
+# publica cuando la subida ya ha terminado. Con los dos pasos en un mismo trabajo, el de publicar
+# preguntaba por la web un segundo después de subirla y, si GitHub aún no la tenía registrada,
+# fallaba con «No artifacts named github-pages were found» (pasó el 21/11/2026).
 jobs:
-  deploy:
+  build:
     # Tras un torneo, solo si ha terminado bien: si falló, la web ya tiene la última clasificación.
+    # Si este trabajo se salta, «deploy» (que lo necesita) también.
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -56,5 +58,14 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - id: deployment
         uses: actions/deploy-pages@v4

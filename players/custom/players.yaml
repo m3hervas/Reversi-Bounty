@@ -17,5 +17,11 @@
 #     class: MiBot
 
 players:
+  - file: nami.py
+    class: NamiNavegante
+  - file: kraken_alfabeta.py
+    class: KrakenAlfaBeta
+  - file: car_lu.py
+    class: CarLu
   - file: minimax_zena.py
     class: MinimaxZena

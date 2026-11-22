@@ -8,7 +8,9 @@ import yaml
 
 RAIZ = Path(__file__).resolve().parent.parent
 FLUJO = yaml.safe_load((RAIZ / ".github" / "workflows" / "pages.yml").read_text(encoding="utf-8"))
-PASOS = FLUJO["jobs"]["deploy"]["steps"]
+#: Los pasos que preparan y suben la web; la publicación va en otro trabajo (ver test de abajo).
+PASOS = FLUJO["jobs"]["build"]["steps"]
+DESPLIEGUE = FLUJO["jobs"]["deploy"]
 
 
 def test_se_lanza_con_main_y_a_mano():
@@ -34,9 +36,13 @@ def test_publica_solo_la_carpeta_web():
     assert subir["with"]["path"] == "web"
 
 
-def test_termina_con_el_paso_de_despliegue():
-    assert "deploy-pages" in PASOS[-1]["uses"]
-    assert PASOS[-1]["id"] == "deployment"
+def test_publica_en_un_trabajo_aparte_cuando_la_web_ya_esta_subida():
+    # En el mismo trabajo, el despliegue preguntaba por la web antes de que GitHub la registrara.
+    assert DESPLIEGUE["needs"] == "build"
+    assert DESPLIEGUE["environment"]["name"] == "github-pages"
+    assert "deploy-pages" in DESPLIEGUE["steps"][-1]["uses"]
+    assert DESPLIEGUE["steps"][-1]["id"] == "deployment"
+    assert not any("deploy-pages" in paso.get("uses", "") for paso in PASOS)
 
 
 # -- Paso 5.4: volver a publicar cuando hay clasificación nueva ------------ #
@@ -51,7 +57,8 @@ def test_se_vuelve_a_publicar_al_terminar_el_torneo():
 
 
 def test_no_publica_si_el_torneo_fallo():
-    condicion = FLUJO["jobs"]["deploy"]["if"]
+    # La condición va en «build»; «deploy» lo necesita, así que si se salta uno, se salta el otro.
+    condicion = FLUJO["jobs"]["build"]["if"]
     assert "workflow_run.conclusion == 'success'" in condicion
     assert "github.event_name != 'workflow_run'" in condicion  # push y a mano, siempre
 

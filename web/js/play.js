@@ -10,6 +10,11 @@
  * activos: se puede cambiar de jugadores y empezar otra partida en cualquier momento, y también
  * poner dos bots a pelear entre ellos.
  *
+ * Deshacer: cada vez que le toca a una persona se guarda la posición en game.history. Deshacer
+ * vuelve a la anterior en la que le tocaba a una persona, así que contra un bot se quita tu jugada
+ * y la respuesta del bot. Lo que se juega es siempre lo que dice el motor: solo se vuelve a una
+ * posición que el propio motor dio por buena.
+ *
  * Calaveras = negras = color 1 (mueven primero). Sombreros de paja = blancas = color -1.
  */
 (function () {
@@ -31,7 +36,7 @@
   const INITIAL = Array.from({ length: 8 }, (_, r) => Array.from({ length: 8 }, (_, c) => (r === 3 && c === 3) || (r === 4 && c === 4) ? -1 : (r === 3 && c === 4) || (r === 4 && c === 3) ? 1 : 0));
   const CORNERS = ["0,0", "0,7", "7,0", "7,7"];
 
-  const game = { token: 0, phase: "setup", players: [], seats: { 1: { kind: "human" }, "-1": { kind: "human" } }, seed: 0, view: null, busy: false, lastBot: null, focus: "3,3" };
+  const game = { token: 0, phase: "setup", players: [], seats: { 1: { kind: "human" }, "-1": { kind: "human" } }, seed: 0, view: null, busy: false, lastBot: null, focus: "3,3", history: [] };
   const ui = {};
   const cells = [];
 
@@ -207,6 +212,11 @@
     const playing = game.phase === "playing";
     const seats = game.phase === "setup" ? selection() : game.seats;
     const people = COLORS.filter((c) => seats[c].kind === "human").length;
+    // Cada bot juega con su propio dibujo en las fichas; una persona, con las de siempre.
+    const mesa = $("cc-1").closest(".play");
+    const ficha = (c) => (seats[c].kind === "bot" ? crew.persona(seats[c].bot).ficha || "" : "");
+    mesa.dataset.fichaCalaveras = ficha(1);
+    mesa.dataset.fichaSombreros = ficha(-1);
     const score = view ? view.score : [2, 2];
     COLORS.forEach((c, i) => {
       const s = seats[c];
@@ -222,6 +232,34 @@
     ui.intro.hidden = game.phase !== "setup";
     renderPosters(seats);
     syncAgain();
+    ui.undo.disabled = !canUndo();
+  }
+
+  // ------------------------------------------------------------ deshacer --- //
+
+  /* Se puede deshacer en tu turno (o al terminar) si hay una posición tuya anterior a la que volver. */
+  function canUndo() {
+    if (!game.view || humanCount() === 0) return false;
+    if (game.phase === "playing") return !game.busy && game.history.length >= 2;
+    return game.phase === "over" && !game.view.forfeit && game.history.length >= 1 && !game.rewarded;
+  }
+
+  function remember(view) {
+    const top = game.history[game.history.length - 1];
+    if (top !== view) game.history.push(view);
+  }
+
+  function undo() {
+    if (!canUndo()) return;
+    ++game.token;                                   // corta cualquier respuesta del bot en camino
+    if (game.phase === "playing") game.history.pop(); // la posición actual
+    const back = game.history[game.history.length - 1];
+    Object.assign(game, { phase: "playing", busy: false, view: back });
+    ui.result.hidden = true; ui.toast.hidden = true;
+    quiet(); save(); render(false);
+    addLog("↶ Jugada deshecha");
+    setStatus("you", turnText(back.turn));
+    RB.sound.play("pass");
   }
 
   /* El botón de siempre: dice «con los cambios» si lo elegido arriba ya no es lo que se está jugando. */
@@ -263,6 +301,7 @@
       const out = outcomeForHuman(view);
       const bot = COLORS.map(botOf).find(Boolean);
       const gained = RB.recordResult(bot, out, view.score[0] - view.score[1]);
+      game.rewarded = true;  // con la recompensa ya cobrada, la partida no se puede deshacer
       earn.hidden = false;
       $("res-earn-txt").textContent = out === "win" ? "Tu recompensa sube" : out === "draw" ? "Reparto del botín" : "Esta vez no hay botín";
       $("res-earn-n").textContent = (gained ? "+" : "") + crew.fmt(gained) + " berries";
@@ -278,7 +317,7 @@
   async function newGame() {
     if (!game.players.length) return;
     const token = ++game.token;
-    Object.assign(game, { phase: "playing", seats: selection(), busy: true, seed: Math.floor(Math.random() * 2 ** 31), lastBot: null });
+    Object.assign(game, { phase: "playing", seats: selection(), busy: true, seed: Math.floor(Math.random() * 2 ** 31), lastBot: null, history: [], rewarded: false });
     ui.result.hidden = true; ui.toast.hidden = true;
     ui.log.replaceChildren(h("li", { class: "empty", text: "Aún no se ha movido ninguna ficha." }));
     quiet();
@@ -314,6 +353,7 @@
       if (token !== game.token) return;
     }
     if (isHuman(view.turn)) {
+      remember(view);
       game.busy = false; render(false);
       setStatus("you", turnText(view.turn));
     } else {
@@ -427,7 +467,7 @@
       }
     }
     const token = ++game.token;
-    Object.assign(game, { phase: "playing", seats: seats, seed: saved.seed, busy: true, lastBot: null });
+    Object.assign(game, { phase: "playing", seats: seats, seed: saved.seed, busy: true, lastBot: null, history: [], rewarded: false });
     try {
       await RB.engine.call("start_match", [saved.seats["1"], saved.seats["-1"], saved.seed]);
       const view = await RB.engine.call("view", [saved.state]);
@@ -498,13 +538,18 @@
     Object.assign(ui, {
       chart: $("chart"), board: $("board"), toast: $("toast"), sfx: $("sfx"), status: $("status"), statusText: $("status-text"),
       intro: $("intro"), result: $("result"), start: $("start"), again: $("again"), retry: $("retry"), log: $("logbook"),
-      seat: { 1: $("seat-1"), "-1": $("seat--1") },
+      seat: { 1: $("seat-1"), "-1": $("seat--1") }, undo: $("undo"),
     });
     buildBoard();
     render(false);
     COLORS.forEach((c) => ui.seat[c].addEventListener("change", onSeatChange));
     ui.start.addEventListener("click", newGame);
     ui.again.addEventListener("click", newGame);
+    ui.undo.addEventListener("click", undo);
+    document.addEventListener("keydown", (e) => {
+      const z = (e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "z";
+      if (z && document.documentElement.dataset.view === "jugar" && !e.target.closest("input, select, textarea")) { e.preventDefault(); undo(); }
+    });
     $("rematch").addEventListener("click", newGame);
     $("change").addEventListener("click", () => { ui.result.hidden = true; ui.seat[1].focus(); });
     ui.retry.addEventListener("click", () => { ui.retry.hidden = true; setStatus("loading", "Reintentando…"); RB.engine.restart(); });

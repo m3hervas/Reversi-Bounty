@@ -289,3 +289,84 @@
   .poster-col .wanted__pic { aspect-ratio: 16 / 10; }
   .poster-col .wanted__money { font-size: 1.5rem; }
 }
+
+/* ---------- pantallas anchas (≥ 1400 px): menos espacio muerto ----------
+ * Con el ancho general de la web (.wrap, 1120 px) y las columnas de 300 · 600 · 300 px, en un
+ * monitor de 1920 px quedaban unos 340 px vacíos a cada lado. Aquí, solo en la vista Lucha:
+ * - el contenido puede llegar a 1640 px;
+ * - el tablero crece con la pantalla, pero sin pasar del alto de la ventana menos lo que ocupan
+ *   la barra de arriba, el marcador y la barra de estado (así no obliga a hacer scroll);
+ * - los carteles crecen hasta 420 px y su texto escala con ellos (unidades cqw del cartel).
+ * Por debajo de 1400 px todo queda como antes. */
+@media (min-width: 1400px) {
+  .play .play__grid {
+    --tablero: clamp(600px, calc(100vh - 330px), 820px);
+    width: min(1640px, 100% - 64px);
+    grid-template-columns: minmax(280px, 420px) var(--tablero) minmax(280px, 420px);
+    gap: 36px;
+  }
+  .poster-col { width: 100%; }
+  .poster-col .wanted { padding: 28px 30px 26px; }
+  .poster-col .wanted__top { font-size: clamp(2.5rem, 15cqw, 3.4rem) !important; }
+  .poster-col .wanted__sub { font-size: clamp(1rem, 5.5cqw, 1.3rem); }
+  .poster-col .wanted__name { font-size: clamp(2rem, 11cqw, 2.7rem); }
+  .poster-col .wanted__foot { font-size: .95rem; }
+  .pick select { font-size: 1.12rem; }
+}
+
+/* ---------- fondo de todas las páginas menos la portada: carta náutica ----------
+ * Una rejilla de rumbos muy suave y dos rosas de los vientos que asoman por los bordes, como en una
+ * carta de navegación. Todo es CSS (degradados y SVG en línea): ninguna imagen que descargar.
+ * De día, líneas marrones sobre pergamino, como los carteles; de noche, líneas doradas sobre azul marino. */
+.play,
+.view[data-view="reglas"], .view[data-view="bots"], .view[data-view="marcador"], .view[data-view="anadir"] {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-100 -100 200 200'%3E%3Cg fill='none' stroke='%237a5230' stroke-opacity='.18' stroke-width='1.2'%3E%3Ccircle r='90'/%3E%3Ccircle r='70'/%3E%3Cpath d='M0-95V95M-95 0H95M-67-67 67 67M67-67-67 67'/%3E%3C/g%3E%3Cg fill='%237a5230' fill-opacity='.15'%3E%3Cpath d='M0-88 9 0 0 88-9 0Z'/%3E%3Cpath d='M-88 0 0-9 88 0 0 9Z'/%3E%3C/g%3E%3C/svg%3E") -190px 78% / 440px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-100 -100 200 200'%3E%3Cg fill='none' stroke='%237a5230' stroke-opacity='.15' stroke-width='1.2'%3E%3Ccircle r='90'/%3E%3Cpath d='M0-95V95M-95 0H95'/%3E%3C/g%3E%3C/svg%3E") calc(100% + 150px) 8% / 360px no-repeat,
+    repeating-linear-gradient(0deg, rgba(122, 82, 48, .09) 0 1px, transparent 1px 80px),
+    repeating-linear-gradient(90deg, rgba(122, 82, 48, .09) 0 1px, transparent 1px 80px),
+    radial-gradient(1100px 600px at 50% 40%, #f7ead0, #e6cfa3 80%);
+}
+:root[data-theme="dark"] .play,
+:root[data-theme="dark"] .view[data-view="reglas"], :root[data-theme="dark"] .view[data-view="bots"], :root[data-theme="dark"] .view[data-view="marcador"], :root[data-theme="dark"] .view[data-view="anadir"] {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-100 -100 200 200'%3E%3Cg fill='none' stroke='%23f2c94c' stroke-opacity='.32' stroke-width='1.2'%3E%3Ccircle r='90'/%3E%3Ccircle r='70'/%3E%3Cpath d='M0-95V95M-95 0H95M-67-67 67 67M67-67-67 67'/%3E%3C/g%3E%3Cg fill='%23f2c94c' fill-opacity='.28'%3E%3Cpath d='M0-88 9 0 0 88-9 0Z'/%3E%3Cpath d='M-88 0 0-9 88 0 0 9Z'/%3E%3C/g%3E%3C/svg%3E") -190px 78% / 440px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-100 -100 200 200'%3E%3Cg fill='none' stroke='%23f2c94c' stroke-opacity='.26' stroke-width='1.2'%3E%3Ccircle r='90'/%3E%3Cpath d='M0-95V95M-95 0H95'/%3E%3C/g%3E%3C/svg%3E") calc(100% + 150px) 8% / 360px no-repeat,
+    repeating-linear-gradient(0deg, rgba(242, 201, 76, .06) 0 1px, transparent 1px 80px),
+    repeating-linear-gradient(90deg, rgba(242, 201, 76, .06) 0 1px, transparent 1px 80px),
+    radial-gradient(1100px 600px at 50% 40%, #1d3a75, #0c1a3c 75%);
+}
+
+/* Las demás páginas llevan la carta hasta el pie: sin franja lisa entre el contenido y el pie. */
+.view[data-view="reglas"], .view[data-view="bots"], .view[data-view="marcador"], .view[data-view="anadir"] { padding-bottom: 60px; }
+html:not([data-view="inicio"]) .footer { margin-top: 0; }
+
+/* ---------- fichas por personaje ----------
+ * El fondo de la ficha dice el bando (dorado = sombreros, oscuro = calaveras) y el dibujo, quién
+ * juega. play.js pone data-ficha-sombreros / data-ficha-calaveras en .play según el bot de cada
+ * bando (la clave «ficha» de crew.js). Sin clave, o una persona, se queda la ficha de siempre. */
+.play[data-ficha-sombreros="buggy"] { --emblema-s: url("../img/fichas/buggy.svg"); }
+.play[data-ficha-sombreros="wapol"] { --emblema-s: url("../img/fichas/wapol.svg"); }
+.play[data-ficha-sombreros="zeff"]  { --emblema-s: url("../img/fichas/zeff.svg"); }
+.play[data-ficha-sombreros="nami"]  { --emblema-s: url("../img/fichas/nami.svg"); }
+.play[data-ficha-calaveras="buggy"] { --emblema-c: url("../img/fichas/buggy.svg"); }
+.play[data-ficha-calaveras="wapol"] { --emblema-c: url("../img/fichas/wapol.svg"); }
+.play[data-ficha-calaveras="zeff"]  { --emblema-c: url("../img/fichas/zeff.svg"); }
+.play[data-ficha-calaveras="nami"]  { --emblema-c: url("../img/fichas/nami.svg"); }
+.play[data-ficha-sombreros="kraken"] { --emblema-s: url("../img/fichas/kraken.svg"); }
+.play[data-ficha-calaveras="kraken"] { --emblema-c: url("../img/fichas/kraken.svg"); }
+.play[data-ficha-sombreros]:not([data-ficha-sombreros=""]) .face--hat {
+  background: var(--emblema-s) center / 80% no-repeat, radial-gradient(circle, transparent 0 70%, rgba(120,70,0,.4) 71% 73%, transparent 74%), repeating-conic-gradient(from 0deg, rgba(255,255,255,.14) 0 6deg, transparent 6deg 12deg), radial-gradient(circle at 36% 30%, #ffe98a, #ffc928 55%, #d99a0b);
+}
+.play[data-ficha-sombreros]:not([data-ficha-sombreros=""]) .face--hat::before { display: none; }
+.play[data-ficha-calaveras]:not([data-ficha-calaveras=""]) .face--skull {
+  background: var(--emblema-c) center / 80% no-repeat, radial-gradient(circle, transparent 0 70%, rgba(242,201,76,.35) 71% 73%, transparent 74%), radial-gradient(circle at 36% 30%, #3f3f52, #15151c 65%);
+}
+
+/* ---------- deshacer ---------- */
+.crews__mid { display: grid; gap: 8px; justify-items: stretch; }
+.btn--xs { font-size: .82rem; padding: 6px 10px; border-radius: 10px; gap: 6px; box-shadow: 0 3px 0 var(--ink), inset 0 -3px 0 var(--bd); }
+.btn--xs:hover { box-shadow: 0 4px 0 var(--ink), inset 0 -3px 0 var(--bd); }
+.btn--xs:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink), inset 0 -3px 0 var(--bd); }
+.btn--xs span { font-size: 1.1em; line-height: 1; }
+#undo:disabled { filter: grayscale(1) opacity(.45); }
