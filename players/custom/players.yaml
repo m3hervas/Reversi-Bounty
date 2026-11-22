@@ -21,3 +21,5 @@ players:
     class: NamiNavegante
   - file: kraken_alfabeta.py
     class: KrakenAlfaBeta
+  - file: car_lu.py
+    class: CarLu
