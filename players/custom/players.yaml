@@ -23,5 +23,7 @@ players:
     class: KrakenAlfaBeta
   - file: car_lu.py
     class: CarLu
+  - file: minimax_zena.py
+    class: MinimaxZena
   - file: brook.py
     class: BrookSilencioso
