@@ -103,13 +103,16 @@ def test_cada_personalidad_pertenece_a_un_bot_del_registro():
     assert personas <= nombres, personas - nombres
 
 
-def test_los_carteles_no_muestran_quien_subio_cada_bot():
-    """Los bots son independientes de sus autores: la web no los enseña en ningún sitio.
+def test_los_autores_solo_salen_en_los_bots_de_otros_equipos():
+    """Los autores solo se enseñan en Rivales y solo en los bots de fuera («Tripulación de»).
 
-    También el marcador: ``leaderboard.json`` trae los autores, pero la tabla no los pinta.
+    Ni la partida, ni los personajes, ni el marcador los pintan.
     """
-    for nombre in (*PROPIOS, "marcador.js"):
+    for nombre in ("crew.js", "play.js", "marcador.js"):
         assert "authors" not in JS[nombre], f"{nombre} usa los autores del bot"
+    app = JS["app.js"]
+    assert "bot.external ? crewLine(bot.authors) :" in app
+    assert app.count("bot.authors") == 1  # solo se leen ahí
     assert "Capitán(es)" not in HTML
 
 

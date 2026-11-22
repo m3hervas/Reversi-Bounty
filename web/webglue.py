@@ -188,12 +188,17 @@ def _jugar(antes: game.GameState, jugada: Any) -> dict[str, Any]:
 
 
 def _ficha(cls: type[Player]) -> dict[str, Any]:
-    """La identidad pública de un jugador, tal como la declara su clase."""
+    """La identidad pública de un jugador, tal como la declara su clase.
+
+    ``external`` dice si el bot lo envió otro equipo: los propios viven dentro del paquete
+    (``reversibounty.bots``) y los de fuera, en ``players/custom/``.
+    """
     return {
         "name": cls.get_name(),
         "icon": cls.get_icon(),
         "authors": cls.get_authors(),
         "description": cls.get_description(),
+        "external": not cls.__module__.startswith("reversibounty."),
     }
 
 

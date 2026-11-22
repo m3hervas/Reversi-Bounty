@@ -66,3 +66,15 @@ def test_la_version_del_archivo_que_lee_es_la_que_escribe_el_torneo():
 def test_el_apartado_esta_en_el_menu_y_en_la_cabecera():
     assert 'data-route="marcador"' in HTML
     assert '"marcador", "anadir"' in HTML.split("</script>")[0]
+
+
+def test_el_cara_a_cara_sale_de_las_partidas_que_guarda_el_torneo(tmp_path):
+    """El marcador lee de cada partida solo campos que el torneo escribe."""
+    import json
+
+    resultado = run_tournament(
+        {RandomPlayer.get_name(): RandomPlayer, GreedyPlayer.get_name(): GreedyPlayer}, rounds=1, time_limit=1.0
+    )
+    datos = json.loads(write_leaderboard(resultado, tmp_path / "leaderboard.json").read_text(encoding="utf-8"))
+    campos = set(re.findall(r"\brec\.([a-z_]+)", JS))
+    assert campos and campos <= set(datos["games"][0]), campos - set(datos["games"][0])

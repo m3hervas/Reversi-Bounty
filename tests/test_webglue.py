@@ -101,7 +101,14 @@ def test_init_devuelve_los_jugadores_del_registro():
         "icon": RandomPlayer.get_icon(),
         "authors": RandomPlayer.get_authors(),
         "description": RandomPlayer.get_description(),
+        "external": False,
     }
+
+
+def test_init_marca_los_bots_de_otros_equipos():
+    jugadores = {j["name"]: j for j in ok("init", str(PLAYERS_DIR))}
+    assert jugadores["Zeff minimax"]["external"] is False
+    assert jugadores["Nami navegante"]["external"] is True
 
 
 def test_la_lista_de_jugadores_sale_del_registro(tmp_path):

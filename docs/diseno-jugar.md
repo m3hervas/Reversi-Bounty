@@ -18,8 +18,8 @@ bandera. Los bots son los rivales del tablón de recompensas y cada uno tiene su
 | --- | --- | --- |
 | Portada | `#/` | El título, una moneda que gira entre sombrero y calavera, y **tu cartel de «Se busca»**. |
 | Lucha | `#/jugar` | Un cartel a cada lado, el marcador arriba y el tablero en el centro. |
-| Rivales | `#/bots` | Un cartel por cada bot admitido en el registro. |
-| Marcador | `#/marcador` | La clasificación del torneo nocturno: el podio con los tres primeros y la tabla completa. Ver [dónde se publica la clasificación](referencia/torneo.md#donde-se-publica-la-clasificacion). |
+| Rivales | `#/bots` | Un cartel por cada bot admitido en el registro, de cuatro en cuatro. Los de otros equipos dicen al pie de qué tripulación vienen. |
+| Marcador | `#/marcador` | La clasificación del torneo nocturno: el podio con los tres primeros, la tabla completa (% de victorias, fichas, infracciones y qué bots son de fuera), y el **cara a cara** de todos contra todos. Ver [dónde se publica la clasificación](referencia/torneo.md#donde-se-publica-la-clasificacion). |
 | Leyes del mar | `#/reglas` | Las cuatro reglas con un ejemplo cada una, un mapa de las casillas y cinco consejos. |
 | Añade tu Bot | `#/anadir` | El código de ejemplo a la izquierda y los cuatro pasos a la derecha. |
 
@@ -54,15 +54,27 @@ persona enseña a Luffy y su propio nombre y recompensa. Sobre cada cartel está
 quién juega ese bando, así se puede cambiar de jugadores **en cualquier momento** y poner **dos bots**
 a luchar entre ellos. El botón de nueva partida está junto al marcador, que va encima del tablero.
 
-Debajo está **Deshacer** (también con Ctrl+Z). Cada vez que le toca a una persona, la web guarda la
+Cuando juegan dos bots, en su lugar sale **Parar**: la partida se detiene antes de la siguiente jugada y **Seguir** la reanuda.
+
+Con una persona en la mesa, debajo está **Deshacer** (también con Ctrl+Z). Cada vez que le toca a una persona, la web guarda la
 posición que le dio el motor; deshacer vuelve a la anterior, así que contra un bot quita tu jugada y su
 respuesta. No se salta ninguna regla: solo se vuelve a posiciones que el motor ya dio por buenas. Para
 que no sirva de trampa, una partida contra un bot no se puede deshacer una vez cobrada la recompensa.
 
-### 4. Los bots son independientes de quien los subió
+Todos los carteles (Rivales, Lucha, Marcador, la portada y el tutorial) son la misma pieza con estilo
+de cartel impreso: papel envejecido con su clavo, «SE BUSCA» a todo el ancho, la foto vertical con un
+filo oscuro para que el personaje salga **siempre de cuerpo entero**, el nombre tan grande como quepa en
+una línea y la recompensa con el símbolo del berry. Todo escala con el ancho del cartel, así que se ve
+igual en grande y en pequeño.
 
-Los carteles no enseñan los autores. Un bot es una clase de Python, no una persona: lo que importa es
-cómo juega. El registro sigue guardando los autores, pero la web no los muestra, y un test lo vigila.
+### 4. Quién envió cada bot
+
+Un bot es una clase de Python, no una persona: lo que importa es cómo juega. Por eso la partida y el
+marcador no enseñan autores. En Rivales, debajo de cada cartel, pone de qué tripulación es: los
+**bots de otros equipos** llevan «Tripulación de:» y los autores que declara la clase, como
+agradecimiento; los nuestros, «Tripulación de: Reversi Bounty». La web
+sabe que un bot es de fuera porque no vive dentro del paquete (`reversibounty.bots`) sino en
+`players/custom/`. Un test vigila que los autores no salgan en ningún otro sitio.
 
 ### 5. Los personajes son decoración, no datos
 
@@ -72,38 +84,59 @@ precio calculado a partir de su nombre, así que **añadir un bot nunca rompe la
 
 | Rival | Personaje | Alias |
 | --- | --- | --- |
-| Buggy aleatorio | Buggy | El Payaso Afortunado |
-| Wapol voraz | Wapol | El Tragón del Botín |
-| Zeff minimax | Zeff | El Cocinero Estratega |
+| Buggy aleatorio | Buggy | Payaso Suertudo |
+| Wapol voraz | Wapol | El Rey Glotón |
+| Zeff minimax | Zeff | Pierna Roja |
 | Nami navegante | Nami | La Gata Ladrona |
-| Kraken alfa-beta | Kraken | El Terror de las Profundidades |
+| Kraken alfa-beta | Kraken | Terror Abisal |
+| Car_lu | Karoo | Pato Relámpago |
+| Minimax de Zena | Mr. 5 | El Hombre Bomba |
+| Brook silencioso | Brook | El Rey del Soul |
 
 Cada personaje juega además con **sus propias fichas**: el fondo dice el bando (dorado para los
 sombreros, oscuro para las calaveras) y el dibujo, quién juega. Buggy lleva su nariz de payaso, Wapol
-su corona, Zeff su gorro de cocinero, Nami una mandarina y el Kraken un tentáculo sobre dos sables. Son SVG propios en `web/img/fichas/`; una
+su corona, Zeff su gorro de cocinero, Nami una mandarina, el Kraken un tentáculo sobre dos sables, Karoo su cabeza de pato con casco, Mr. 5 su chapa del 5 sobre una explosión y Brook su violín. Son SVG propios en `web/img/fichas/`; una
 persona o un bot sin personaje juega con las fichas de siempre.
 
 Las imágenes de los personajes se hicieron con IA para este trabajo y están dentro de `web/img/`, con
 fondo transparente (los tests comprueban que tienen canal alfa).
 
-### 6. Tu recompensa es solo un juego
+### 6. Cada rival vale lo que juega
+
+La recompensa de cada bot no es al azar: sigue su fuerza en el torneo. Se calcula como
+**5 M + 190 M × p^1,5**, donde *p* es la fracción de puntos que consiguió en el torneo nocturno. La
+curva sube despacio abajo y deprisa arriba, así que ganar a un bot fuerte vale mucho más que ganar a
+uno flojo. Un bot recién llegado lleva un valor provisional hasta su primer torneo.
+
+| Rival | % de puntos | Recompensa |
+| --- | --- | --- |
+| Kraken alfa-beta | 82,5 % | 147 M |
+| Car_lu | 80 % (30 partidas medidas aparte) | 141 M |
+| Zeff minimax | 72,5 % | 122 M |
+| Nami navegante | 70 % | 116 M |
+| Minimax de Zena | provisional | 110 M |
+| Brook silencioso | provisional | 60 M |
+| Wapol voraz | 22,5 % | 25 M |
+| Buggy aleatorio | 2,5 % | 6 M |
+
+### 7. Tu recompensa es solo un juego
 
 Cada victoria contra un bot sube tu recompensa: más cuanto más temible es el rival. Se guarda en el
 navegador (`localStorage`) y sirve para divertirse; **no son los puntos del torneo**. Los rangos van de
 *Grumete* a *Emperador del Reversi*.
 
-### 7. La barra de arriba
+### 8. La barra de arriba
 
 La barra es el *Log Pose* de la web: cada apartado lleva su icono, el activo se marca en dorado y tu
 recompensa está siempre a la vista (lleva a tu cartel en la portada). Al bajar por la página se
 compacta y echa sombra, y el borde es una cuerda trenzada en vez de una raya.
 
-### 8. Día y noche
+### 9. Día y noche
 
 El tema claro es un día soleado en el mar y el oscuro, la misma isla de noche. Los colores son variables
 de `web/css/theme.css`, que se redefinen para el modo oscuro del sistema y para la elección a mano.
 
-### 9. Accesibilidad
+### 10. Accesibilidad
 
 Hay un enlace para saltar al contenido, el foco se ve, cada casilla tiene un nombre («d3, calavera,
 jugada posible») y el tablero se maneja con las flechas y Enter. Con `prefers-reduced-motion` se quitan

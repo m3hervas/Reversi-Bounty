@@ -27,3 +27,10 @@ def test_deshacer_solo_vuelve_a_posiciones_guardadas_del_motor():
 def test_no_se_deshace_una_partida_con_la_recompensa_cobrada():
     assert "game.rewarded = true" in PLAY
     assert "!game.rewarded" in PLAY
+
+
+def test_entre_dos_bots_se_puede_parar_y_seguir():
+    assert 'id="pause"' in HTML
+    assert "function togglePause()" in PLAY
+    # Parar no corta una jugada a medias: el bot espera antes de pedir la siguiente.
+    assert "if (game.paused) {" in PLAY and "game.waiting = color" in PLAY
