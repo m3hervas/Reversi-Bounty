@@ -12,7 +12,7 @@ FICHAS = re.findall(r'ficha:\s*"([a-z0-9]+)"', CREW)
 
 
 def test_cada_personaje_tiene_su_ficha():
-    assert set(FICHAS) == {"buggy", "wapol", "zeff", "nami", "kraken", "karoo", "mr5", "brook"}
+    assert set(FICHAS) == {"buggy", "wapol", "zeff", "nami", "kraken", "karoo", "brook"}
     assert len(FICHAS) == len(set(FICHAS))  # dos personajes no comparten dibujo
 
 

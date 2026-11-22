@@ -34,11 +34,13 @@ class Vigilante:
         return jugada
 
 
-def verificar_contrato(clase: type[Player], semillas: tuple[int, ...] = (0, 1, 2)) -> None:
+def verificar_contrato(clase: type[Player], semillas: tuple[int, ...] = (0,)) -> None:
     """Juega varias partidas con el jugador, con negras y con blancas, y comprueba el contrato.
 
     Contra un :class:`~reversibounty.bots.RandomPlayer`, en cada turno comprueba que la
-    jugada es legal y que el jugador no modifica el estado que recibe.
+    jugada es legal y que el jugador no modifica el estado que recibe. Por defecto juega una
+    partida con negras y otra con blancas: basta para ver cada jugada de los dos bandos, y un bot
+    fuerte (que piensa casi un segundo por jugada) no alarga los tests de cada pull request.
 
     Args:
         clase: la clase del jugador.

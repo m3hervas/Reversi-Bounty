@@ -90,12 +90,11 @@ precio calculado a partir de su nombre, así que **añadir un bot nunca rompe la
 | Nami navegante | Nami | La Gata Ladrona |
 | Kraken alfa-beta | Kraken | Terror Abisal |
 | Car_lu | Karoo | Pato Relámpago |
-| Minimax de Zena | Mr. 5 | El Hombre Bomba |
 | Brook silencioso | Brook | El Rey del Soul |
 
 Cada personaje juega además con **sus propias fichas**: el fondo dice el bando (dorado para los
 sombreros, oscuro para las calaveras) y el dibujo, quién juega. Buggy lleva su nariz de payaso, Wapol
-su corona, Zeff su gorro de cocinero, Nami una mandarina, el Kraken un tentáculo sobre dos sables, Karoo su cabeza de pato con casco, Mr. 5 su chapa del 5 sobre una explosión y Brook su violín. Son SVG propios en `web/img/fichas/`; una
+su corona, Zeff su gorro de cocinero, Nami una mandarina, el Kraken un tentáculo sobre dos sables, Karoo su cabeza de pato con casco y Brook su violín. Son SVG propios en `web/img/fichas/`; una
 persona o un bot sin personaje juega con las fichas de siempre.
 
 Las imágenes de los personajes se hicieron con IA para este trabajo y están dentro de `web/img/`, con
@@ -114,7 +113,6 @@ uno flojo. Un bot recién llegado lleva un valor provisional hasta su primer tor
 | Car_lu | 80 % (30 partidas medidas aparte) | 141 M |
 | Zeff minimax | 72,5 % | 122 M |
 | Nami navegante | 70 % | 116 M |
-| Minimax de Zena | provisional | 110 M |
 | Brook silencioso | provisional | 60 M |
 | Wapol voraz | 22,5 % | 25 M |
 | Buggy aleatorio | 2,5 % | 6 M |

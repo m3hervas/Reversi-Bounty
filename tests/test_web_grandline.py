@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import importlib.util
 import re
+import sys
 from pathlib import Path
 
 import pytest
@@ -32,6 +33,9 @@ def test_cada_funcion_de_python_que_llama_la_web_esta_declarada_en_el_puente():
     spec = importlib.util.spec_from_file_location("webglue", WEB / "webglue.py")
     assert spec is not None and spec.loader is not None
     webglue = importlib.util.module_from_spec(spec)
+    # Registrarlo antes de ejecutarlo: sus dataclass lo buscan en sys.modules. Sin esto el test
+    # solo pasaba si otro test había importado antes webglue (y en paralelo no siempre es así).
+    sys.modules.setdefault("webglue", webglue)
     spec.loader.exec_module(webglue)
     llamadas: set[str] = set()
     for nombre in PROPIOS:
