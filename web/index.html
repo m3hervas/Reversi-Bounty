@@ -32,10 +32,10 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Rye&family=Titan+One&display=swap">
-  <link rel="stylesheet" href="css/theme.css?v=1795279000">
-  <link rel="stylesheet" href="css/pages.css?v=1795279000">
-  <link rel="stylesheet" href="css/play.css?v=1795279000">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Rye&family=Titan+One&family=Noto+Serif+Display:wdth,wght@62.5,900;75,800&display=swap">
+  <link rel="stylesheet" href="css/theme.css?v=1795369000">
+  <link rel="stylesheet" href="css/pages.css?v=1795369000">
+  <link rel="stylesheet" href="css/play.css?v=1795369000">
 </head>
 <body>
   <a class="skip" href="#main">Saltar al contenido</a>
@@ -280,6 +280,7 @@
                 <div class="crews__mid">
                   <button class="btn btn--gold btn--sm" type="button" id="again" disabled>Nueva partida</button>
                   <button class="btn btn--paper btn--xs" type="button" id="undo" disabled aria-keyshortcuts="Control+Z" title="Deshacer tu última jugada (Ctrl+Z)"><span aria-hidden="true">↶</span> Deshacer</button>
+                  <button class="btn btn--paper btn--xs" type="button" id="pause" hidden aria-pressed="false" title="Parar o seguir la partida entre los dos bots">⏸ Parar</button>
                 </div>
                 <div class="crewcard crewcard--r" id="cc--1"><b class="crewcard__n" id="cs--1">2</b><div><span class="crewcard__side">Sombreros</span><span class="crewcard__name" id="cn--1">—</span></div><span class="token token--flag"><span class="face face--hat"></span></span></div>
               </div>
@@ -558,20 +559,28 @@
           <p class="eyebrow" id="marcador-info" role="status" aria-live="polite" style="color:var(--ink-soft)">Cargando la clasificación…</p>
         </header>
         <div id="marcador-msg" class="marcador__msg paper" role="status" hidden></div>
-        <div class="rivals marcador__podio" id="marcador-podio"></div>
+        <div class="marcador__podio" id="marcador-podio"></div>
         <div class="marcador__tabla paper" id="marcador-tabla" hidden>
           <table>
             <caption class="sr-only">Clasificación del torneo, de mejor a peor</caption>
             <thead><tr>
               <th scope="col">Puesto</th><th scope="col">Bot</th>
-              <th scope="col" title="Partidas jugadas">PJ</th><th scope="col" title="Victorias">G</th>
-              <th scope="col" title="Empates">E</th><th scope="col" title="Derrotas">P</th>
+              <th scope="col" title="Partidas jugadas">PJ</th>
+              <th scope="col" title="Ganadas · empatadas · perdidas">G · E · P</th>
+              <th scope="col" title="Porcentaje de los puntos posibles">Victorias</th>
               <th scope="col" title="Puntos: 1 por victoria, 0,5 por empate">Pts</th>
+              <th scope="col" title="Fichas a favor / fichas en contra, sumando todas sus partidas">Fichas</th>
               <th scope="col" title="Fichas a favor menos fichas en contra">Dif.</th>
+              <th scope="col" title="Partidas perdidas por incumplir las reglas">Infr.</th>
             </tr></thead>
             <tbody id="marcador-filas"></tbody>
           </table>
         </div>
+        <section class="marcador__h2h paper" id="marcador-h2h" aria-labelledby="t-h2h" hidden>
+          <h2 id="t-h2h">Cara a cara</h2>
+          <p class="marcador__nota">Cada casilla dice cuántas partidas gana el bot de la fila al de la columna y cuántas pierde. Verde: le gana; rojo: le pierde.</p>
+          <div class="h2h__marco" id="h2h-grid"></div>
+        </section>
         <div class="marcador__infr paper" id="marcador-infr" hidden></div>
         <div class="cta">
           <div><h2>¿Quieres subir en la clasificación?</h2><p>Un bot admitido en el registro juega el próximo torneo y aparece aquí al día siguiente, sin que nadie tenga que hacer nada.</p></div>
@@ -696,11 +705,11 @@ git push -u origin bot-mi-bot</code></pre>
 
   <noscript><p style="padding:20px;text-align:center">Esta web necesita JavaScript para ejecutar el motor del juego.</p></noscript>
 
-  <script src="js/engine.js?v=1795279000" defer></script>
-  <script src="js/crew.js?v=1795279000" defer></script>
-  <script src="js/marcador.js?v=1795279000" defer></script>
-  <script src="js/tutorial.js?v=1795279000" defer></script>
-  <script src="js/app.js?v=1795279000" defer></script>
-  <script src="js/play.js?v=1795279000" defer></script>
+  <script src="js/engine.js?v=1795369000" defer></script>
+  <script src="js/crew.js?v=1795369000" defer></script>
+  <script src="js/marcador.js?v=1795369000" defer></script>
+  <script src="js/tutorial.js?v=1795369000" defer></script>
+  <script src="js/app.js?v=1795369000" defer></script>
+  <script src="js/play.js?v=1795369000" defer></script>
 </body>
 </html>

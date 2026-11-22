@@ -35,4 +35,5 @@ jobs:
       - name: Lint (ruff)
         run: ruff check .
       - name: Tests (pytest)
-        run: pytest -q
+        # -n auto: los tests se reparten entre los núcleos de la máquina (pytest-xdist).
+        run: pytest -q -n auto

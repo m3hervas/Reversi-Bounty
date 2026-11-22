@@ -119,8 +119,32 @@
 .block { padding: 40px 0 6px; }
 
 /* ============================ RIVALES ============================ */
-.rivals { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 30px; margin-top: 10px; }
-.rival { display: grid; gap: 14px; }
+/* Rivales: carteles de cuatro en cuatro; tres, dos o uno según quepan. */
+.view[data-view="bots"] > .wrap { width: min(1280px, 100% - 32px); }
+.rivals { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 26px; margin-top: 10px; }
+@media (max-width: 1180px) { .rivals { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 900px) { .rivals { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .rivals { grid-template-columns: 1fr; } }
+/* Debajo del cartel: de qué tripulación es el bot. Una etiqueta pequeña y los nombres debajo,
+ * centrados y con los saltos de línea repartidos. Dorado para los nuestros, azul para los de fuera. */
+.rival__crew {
+  display: grid; align-content: center; gap: 3px; margin: 2px 8px 0; padding: 8px 12px;
+  text-align: center; border: 2px solid #2f6fb0; border-radius: 12px; background: rgba(47, 111, 176, .12);
+  box-shadow: 0 3px 0 rgba(43, 26, 15, .18);
+}
+.rival__crew--propio { border-color: var(--gold-dark); background: rgba(255, 201, 40, .22); }
+.rival__crew-tag { font: 900 .68rem/1 var(--f-body); letter-spacing: .14em; text-transform: uppercase; color: #2f6fb0; }
+.rival__crew--propio .rival__crew-tag { color: #a86d06; }
+.rival__crew-tag span { letter-spacing: 0; margin-right: 2px; }
+.rival__crew-names { font: 800 .95rem/1.25 var(--f-body); color: #2b1a0f; text-wrap: balance; overflow-wrap: anywhere; }
+:root[data-theme="dark"] .rival__crew { background: rgba(120, 180, 255, .14); border-color: #7fb4ff; }
+:root[data-theme="dark"] .rival__crew--propio { background: rgba(255, 201, 40, .16); border-color: var(--gold); }
+:root[data-theme="dark"] .rival__crew-tag { color: #9cc6ff; }
+:root[data-theme="dark"] .rival__crew--propio .rival__crew-tag { color: var(--gold); }
+:root[data-theme="dark"] .rival__crew-names { color: #f3ead8; }
+/* Subrejilla: los carteles de una misma fila comparten filas (cartel, descripción, botón y
+ * tripulación), así que los botones quedan todos a la misma altura. */
+.rival { display: grid; grid-row: span 4; grid-template-rows: subgrid; row-gap: 12px; }
 .rival:nth-child(odd) .wanted { transform: rotate(-1.6deg); }
 .rival:nth-child(even) .wanted { transform: rotate(1.2deg); }
 .rival .wanted { transition: transform .3s cubic-bezier(.3,1.5,.5,1); }
@@ -226,14 +250,28 @@
 
 /* ============================ MARCADOR ============================ */
 .marcador__msg { display: grid; justify-items: start; gap: 12px; padding: 22px 26px; max-width: 62ch; font-weight: 700; }
-.marcador__podio { margin-bottom: 34px; }
+/* Podio: el 1.º en el centro y más alto, el 2.º a la izquierda y el 3.º a la derecha. */
+.marcador__podio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; align-items: end; max-width: 1000px; margin: 0 auto 34px; }
+.marcador__cartel { display: grid; gap: 0; }
+.marcador__cartel[data-puesto="1"] { order: 2; }
+.marcador__cartel[data-puesto="2"] { order: 1; }
+.marcador__cartel[data-puesto="3"] { order: 3; }
+.marcador__peana { display: grid; place-items: center; margin: 14px 10% 0; font: 400 2rem/1 var(--f-logo); color: var(--ink); border: 3px solid var(--ink); border-bottom: 0; border-radius: 12px 12px 0 0; box-shadow: inset 0 -6px 0 rgba(0,0,0,.12); }
+.marcador__cartel[data-puesto="1"] .marcador__peana { height: 96px; background: linear-gradient(#ffe27a, var(--gold)); }
+.marcador__cartel[data-puesto="2"] .marcador__peana { height: 64px; background: linear-gradient(#f4f7fa, #c9d3de); }
+.marcador__cartel[data-puesto="3"] .marcador__peana { height: 44px; background: linear-gradient(#f2c49a, #d08a55); }
+@media (max-width: 760px) {
+  .marcador__podio { grid-template-columns: 1fr; max-width: 380px; }
+  .marcador__cartel[data-puesto] { order: 0; }
+  .marcador__peana { display: none; }
+}
 .marcador__cartel .wanted { padding-top: 26px; }
 .marcador__medalla { position: absolute; z-index: 2; top: -14px; right: -10px; transform: rotate(8deg); padding: 6px 12px; font: 400 1.05rem/1 var(--f-logo); color: var(--ink); background: var(--gold); border: 3px solid var(--ink); border-radius: 999px; box-shadow: 0 3px 0 var(--ink); }
 .marcador__cartel[data-puesto="1"] .marcador__medalla { background: var(--gold); }
 .marcador__cartel[data-puesto="2"] .marcador__medalla { background: #dfe6ee; }
 .marcador__cartel[data-puesto="3"] .marcador__medalla { background: #e0a470; }
 .marcador__tabla { overflow-x: auto; padding: 8px 14px; margin-bottom: 26px; }
-.marcador__tabla table { width: 100%; min-width: 560px; border-collapse: collapse; color: #2b1a0f; font-weight: 700; }
+.marcador__tabla table { width: 100%; min-width: 820px; border-collapse: collapse; color: #2b1a0f; font-weight: 700; }
 .marcador__tabla th, .marcador__tabla td { padding: 12px 10px; text-align: center; border-bottom: 2px dashed rgba(43, 26, 15, .28); }
 .marcador__tabla thead th { font: 900 .78rem/1 var(--f-body); letter-spacing: .12em; text-transform: uppercase; color: var(--red-dark); }
 .marcador__tabla tbody tr:last-child > * { border-bottom: 0; }
@@ -361,3 +399,58 @@
 
 /* En el móvil la portada se apila: el texto pasa por encima del horizonte y las islas estorbarían. */
 @media (max-width: 860px) { .isla, .mar-capa, .reflejos { display: none; } }
+
+
+/* ============================ MARCADOR: tabla, cara a cara y repetición ============================ */
+.marcador__tabla tbody tr[data-puesto="1"] { background: rgba(255, 201, 40, .22); }
+.marcador__tabla tbody tr[data-puesto="2"] { background: rgba(200, 212, 225, .3); }
+.marcador__tabla tbody tr[data-puesto="3"] { background: rgba(214, 140, 85, .18); }
+.marcador__alias { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font: 800 .74rem/1.2 var(--f-body); letter-spacing: .06em; text-transform: uppercase; color: #7a5230; }
+.marcador__fuera { padding: 2px 7px; border-radius: 999px; background: var(--navy); color: var(--gold); letter-spacing: .04em; }
+.marcador__gep { white-space: nowrap; }
+.marcador__gep .g { color: #1f7a4d; } .marcador__gep .p { color: var(--red-dark); } .marcador__gep .e { color: #7a5230; }
+.marcador__barra { min-width: 150px; }
+.marcador__barra .barra { display: inline-block; vertical-align: middle; width: 90px; height: 12px; border: 2px solid #2b1a0f; border-radius: 999px; background: rgba(43, 26, 15, .1); overflow: hidden; }
+.marcador__barra .barra i { display: block; height: 100%; background: linear-gradient(90deg, #f2c94c, #1f9d5c); }
+.marcador__barra .barra__n { margin-left: 8px; font-variant-numeric: tabular-nums; }
+.marcador__fichas { white-space: nowrap; color: #7a5230; }
+.marcador__tabla td.mas { color: #1f7a4d; } .marcador__tabla td.menos { color: var(--red-dark); }
+
+.marcador__h2h { display: grid; gap: 12px; padding: 20px 24px; margin-bottom: 26px; color: #2b1a0f; }
+.marcador__h2h h2 { font: 400 1.6rem/1.1 var(--f-logo); }
+.marcador__nota { font-weight: 600; color: #6b4a2b; max-width: 75ch; }
+.h2h__marco { overflow-x: auto; }
+.h2h { border-collapse: separate; border-spacing: 4px; margin: 0 auto; font-weight: 700; }
+.h2h th { font: 800 .8rem/1.2 var(--f-body); padding: 4px 6px; text-align: left; white-space: nowrap; }
+.h2h thead th { text-align: center; vertical-align: bottom; max-width: 92px; white-space: normal; }
+.h2h__esq { font-weight: 600 !important; color: #8a6a4a; font-size: .72rem !important; }
+.h2h__icono { font-size: 1.3rem; display: block; }
+.h2h tbody th .h2h__icono { display: inline; }
+.h2h__corto { display: block; font-size: .7rem; line-height: 1.1; color: #6b4a2b; }
+.h2h td { padding: 0; text-align: center; }
+.h2h__yo, .h2h__nada { width: 74px; height: 44px; color: #b08a62; background: rgba(43, 26, 15, .06); border-radius: 10px; }
+.h2h__celda {
+  display: grid; place-content: center; width: 74px; height: 44px; border: 2px solid #2b1a0f; border-radius: 10px; font: 800 1rem/1 var(--f-body); color: #2b1a0f;
+  background: color-mix(in srgb, #1f9d5c calc(max(var(--tono), 0) * 75%), color-mix(in srgb, #d8402f calc(max(calc(var(--tono) * -1), 0) * 75%), #fff3d6));
+}
+.h2h__celda small { font-size: .65rem; font-weight: 700; }
+.marcador__h2h[hidden] { display: none; }
+
+/* ============================ LEYES DEL MAR: 2 × 2 y pasos en fila ============================
+ * Las cuatro leyes en un bloque de 2 × 2, todas iguales: mismo alto, el texto arriba y el ejemplo
+ * abajo, con los tableros del mismo tamaño. Los pasos de «Cómo se juega una partida aquí», en una
+ * sola fila. En pantallas estrechas, una columna. */
+.laws { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 34px 28px; }
+.law--sm, .law--sm:nth-child(even) { grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr auto; align-items: start; gap: 14px; padding: 30px 26px 20px; }
+.law--sm:nth-child(even) .law__fig { order: 0; }
+.law--sm .law__fig { align-self: end; padding-top: 14px; border-top: 2px dashed color-mix(in srgb, var(--ink) 22%, transparent); grid-template-columns: repeat(2, 130px); justify-content: center; }
+.law--sm .law__fig:not(.law__fig--pair) .mini { grid-column: 1 / -1; justify-self: center; }
+.law--sm .mini, .law--sm .law__fig--pair .mini { width: 130px; max-width: 130px; border-width: 2px; }
+.law--sm .law__fig figcaption { grid-column: 1 / -1; min-height: 2.7em; font-size: .82rem; max-width: 36ch; }
+.turnos { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.turno { grid-template-columns: 1fr; align-content: start; gap: 8px; font-size: .92rem; }
+@media (max-width: 1100px) { .turnos { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); } }
+@media (max-width: 860px) {
+  .laws { grid-template-columns: minmax(0, 1fr); grid-auto-rows: auto; }
+}
+.law--sm > div { min-width: 0; overflow-wrap: anywhere; }

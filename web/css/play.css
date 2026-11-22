@@ -144,6 +144,7 @@
 .status[data-state="you"] .status__dot { background: #2eb872; animation: pulse 1s infinite; }
 .status[data-state="thinking"] .status__dot, .status[data-state="loading"] .status__dot { background: #ffb020; animation: pulse 1s infinite; }
 .status[data-state="error"] .status__dot { background: var(--red); }
+.status[data-state="paused"] .status__dot { background: #5aa0e6; }
 .btns { display: grid; gap: 10px; margin-top: 12px; }
 .btns .btn { width: 100%; font-size: 1rem; padding: 12px 16px; }
 .btns [hidden] { display: none; }
@@ -355,6 +356,10 @@ html:not([data-view="inicio"]) .footer { margin-top: 0; }
 .play[data-ficha-calaveras="nami"]  { --emblema-c: url("../img/fichas/nami.svg"); }
 .play[data-ficha-sombreros="kraken"] { --emblema-s: url("../img/fichas/kraken.svg"); }
 .play[data-ficha-calaveras="kraken"] { --emblema-c: url("../img/fichas/kraken.svg"); }
+.play[data-ficha-sombreros="karoo"] { --emblema-s: url("../img/fichas/karoo.svg"); }
+.play[data-ficha-calaveras="karoo"] { --emblema-c: url("../img/fichas/karoo.svg"); }
+.play[data-ficha-sombreros="brook"] { --emblema-s: url("../img/fichas/brook.svg"); }
+.play[data-ficha-calaveras="brook"] { --emblema-c: url("../img/fichas/brook.svg"); }
 .play[data-ficha-sombreros]:not([data-ficha-sombreros=""]) .face--hat {
   background: var(--emblema-s) center / 80% no-repeat, radial-gradient(circle, transparent 0 70%, rgba(120,70,0,.4) 71% 73%, transparent 74%), repeating-conic-gradient(from 0deg, rgba(255,255,255,.14) 0 6deg, transparent 6deg 12deg), radial-gradient(circle at 36% 30%, #ffe98a, #ffc928 55%, #d99a0b);
 }
@@ -370,3 +375,85 @@ html:not([data-view="inicio"]) .footer { margin-top: 0; }
 .btn--xs:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink), inset 0 -3px 0 var(--bd); }
 .btn--xs span { font-size: 1.1em; line-height: 1; }
 #undo:disabled { filter: grayscale(1) opacity(.45); }
+
+
+/* ================================ EL CARTEL DE «SE BUSCA» ================================
+ * Como un cartel impreso de verdad: papel envejecido con su clavo, «SE BUSCA» a todo el ancho,
+ * la foto vertical con un filo oscuro (el personaje siempre sale entero), el nombre tan grande
+ * como quepa en una línea y la recompensa con el símbolo del berry. Vale para todos los carteles:
+ * Rivales, Lucha, Marcador, la portada y el tutorial. Todo escala con el ancho del cartel (cqw). */
+.wanted.paper {
+  --tinta: #3b2416;
+  display: flex; flex-direction: column; align-items: stretch;
+  padding: 20px 16px 14px; color: var(--tinta); border: 0; border-radius: 1px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .22 0 0 0 0 .1 0 0 0 .16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse 34% 20% at 18% 86%, rgba(140, 92, 40, .14), transparent 70%),
+    radial-gradient(ellipse 26% 16% at 86% 12%, rgba(140, 92, 40, .12), transparent 70%),
+    radial-gradient(circle at 0 0, rgba(110, 70, 28, .32), transparent 9%),
+    radial-gradient(circle at 100% 0, rgba(110, 70, 28, .28), transparent 8%),
+    radial-gradient(circle at 0 100%, rgba(110, 70, 28, .28), transparent 9%),
+    linear-gradient(315deg, rgba(90, 55, 20, .34) 0, rgba(255, 248, 230, .45) 3.5%, transparent 8%),
+    radial-gradient(ellipse 75% 70% at 50% 46%, transparent 62%, rgba(120, 76, 30, .3) 100%),
+    linear-gradient(175deg, #f1e3c2, #ecdcb8 60%, #e2cda2);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .3), 0 14px 24px -10px rgba(60, 35, 10, .55);
+}
+.wanted.paper::after { display: none; }
+/* el clavo que lo sujeta */
+.wanted.paper::before {
+  content: ""; position: absolute; z-index: 5; top: 6px; left: 50%; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f4f4f4, #9aa3ad 45%, #4a525c 100%);
+  box-shadow: 1px 3px 3px rgba(30, 18, 8, .5);
+}
+/* «SE BUSCA», a todo el ancho */
+.wanted.paper .wanted__top {
+  order: 1; margin: 2px 0 3cqw; white-space: nowrap; letter-spacing: .005em !important;
+  font: 900 18.5cqw/.86 "Noto Serif Display", Georgia, serif !important; font-stretch: 62.5%;
+  text-shadow: 0 0 .6px rgba(59, 36, 22, .6);
+}
+/* la foto: vertical, con un filo oscuro y aspecto de impresa; el personaje, siempre entero */
+.wanted.paper .wanted__pic, .wanted.paper .wanted__pic.sel {
+  order: 2; width: auto; aspect-ratio: 4 / 5; margin: 0 -1px; border: max(2px, .9cqw) solid var(--tinta);
+  backdrop-filter: none;
+  background:
+    radial-gradient(ellipse 36% 6% at 50% 93%, rgba(59, 36, 22, .28), transparent 70%),
+    linear-gradient(transparent 84%, rgba(110, 80, 45, .16) 84%, rgba(110, 80, 45, .24)),
+    repeating-conic-gradient(from 200deg at 14% -8%, rgba(255, 252, 242, .5) 0 4deg, transparent 4deg 11deg),
+    radial-gradient(ellipse 90% 80% at 30% 15%, #f6eedd, #e3d5b8 70%, #cfbd98);
+  box-shadow: inset 0 0 5cqw rgba(90, 60, 25, .3);
+}
+.wanted.paper .wanted__pic.sel::before, .wanted.paper .wanted__pic.sel::after,
+.wanted.paper .sel__shine, .wanted.paper .sel__tag, .wanted.paper .sel__floor { display: none; }
+.wanted.paper .sel__char {
+  bottom: 6%; height: 88%; max-width: 88%;
+  filter: sepia(.12) saturate(.92) drop-shadow(0 3px 0 rgba(59, 36, 22, .22));
+}
+.wanted.paper .wanted__pic::after {
+  content: ""; display: block; position: absolute; z-index: 3; inset: auto 22% 3%; height: 6%; width: auto; border: 0; border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(59, 36, 22, .35), transparent 70%); animation: none; filter: none;
+}
+.wanted.paper .wanted__pic.sel::after { display: block; translate: none; }
+/* el nombre: tan grande como quepa en una línea */
+.wanted.paper .wanted__name {
+  order: 3; display: grid; place-items: center; height: 16cqw; margin: 3cqw 0 1.4cqw; white-space: nowrap; overflow: hidden;
+  font: 900 calc(min(15.5cqw, 166cqw / var(--len, 12)))/.92 "Noto Serif Display", Georgia, serif !important; font-stretch: 62.5%;
+  letter-spacing: .01em; word-break: normal;
+}
+/* la recompensa: berry, cifras espaciadas y guion */
+.wanted.paper .wanted__money {
+  order: 4; flex-direction: row; justify-content: center; align-items: center; gap: 2cqw; margin: 0;
+  font: 800 10cqw/1 "Noto Serif Display", Georgia, serif !important; font-stretch: 75%; letter-spacing: .13em;
+}
+.wanted.paper .wanted__money span::before {
+  content: ""; display: inline-block; vertical-align: -.08em; width: .72em; height: .94em; margin-right: .22em;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 52'%3E%3Cpath fill='%233b2416' fill-rule='evenodd' d='M6 7h16.5C31 7 35 11 35 17c0 4.2-2.3 7-6.2 8.1C33.6 26 37 29.6 37 35c0 7.3-5 11-13.6 11H6zm9.5 7.5v8.2h5.8c3 0 4.6-1.5 4.6-4.1s-1.6-4.1-4.6-4.1zm0 15.2v9h6.5c3.4 0 5.2-1.6 5.2-4.5s-1.8-4.5-5.2-4.5z'/%3E%3Cpath d='M13 1v51M24 1v51' stroke='%233b2416' stroke-width='3.4'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.wanted.paper .wanted__money span::after { content: "–"; margin-left: .04em; }
+.wanted.paper .wanted__money small { display: none; }
+/* el alias, pequeño al pie, y la línea de debajo */
+.wanted.paper .wanted__sub {
+  order: 5; margin: 3cqw 0 0; padding-top: 2.2cqw; border-top: max(1px, .5cqw) solid rgba(59, 36, 22, .35);
+  font: 800 max(.62rem, 4cqw)/1.1 var(--f-body) !important; letter-spacing: .18em; text-transform: uppercase; opacity: .82;
+}
+.wanted.paper .wanted__foot { order: 6; margin-top: 1.6cqw; font: 700 max(.6rem, 3.6cqw)/1.25 var(--f-body) !important; letter-spacing: .06em; opacity: .7; }
+.wanted.paper .wanted__foot:empty { display: none; }

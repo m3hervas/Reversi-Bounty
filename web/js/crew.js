@@ -17,9 +17,12 @@
   const RB = (window.RB = window.RB || {});
   const KEY = "bb-recompensa";
 
+  /* La recompensa sigue a la fuerza de cada bot: 5 M + 190 M × (% de puntos)^1,5, con el % del
+   * torneo nocturno (Car_lu, medido aparte en 30 partidas). Brook lleva un valor provisional
+   * hasta su primer torneo. Ver docs/diseno-jugar.md. */
   const PERSONAS = {
     "Buggy aleatorio": {
-      aka: "El Payaso Afortunado", bounty: 15000000, img: "img/buggy.png", ficha: "buggy", accent: "#9b5de5",
+      aka: "Payaso Suertudo", bounty: 6000000, img: "img/buggy.png", ficha: "buggy", accent: "#9b5de5",
       lines: {
         hello: ["¡Soy el magnífico capitán Buggy! Jugaré… a lo que salga.", "¡Y no me llames payaso! ¡Que empiece el espectáculo!"],
         think: ["Mmm… ¡esta! ¡O esta! ¡Da igual!", "Tiro los cuchillos y… ¡ahí va!"],
@@ -30,7 +33,7 @@
       },
     },
     "Wapol voraz": {
-      aka: "El Tragón del Botín", bounty: 28000000, img: "img/wapol.png", ficha: "wapol", accent: "#ff8a1f",
+      aka: "El Rey Glotón", bounty: 25000000, img: "img/wapol.png", ficha: "wapol", accent: "#ff8a1f",
       lines: {
         hello: ["Todas las fichas serán mías. ¡Todas!", "Cada ficha que voltee es una moneda más."],
         think: ["¿Cuál me da más? … ¡Esa!", "Contando botín…"],
@@ -41,7 +44,7 @@
       },
     },
     "Zeff minimax": {
-      aka: "El Cocinero Estratega", bounty: 150000000, img: "img/zeff.png", ficha: "zeff", accent: "#3f86d9",
+      aka: "Pierna Roja", bounty: 122000000, img: "img/zeff.png", ficha: "zeff", accent: "#3f86d9",
       lines: {
         hello: ["Siéntate, mocoso. Veamos qué sabes.", "Aquí se cocina a fuego lento y se piensa varias jugadas por delante."],
         think: ["Calculando unas cuantas jugadas por delante…", "Todo bien sazonado, nada se improvisa."],
@@ -52,7 +55,7 @@
       },
     },
     "Nami navegante": {
-      aka: "La Gata Ladrona", bounty: 66000000, img: "img/nami.png", ficha: "nami", accent: "#ff8c1a",
+      aka: "La Gata Ladrona", bounty: 116000000, img: "img/nami.png", ficha: "nami", accent: "#ff8c1a",
       lines: {
         hello: ["Tengo el mapa de este tablero. Tú no.", "Ganarme te va a costar caro. Muy caro."],
         think: ["Leyendo los vientos…", "Trazando la ruta hasta la esquina…"],
@@ -63,7 +66,7 @@
       },
     },
     "Kraken alfa-beta": {
-      aka: "El Terror de las Profundidades", bounty: 99000000, img: "img/kraken.png", ficha: "kraken", accent: "#e2725b",
+      aka: "Terror Abisal", bounty: 147000000, img: "img/kraken.png", ficha: "kraken", accent: "#e2725b",
       lines: {
         hello: ["Seis brazos y seis sables. ¿Seguro que quieres jugar?", "Del fondo del mar sube el Kraken."],
         think: ["Enroscando la jugada…", "Un tentáculo en cada esquina…"],
@@ -71,6 +74,28 @@
         move: ["¡Tentáculo va!", "Te arrastro al fondo.", "Ni una ficha se me escapa."],
         win: ["Al fondo del mar contigo. ¡Glub, glub!"], lose: ["Vuelvo a las profundidades… por ahora."],
         draw: ["¿Empate? Te suelto… esta vez."], forfeit: ["¡Se me han enredado los tentáculos!"],
+      },
+    },
+    "Car_lu": {
+      aka: "Pato Relámpago", bounty: 141000000, img: "img/karoo.png", ficha: "karoo", accent: "#ffb627",
+      lines: {
+        hello: ["¡Cuac! A toda velocidad por el tablero.", "Agárrate, que este pato no frena."],
+        think: ["Calentando motores… ¡cuac!", "Midiendo la pista hasta la esquina…"],
+        big: ["¡Cuac! ¡Me has desplumado!", "¡Eso ha sido más rápido que yo!"],
+        move: ["¡Cuac!", "¡Fiuuu! Ya estoy aquí.", "Sin frenos y sin miedo."],
+        win: ["¡Primero en la meta! ¡Cuac, cuac!"], lose: ["Necesito otro barril de agua…"],
+        draw: ["Empate en la foto finish. ¡Cuac!"], forfeit: ["¡Me he salido de la pista!"],
+      },
+    },
+    "Brook silencioso": {
+      aka: "El Rey del Soul", bounty: 60000000, img: "img/brook.png", ficha: "brook", accent: "#7b4fb0",
+      lines: {
+        hello: ["¡Yohohoho! Tocaré una melodía silenciosa en tu tablero.", "Encantado. ¿Me deja ver sus fichas? …Ah, que se ven todas."],
+        think: ["Afinando el violín…", "Escucho el silencio del tablero… aunque no tengo orejas. ¡Yohoho!"],
+        big: ["¡Se me ha helado la sangre! …Aunque no tengo sangre. ¡Yohohoho!", "¡Me has dejado en los huesos!"],
+        move: ["Una nota más.", "Pianissimo…", "¡Yohohoho!"],
+        win: ["¡Bravo! Ovación para este esqueleto. ¡Yohohoho!"], lose: ["Se me ha roto una cuerda… y el corazón. ¡Ah, no, que no tengo!"],
+        draw: ["Empate… un dúo precioso. ¡Yohoho!"], forfeit: ["¡Me he quedado sin tiempo, y llevo cincuenta años esperando!"],
       },
     },
   };
@@ -92,10 +117,10 @@
   }
 
   function persona(bot) {
-    if (!bot) return { aka: "Rival misterioso", bounty: 0, lines: GENERIC };
+    if (!bot) return { aka: "Rival Oculto", bounty: 0, lines: GENERIC };
     const p = PERSONAS[bot.name];
     if (p) return p;
-    return { aka: "Nuevo en el Grand Line", bounty: (5 + (hash(bot.name) % 56)) * 1000000, lines: GENERIC };
+    return { aka: "Recién Llegado", bounty: (5 + (hash(bot.name) % 56)) * 1000000, lines: GENERIC };
   }
 
   function line(bot, kind) {

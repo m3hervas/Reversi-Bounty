@@ -125,6 +125,16 @@
   }
   RB.renderProfile = renderProfile;
 
+  /* El nombre del cartel va a todo el ancho en una línea: su tamaño depende de lo largo que sea.
+   * Un observador pone esa longitud (--len) a cada nombre, se escriba desde donde se escriba. */
+  function fitNames() {
+    document.querySelectorAll(".wanted__name").forEach((el) => {
+      const len = String(Math.max(7, el.textContent.trim().length));
+      if (el.style.getPropertyValue("--len") !== len) el.style.setProperty("--len", len);
+    });
+  }
+  new MutationObserver(fitNames).observe(document.documentElement, { subtree: true, childList: true, characterData: true });
+
   /* Una victoria, un empate o una derrota de la persona frente a un bot. Devuelve los berries ganados. */
   RB.recordResult = function (bot, outcome, diff) {
     const p = crew.profile;
@@ -166,9 +176,20 @@
         h("div", { class: "wanted__name", text: bot.name }),
         h("div", { class: "wanted__money" }, h("span", { text: crew.fmt(p.bounty) }), h("small", { text: "BERRIES" })),
       ),
+      bot.external ? crewLine(bot.authors) : crewLine(["Reversi Bounty"], true),
       h("p", { class: "rival__desc", text: bot.description }),
       extra,
     );
+  }
+
+  /* Debajo del cartel, de qué tripulación es el bot: los de otros equipos, con sus autores; los
+   * propios, «Reversi Bounty» (nunca los nombres de quien los programó). */
+  function crewLine(authors, propio) {
+    const names = (Array.isArray(authors) ? authors : [authors]).filter(Boolean);
+    const list = names.length > 1 ? names.slice(0, -1).join(", ") + " y " + names[names.length - 1] : names.join("");
+    return h("p", { class: "rival__crew" + (propio ? " rival__crew--propio" : "") },
+      h("span", { class: "rival__crew-tag" }, h("span", { "aria-hidden": "true", text: propio ? "🏴‍☠️" : "⚓" }), " Tripulación de"),
+      h("b", { class: "rival__crew-names", text: list || "otro equipo" }));
   }
 
   function renderRivals(players) {
@@ -222,6 +243,7 @@
     nameIn.addEventListener("input", () => { crew.profile.name = nameIn.value.trim(); crew.save(); renderProfile(false); if (RB.refreshPosters) RB.refreshPosters(); });
     renderProfile(false);
     renderMinis();
+    fitNames();
 
     document.querySelectorAll("[data-copy]").forEach((btn) => btn.addEventListener("click", async () => {
       const text = $("code-" + btn.dataset.copy).textContent;
@@ -235,7 +257,9 @@
       chip.dataset.state = "ready";
       $("engine-text").textContent = "Python " + info.python;
       $("footer-engine").textContent = "Las reglas y los bots son el paquete Python del proyecto: Python " + info.python + " con Pyodide " + info.pyodide + ", cargado en " + (info.ms / 1000).toFixed(1) + " s.";
+      RB.players = info.players;
       renderRivals(info.players);
+      if (RB.marcadorRefresh) RB.marcadorRefresh();
     });
     RB.engine.on("fatal", (msg) => {
       chip.dataset.state = "error";

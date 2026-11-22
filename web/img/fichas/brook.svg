@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><!-- Brook: su violín y el arco -->
+<defs>
+<linearGradient id="madera" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e3954a"/><stop offset=".55" stop-color="#b35a1f"/><stop offset="1" stop-color="#7a3510"/></linearGradient>
+</defs>
+<g transform="rotate(-35 50 50)">
+<g stroke="#2b1a0f" stroke-width="2.6" stroke-linejoin="round">
+<path d="M50 24 C40 24 36 30 38 37 C40 42 37 45 34 47 C28 52 28 60 33 66 C36 70 36 74 34 78 C32 86 40 92 50 92 C60 92 68 86 66 78 C64 74 64 70 67 66 C72 60 72 52 66 47 C63 45 60 42 62 37 C64 30 60 24 50 24 Z" fill="url(#madera)"/>
+<rect x="46.5" y="4" width="7" height="22" rx="2" fill="#2b1a0f"/>
+<circle cx="50" cy="6" r="4.5" fill="#5a2a0c"/>
+<rect x="45" y="66" width="10" height="5" rx="1.5" fill="#f2e2c0"/>
+<path d="M46 80 H54 L52 88 H48 Z" fill="#2b1a0f"/>
+</g>
+<path d="M42 52 C40 55 40 58 42 60 M58 52 C60 55 60 58 58 60" fill="none" stroke="#2b1a0f" stroke-width="2.4" stroke-linecap="round"/>
+<path d="M48.5 24 V80 M51.5 24 V80" stroke="#f6edd8" stroke-width=".9"/>
+<path d="M41 32 C40 38 38 44 36 48" fill="none" stroke="#ffd29a" stroke-width="2" stroke-linecap="round" opacity=".8"/>
+</g>
+<g transform="rotate(30 50 50)">
+<path d="M14 50 H86" stroke="#2b1a0f" stroke-width="5" stroke-linecap="round"/>
+<path d="M14 50 H86" stroke="#c9a36b" stroke-width="2.4" stroke-linecap="round"/>
+<path d="M20 53 H82" stroke="#f6edd8" stroke-width="1.4"/>
+<rect x="78" y="46" width="8" height="8" rx="1.5" fill="#2b1a0f"/>
+</g>
+</svg>
