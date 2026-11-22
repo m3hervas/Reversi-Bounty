@@ -18,7 +18,7 @@
   const KEY = "bb-recompensa";
 
   /* La recompensa sigue a la fuerza de cada bot: 5 M + 190 M × (% de puntos)^1,5, con el % del
-   * torneo nocturno (Car_lu, medido aparte en 30 partidas). Brook lleva un valor provisional
+   * torneo nocturno (Car_lu, medido aparte en 30 partidas). Mr. 5 y Brook llevan un valor provisional
    * hasta su primer torneo. Ver docs/diseno-jugar.md. */
   const PERSONAS = {
     "Buggy aleatorio": {
@@ -85,6 +85,17 @@
         move: ["¡Cuac!", "¡Fiuuu! Ya estoy aquí.", "Sin frenos y sin miedo."],
         win: ["¡Primero en la meta! ¡Cuac, cuac!"], lose: ["Necesito otro barril de agua…"],
         draw: ["Empate en la foto finish. ¡Cuac!"], forfeit: ["¡Me he salido de la pista!"],
+      },
+    },
+    "Minimax de Zena": {
+      aka: "El Hombre Bomba", bounty: 110000000, img: "img/mr5.png", ficha: "mr5", accent: "#8a4b2a",
+      lines: {
+        hello: ["Agente número 5, listo para volar el tablero.", "Cada ficha mía es una bomba de relojería."],
+        think: ["Calculando la explosión…", "Contando hasta cinco…"],
+        big: ["Hmpf. Me has desactivado la bomba.", "Eso no estaba en el informe de la misión."],
+        move: ["¡Bum!", "Misión cumplida.", "Detonación controlada."],
+        win: ["Objetivo eliminado. Fin de la misión."], lose: ["La misión ha fracasado…"],
+        draw: ["Empate. Informaré a la central."], forfeit: ["¡Me ha estallado en la cara!"],
       },
     },
     "Brook silencioso": {
