@@ -26,7 +26,9 @@ concurrency:
 jobs:
   torneo:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Con 8 bots (varios piensan casi un segundo por jugada) el torneo ya tarda unos 26 minutos;
+    # cada bot fuerte nuevo añade varios más. Hora y media deja margen de sobra para que entren más.
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

@@ -110,6 +110,18 @@ que nadie intervenga:
    que el navegador no enseñe la copia del día anterior, y dibuja la tabla. No juega ninguna partida.
    Antes del primer torneo el archivo no existe: la página lo dice en lugar de fallar.
 
+!!! warning "No borres la rama `marcador`"
+    Aunque parezca una rama vieja, es donde vive la clasificación. Si se borra, la próxima vez que se
+    publique la web saldrá «Todavía no hay clasificación» hasta que el torneo vuelva a jugarse. Para
+    arreglarlo enseguida: *Actions* → *Torneo* → *Run workflow* y, al terminar, *Actions* → *Pages* →
+    *Run workflow*. Conviene protegerla contra el borrado en *Settings* → *Rules* (sin exigir pull
+    request, porque el torneo escribe en ella directamente).
+
+!!! note "Cuánto tarda"
+    Cada pareja juega con los dos colores y varias rondas, y los bots fuertes piensan casi un segundo
+    por jugada: con 8 bots el torneo dura unos 26 minutos. El workflow se corta a los 90 minutos (hora y media)
+    (`timeout-minutes` en `torneo.yml`); si entran muchos bots más, habrá que subirlo o bajar las rondas.
+
 ## El archivo `leaderboard.json`
 
 ```json
