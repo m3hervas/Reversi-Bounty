@@ -48,3 +48,8 @@ def test_crea_la_rama_marcador_la_primera_vez():
 
 def test_no_hace_commit_si_no_ha_cambiado_nada():
     assert "git diff --cached --quiet" in ORDENES
+
+
+def test_tiene_tiempo_de_sobra_para_todos_los_bots():
+    # Con 8 bots ya tarda unos 26 minutos: el límite no puede estar justo por encima.
+    assert FLUJO["jobs"]["torneo"]["timeout-minutes"] >= 60
